@@ -13,6 +13,8 @@ def do(cmd, cfg=None, errorString=None, path=None, logFile=None):
         outpipe = open(logPath+"/"+logFile, "w")
     p = subprocess.Popen(" ".join(cmd), stdout=outpipe, stderr=outpipe,
                          cwd=path, shell=True)
+    if cfg and logFile:
+        outpipe.close()
     out = ""
     err = ""
     if cfg and logFile:
@@ -24,22 +26,3 @@ def do(cmd, cfg=None, errorString=None, path=None, logFile=None):
             c.printError(err)
             cfg["errors"].append(errorString)
     return out,err,p.returncode
-
-def doSilent(cmd, cfg=None, errorString=None, path=None, logFile=None):
-    outpipe = "/dev/null"
-    if cfg and logFile:
-        logPath = cfg["devDir"] + "/autoproj/logs";
-        if not os.path.isdir(logPath):
-            os.system("mkdir -p "+logPath)
-        outpipe = logPath+"/"+logFile
-    if not path:
-        path = "."
-    returncode = os.system("( cd "+path+" ; "+" ".join(cmd)+" &> "+outpipe+" )")
-    return "", "", returncode
-    
-def doVerbose(cmd, cfg=None, errorString=None, path=None):
-    if path:
-        os.system("( cd "+path+" ; "+" ".join(cmd)+" 2>&1 )")
-    else:
-        os.system(" ".join(cmd)+" 2>&1")
-    return "", ""

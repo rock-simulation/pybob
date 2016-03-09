@@ -30,7 +30,7 @@ def fetch_ode(cfg):
     print c.BOLD+"Fetching "+"external/ode ... "+c.END,
     sys.stdout.flush
     cwd = os.getcwd()
-    os.system("mkdir -p "+ path)
+    execute.do(["mkdir -p "+ path])
     os.chdir(path)
     if not os.path.isfile(path+"/ode-0.12.tar.gz"):
         if os.path.isdir(path+"/ode"):
@@ -49,14 +49,14 @@ def install_ode(cfg):
         return
     path = cfg["devDir"]+"/simulation/ode"
     cmd = ["./configure", 'CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
-    execute.doSilent(cmd, None, None, path)
+    execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
     print c.BOLD + "simulation/ode"+c.WARNING+" configured"+c.END
     if system() == "Linux":
         libtool = os.popen('which libtool').read()
         if len(libtool) > 0:
-            execute.doSilent(["mv", path+"/libtool", path+"/libtool_old"])
-            execute.doSilent(["ln", "-s", libtool, path+"/libtool"])
-    execute.doSilent(["make", "-C", path, "install", "-j", str(cfg["numCores"])])
+            execute.do(["mv", "libtool", "libtool_old"], None, None, path)
+            execute.do(["ln", "-s", libtool, "libtool"], None, None, path)
+    execute.do(["make", "-C", path, "install", "-j", str(cfg["numCores"])], cfg, None, None, "simulation_ode_configure.txt")
     print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
 
 def uninstall_minizip(cfg):

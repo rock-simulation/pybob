@@ -22,7 +22,7 @@ function parse_yaml {
 
 packages1="buildconf list bootstrap install rebuild clean fetch update diff help"
 packages=""
-if [ -d ${MARS_SCRIPT_DIR}/${PACKAGES_FILE} ]; then
+if [ -f ${MARS_SCRIPT_DIR}/${PACKAGES_FILE} ]; then
     while read package; do
         package=${package/\#*/}
         if [[ x${package} = x ]]; then

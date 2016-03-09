@@ -122,12 +122,12 @@ def installPackage(p):
         cfg["errors"].append("install: "+p+" path not found")
         return
     if cfg["rebuild"]:
-        execute.doSilent(["rm", "-rf", path+"/build"])
+        execute.do(["rm", "-rf", path+"/build"])
     start = datetime.datetime.now()
     if os.path.isdir(path+"/build"):
         cmd = ["cmake", path]
     else:
-        execute.doSilent(["mkdir", "-p", path+"/build"])
+        execute.do(["mkdir", "-p", path+"/build"])
         #cmd = ["cmake", "..", "-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install", "-DCMAKE_BUILD_TYPE=DEBUG", "-Wno-dev"]
     out, err, r = execute.do(["cmake_debug"], cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
