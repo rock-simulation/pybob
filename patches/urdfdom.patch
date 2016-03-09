@@ -1,0 +1,99 @@
+--- urdfdom/CMakeLists.txt
++++ urdfdom/CMakeLists.txt
+@@ -34,10 +34,14 @@ endif (MSVC OR MSVC90 OR MSVC10)
+ 
+ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+ 
+-include(SearchForTinyXML)
+-include_directories(${tinyxml_include_dirs})
+-link_directories(${tinyxml_library_dirs})
+-add_definitions(${tinyxml_cflags})
++#include(SearchForTinyXML)
++include(FindPkgConfig)
++pkg_check_modules(tinyxml REQUIRED tinyxml)
++
++message(STATUS ${tinyxml_INCLUDE_DIRS})
++include_directories(${tinyxml_INCLUDE_DIRS})
++link_directories(${tinyxml_LIBRARY_DIRS})
++add_definitions(${tinyxml_CFLAGS_OTHERS})
+ 
+ find_package(urdfdom_headers REQUIRED)
+ include_directories(SYSTEM ${urdfdom_headers_INCLUDE_DIRS})
+@@ -57,7 +61,7 @@ add_subdirectory(urdf_parser)
+ set(PKG_NAME ${PROJECT_NAME})
+ set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
+ set(PKG_DEPENDS urdfdom_headers console_bridge)
+-set(cmake_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/urdfdom-config.cmake")
++set(cmake_conf_file "cmake/urdfdom-config.cmake")
+ configure_file("${cmake_conf_file}.in" "${CMAKE_BINARY_DIR}/${cmake_conf_file}" @ONLY)
+ install(FILES ${CMAKE_BINARY_DIR}/${cmake_conf_file}
+   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake/ COMPONENT cmake)
+@@ -67,7 +71,7 @@ if (NOT MSVC)
+   set(PKG_DESC "Unified Robot Description Format")
+   set(PKG_DEPENDS "urdfdom_headers console_bridge") # make the list separated by spaces instead of ;
+   set(PKG_URDF_LIBS "-lurdfdom_sensor -lurdfdom_model_state -lurdfdom_model -lurdfdom_world")
+-  set(pkg_conf_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pkgconfig/urdfdom.pc")
++  set(pkg_conf_file "cmake/pkgconfig/urdfdom.pc")
+   configure_file("${pkg_conf_file}.in" "${CMAKE_BINARY_DIR}/${pkg_conf_file}" @ONLY)
+   install(FILES ${CMAKE_BINARY_DIR}/${pkg_conf_file}
+     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
+diff --git a/urdf_parser/CMakeLists.txt b/urdf_parser/CMakeLists.txt
+index 1058d22..362d6c0 100644
+--- urdfdom/urdf_parser/CMakeLists.txt
++++ urdfdom/urdf_parser/CMakeLists.txt
+@@ -1,19 +1,21 @@
+ include_directories(include)
+ 
++add_definitions(-Dconsole_bridge_EXPORTS)
++
+ add_library(urdfdom_world SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp src/world.cpp)
+-target_link_libraries(urdfdom_world ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
++target_link_libraries(urdfdom_world ${tinyxml_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
+ set_target_properties(urdfdom_world PROPERTIES SOVERSION 0.3)
+ 
+ add_library(urdfdom_model SHARED src/pose.cpp src/model.cpp src/link.cpp src/joint.cpp)
+-target_link_libraries(urdfdom_model ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
++target_link_libraries(urdfdom_model ${tinyxml_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
+ set_target_properties(urdfdom_model PROPERTIES SOVERSION 0.3)
+ 
+ add_library(urdfdom_sensor SHARED src/urdf_sensor.cpp)
+-target_link_libraries(urdfdom_sensor urdfdom_model ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
++target_link_libraries(urdfdom_sensor urdfdom_model ${tinyxml_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
+ set_target_properties(urdfdom_sensor PROPERTIES SOVERSION 0.3)
+ 
+ add_library(urdfdom_model_state SHARED src/urdf_model_state.cpp src/twist.cpp)
+-target_link_libraries(urdfdom_model_state ${tinyxml_libraries} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
++target_link_libraries(urdfdom_model_state ${tinyxml_LIBRARIES} ${console_bridge_LIBRARIES} ${Boost_LIBRARIES})
+ set_target_properties(urdfdom_model_state PROPERTIES SOVERSION 0.3)
+ 
+ # --------------------------------
+@@ -33,10 +35,23 @@ add_executable(urdf_unit_test test/urdf_unit_test.cpp)
+ target_link_libraries(urdf_unit_test urdfdom_model ${Boost_LIBRARIES})
+ add_test(urdf_unit_test urdf_unit_test)
+ 
+-INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
++
++if(WIN32)
++  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
++else(WIN32)
++  set(LIB_INSTALL_DIR lib)
++endif(WIN32)
++
++set(_INSTALL_DESTINATIONS
++	RUNTIME DESTINATION bin
++	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
++	ARCHIVE DESTINATION lib
++)
++
++INSTALL(TARGETS urdfdom_model ${_INSTALL_DESTINATIONS})
++INSTALL(TARGETS urdfdom_world ${_INSTALL_DESTINATIONS})
+ INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test
+-  DESTINATION ${CMAKE_INSTALL_BINDIR})
+-INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
+-INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
++   ${_INSTALL_DESTINATIONS})
++INSTALL(TARGETS urdfdom_sensor ${_INSTALL_DESTINATIONS})
++INSTALL(TARGETS urdfdom_model_state ${_INSTALL_DESTINATIONS})
++INSTALL(DIRECTORY include/urdf_parser  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

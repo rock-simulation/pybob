@@ -1,0 +1,63 @@
+--- libyaml/CMakeLists.txt	2015-02-13 10:53:19 +0000
++++ libyaml/CMakeLists.txt	2015-02-13 10:51:44 +0000
+@@ -12,5 +12,41 @@ file (GLOB SRC src/*.c)
+ 
+ include_directories (include win32)
+ add_definitions (-DHAVE_CONFIG_H -DYAML_DECLARE_STATIC)
+-add_library (yaml STATIC ${SRC})
++add_library (yaml SHARED ${SRC})
++
++
++if(WIN32)
++  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
++else(WIN32)
++  set(LIB_INSTALL_DIR lib)
++endif(WIN32)
++
++
++set(_INSTALL_DESTINATIONS
++	RUNTIME DESTINATION bin
++	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
++	ARCHIVE DESTINATION lib
++)
++
++install(TARGETS yaml  ${_INSTALL_DESTINATIONS})
++
++# Prepare and install necessary files to support finding of the library 
++# using pkg-config
++configure_file(yaml-0.1.pc.in ${CMAKE_BINARY_DIR}/yaml-0.1.pc @ONLY)
++install(FILES ${CMAKE_BINARY_DIR}/yaml-0.1.pc DESTINATION lib/pkgconfig)
++install(FILES include/yaml.h DESTINATION include/libyaml)
++
++install(TARGETS yaml DESTINATION lib)
++
++# Prepare and install necessary files to support finding of the library 
++# using pkg-config
++configure_file(yaml-0.1.pc.in ${CMAKE_BINARY_DIR}/yaml-0.1.pc @ONLY)
++install(FILES ${CMAKE_BINARY_DIR}/yaml-0.1.pc DESTINATION lib/pkgconfig)
++
++install(TARGETS yaml DESTINATION lib)
++
++# Prepare and install necessary files to support finding of the library 
++# using pkg-config
++configure_file(yaml-0.1.pc.in ${CMAKE_BINARY_DIR}/yaml-0.1.pc @ONLY)
++install(FILES ${CMAKE_BINARY_DIR}/yaml-0.1.pc DESTINATION lib/pkgconfig)
+ 
+--- libyaml/yaml-0.1.pc.in	2015-02-13 10:53:19 +0000
++++ libyaml/yaml-0.1.pc.in	2015-02-13 10:50:41 +0000
+@@ -1,10 +1,10 @@
+-prefix=@prefix@
+-exec_prefix=@exec_prefix@
+-includedir=@includedir@
+-libdir=@libdir@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++includedir=${prefix}/include/libyaml
++libdir=${prefix}/lib
+ 
+ Name: LibYAML
+ Description: Library to parse and emit YAML
+ Version: @PACKAGE_VERSION@
+-Cflags:
++Cflags:-I${includedir}
+ Libs: -L${libdir} -lyaml

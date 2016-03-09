@@ -1,0 +1,30 @@
+--- base-types/base/Time.hpp
++++ base-types/base/Time.hpp
+@@ -12,6 +12,10 @@
+ #include <stdexcept>
+ #include <assert.h>
+ 
++#ifdef WIN32
++typedef long suseconds_t;
++#endif
++
+ namespace base
+ {
+     struct Time
+@@ -211,10 +215,16 @@ namespace base
+             }
+ 
+             struct tm tm;
++	    /* TODO: windows does not support strptime, so this whole function
++	       is unsusable on windows! */
++#ifdef WIN32
++	    throw std::runtime_error("base::Time::fromString failed- not implemented for windows");
++#else
+             if(NULL == strptime(mainTime.c_str(), mainFormat.c_str(), &tm))
+             {
+                 throw std::runtime_error("base::Time::fromString failed- Time-String '" + mainTime + "' did not match the given format '" + mainFormat +"'");
+             }
++#endif
+             // " ... not set by strptime(); tells mktime() to determine 
+             // whether daylight saving time is in effect ..."
+             // (http://pubs.opengroup.org/onlinepubs/007904975/functions/strptime.html)
