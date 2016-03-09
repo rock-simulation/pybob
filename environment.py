@@ -4,10 +4,14 @@ import os
 import sys
 from platform import system
 import colorconsole as c
+import subprocess
 
 def source(sourceFile):
     newenv = {}
-    for line in os.popen('. '+sourceFile+' >&/dev/null; env'):
+    print sourceFile
+    p = subprocess.Popen(['. '+sourceFile+' &> /dev/null; env'], stdout=subprocess.PIPE, shell=True, executable='/bin/bash')
+    out, err = p.communicate()
+    for line in out.split("\n"):
         try:
             k,v = line.strip().split('=',1)
         except:
@@ -24,7 +28,9 @@ def setupEnv(cfg, update=False):
     prefix_config = prefix + "/configuration"
 
     # create env.sh
-    cmakeDebugPath = os.popen('which cmake_debug').read().strip()
+    p = subprocess.Popen(['which cmake_debug'], stdout=subprocess.PIPE, shell=True)
+    out, err = p.communicate()
+    cmakeDebugPath = out.strip()
     if len(cmakeDebugPath) > 0:
         # check if path is correct
         if cmakeDebugPath != cfg["devDir"]+"/install/bin/cmake_debug":
