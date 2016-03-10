@@ -8,7 +8,6 @@ import subprocess
 
 def source(sourceFile):
     newenv = {}
-    print sourceFile
     p = subprocess.Popen(['. '+sourceFile+' &> /dev/null; env'], stdout=subprocess.PIPE, shell=True, executable='/bin/bash')
     out, err = p.communicate()
     for line in out.split("\n"):

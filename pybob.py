@@ -19,11 +19,12 @@ start = datetime.datetime.now()
 commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
             "rebuild", "clean", "diff", "envsh", "uninstall", "help"]
 if len(sys.argv) < 2 or sys.argv[1] not in commands:
-    print c.printError("Please specify an action. Your options are:\n" +
+    print c.printBold("Please specify an action. Your options are:\n" +
                        ", ".join(commands) + "\n")
     exit(0)
 
 cfg = config.getConfiguration()
+cfg["installed"] = []
 cfg["updated"] = []
 cfg["update"] = True
 cfg["errors"] = []
@@ -52,7 +53,7 @@ def buildconf_():
 def envsh_():
     global cfg
     env.setupEnv(cfg, True)
-    c.printBold("  Recreated env.sh.")
+    c.printNormal("  Recreated env.sh.")
 
 # todo: important we need to detect loops
 def getDeps(cfg, pkg, deps, checked):
@@ -112,7 +113,7 @@ def fetch_(returnPackages = False):
                         mans.append(m)
     if returnPackages:
         return layout_packages
-    c.printBold("Buildable packages:\n "+"\n ".join(layout_packages))
+    #c.printBold("Buildable packages:\n "+"\n ".join(layout_packages))
 
 def installPackage(p):
     if p in cfg["ignorePackages"]:
@@ -131,22 +132,23 @@ def installPackage(p):
         #cmd = ["cmake", "..", "-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install", "-DCMAKE_BUILD_TYPE=DEBUG", "-Wno-dev"]
     out, err, r = execute.do(["cmake_debug"], cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
-        print c.BOLD + p+c.ERROR+" configure error"+c.END
+        print p+c.ERROR+" configure error"+c.END
         cfg["errors"].append("configure: "+p)
         return
-    print c.BOLD + p+c.WARNING+" configured"+c.END
+    print p+c.WARNING+" configured"+c.END
     end = datetime.datetime.now()
     diff1 = end - start
     start = end
     out, err, r = execute.do(["make", "install", "-j", str(cfg["numCores"]), "-C", path+"/build"], cfg , None, None, p.replace("/", "_")+"_build.txt")
     if r != 0:
-        print c.BOLD + p+c.ERROR+" build error"+c.END
+        print p+c.ERROR+" build error"+c.END
         cfg["errors"].append("build: "+p)
         return
     end = datetime.datetime.now()
     diff2 = end - start
-    print c.BOLD + p+c.WARNING+" installed"+c.END
+    print p+c.WARNING+" installed"+c.END
     cfg["profiling"].append([p, {"configure time": str(diff1)}, {"compile time": str(diff2)}])
+    cfg["installed"].append(p)
 
 def install_():
     global cfg
@@ -189,7 +191,7 @@ def install_():
                     if cfg["multiprocessing"]:
                         threads.append(Thread(target=cfg["overrides"][p]["install"], args=(cfg,)))
                     else:
-                        c.printBold("Install: "+p)
+                        c.printNormal("Install: "+p)
                         le = len(cfg["errors"])
                         cfg["overrides"][p]["install"](cfg)
                         if len(cfg["errors"]) <= le:
@@ -200,7 +202,7 @@ def install_():
                     if cfg["multiprocessing"]:
                         threads.append(Thread(target=installPackage, args=(p,)))
                     else:
-                        c.printBold("Install: "+p)
+                        c.printNormal("Install: "+p)
                         le = len(cfg["errors"])
                         installPackage(p)
                         if len(cfg["errors"]) <= le:
@@ -217,8 +219,7 @@ def install_():
             for t in threads:
                 t.join()
             if len(cfg["errors"]) > le:
-                c.printError("error")
-        
+                foo = ""
 
 def list_():
     global cfg
@@ -245,9 +246,9 @@ def bootstrap_():
 
 def help_():
     print
-    print("  The following commands are available:\n  "),
+    printNormal("  The following commands are available:\n  "),
     c.printBold(", ".join(commands))
-    print('\n  Once you have the env.sh sourced, most commands\n  can also be used with "mars_command" to have\n  autocompletion (e.g. mars_install)\n')
+    printNormal('\n  Once you have the env.sh sourced, most commands\n  can also be used with "mars_command" to have\n  autocompletion (e.g. mars_install)\n')
 
 globals()[sys.argv[1]+"_"]()
 printErrors()
@@ -256,5 +257,7 @@ if len(cfg["profiling"]) > 0:
     with open(cfg["devDir"]+"/autoproj/profiling.yml", "w") as f:
         yaml.dump(cfg["profiling"], f, default_flow_style=False)
 
+c.printBold("Installed packages: ")
+c.printNormal(cfg["installed"])
 diff = datetime.datetime.now() - start
 print "Time: "+str(diff)

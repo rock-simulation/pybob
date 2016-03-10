@@ -60,18 +60,20 @@ def clonePackage(cfg, package, server, gitPackage):
     clonePath = cfg["devDir"]+"/"+clonePath
     if os.path.isdir(clonePath):
         if cfg["update"]:
-            c.printBold("Updating "+clonePath)
+            print "Updating "+clonePath+" ... "+c.END,
             execute.do(["git", "-C", clonePath, "pull"], cfg)
     else:
         if not cfg["update"]:
             c.printError(package+" is not cloned, call mars_fetch to update or clone the packages.")
             cfg["errors"].append("missing: "+package)
         else:
-            print c.BOLD+"Fetching "+clonePath+" ... "+c.END,
+            print "Fetching "+clonePath+" ... "+c.END,
             sys.stdout.flush()
             execute.do(["git", "clone", "-q", server+gitPackage, clonePath], cfg)
 
 def getServerInfo(cfg, pDict, info):
+    # todo:
+    #    - parse type git / url / etc.
     setupCfg(cfg)
     if len(pDict) == 1:
         package, pInfo = pDict.items()[0]
@@ -95,7 +97,7 @@ def getServerInfo(cfg, pDict, info):
             if haveKey:
                 return
             haveServer = True
-    info = {}
+    info.clear()
     return
 
 def getPackageInfoHelper(cfg, package, base, info):
@@ -131,7 +133,7 @@ def getPackageInfo(cfg, package, info):
             base = base[:base.rindex("/")]
             if base+"/.*" in cfg["packages"]:
                 base = base + "/.*"
-                #c.printBold("found wildcard packages: "+package+" ("+base+")")
+                #c.printNormal("found wildcard packages: "+package+" ("+base+")")
                 return getPackageInfoHelper(cfg, package, base, info)
     return False
 
@@ -143,9 +145,10 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
             info2 = {}
             if getServerInfo(cfg, pDict, info2):
                 info.append(info2)
+    # todo: add parsing of libs.autoproj
 
 def fetchPackage(cfg, package, layout_packages):
-    print c.BOLD + "Check: " + package + " ... " + c.END,
+    print "Check: " + package + " ... " + c.END,
     sys.stdout.flush()
     setupCfg(cfg)
     if package in cfg["ignorePackages"]:
@@ -209,9 +212,9 @@ def fetchPackage(cfg, package, layout_packages):
     c.printError("error")
 
 def fetchPackages(cfg, layout_packages):
-    setupCfg()
+    setupCfg(cfg)
     updated = []
-    with open(path+"manifest") as f:
+    with open(cfg["devDir"]+"/autoproj/manifest") as f:
         manifest = yaml.load(f)
     for layout in manifest["layout"]:
         fetchPackage(cfg, layout, layout_packages)
@@ -221,10 +224,10 @@ def clonePackageSet(cfg, package, server, path, cloned, remotes, deps):
     for key, value in package.items():
         if value not in cloned:
             # clone in tmp folder
-            c.printBold("  Fetching: "+value)
+            c.printNormal("  Fetching: "+value)
             out, err, r = execute.do(["git", "clone", server[key]+value.strip()+".git", path+"tmp"])
             if not os.path.isdir(path+"tmp/.git"):
-                c.printBold(out);
+                c.printNormal(out);
                 c.printError(err);
                 cfg["errors"].apend("clone: "+value)
             # get the name of the remote
@@ -232,7 +235,7 @@ def clonePackageSet(cfg, package, server, path, cloned, remotes, deps):
                 info = yaml.load(f)
             os.system("rm -rf "+path+"remotes/"+info["name"])
             os.system("mv "+ path+"tmp "+path+"remotes/"+info["name"]);
-            if "imports" in info:
+            if "imports" in info and info["imports"]:
                 for i in info["imports"]:
                     if i not in deps and i not in cloned:
                         deps.append(i)
@@ -262,13 +265,13 @@ def updatePackageSets(cfg):
         if os.path.isdir(path+"remotes/"+d):
             if d not in remotes:
                 remotes.append(d)
-                c.printBold("  Updating: "+d)
+                c.printNormal("  Updating: "+d)
                 out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
                 if len(err) > 0:
                     c.printError(err)
                 with open(path+"remotes/"+d+"/source.yml") as f:
                     info = yaml.load(f)
-                if "imports" in info:
+                if "imports" in info and info["imports"]:
                     for i in info["imports"]:
                         if i not in deps and i not in cloned:
                             deps.append(i)
@@ -304,7 +307,7 @@ def updatePackageSets(cfg):
 
 def fetchBuildconf(cfg):
     if os.path.isdir(cfg["devDir"]+"/autoproj"):
-        c.printBold("  Update buildconf.")
+        c.printNormal("  Update buildconf.")
         out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
         if len(err) > 0:
             c.printError(err)
@@ -315,7 +318,7 @@ def fetchBuildconf(cfg):
             return
         branch = cfg["buildconfBranch"]
 
-        c.printBold("   Fetching \""+address+branch+"\" into "+cfg["devDir"]+"/autoproj")
+        c.printNormal("   Fetching \""+address+branch+"\" into "+cfg["devDir"]+"/autoproj")
         command = ["git", "clone", address, cfg["devDir"]+"/autoproj"]
         if len(branch) > 0:
             command.append("-b")

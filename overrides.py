@@ -7,11 +7,7 @@ import colorconsole as c
 import execute
 
 def uninstall_ode(cfg):
-    path = cfg["devDir"]+"/simulation"
-    cwd = os.getcwd()
-    os.chdir(path+"/ode")
-    execute.do(["make", "clean"])
-    os.chdir(cwd)
+    execute.do(["make", "-C", cfg["devDir"]+"/simulation/ode", "clean"])
 
 def patch_ode(cfg):
     srcPath = cfg["pyScriptDir"]+"/patches/"
@@ -42,6 +38,7 @@ def fetch_ode(cfg):
         if not os.path.isfile("ode/ode.pc.in"):
             cfg["errors"].append("fetch: simulation/ode")
     os.chdir(cwd)
+    cfg["installed"].append("simulation/ode")
 
 def install_ode(cfg):
     if os.system("pkg-config --exists ode") == 0:

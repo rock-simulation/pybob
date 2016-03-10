@@ -5,6 +5,9 @@ WARNING = '\033[38;5;166m'
 ERROR = '\033[31;1m'
 END = '\033[0m'
 
+def printNormal(s):
+    print s
+
 def printBold(s):
     print BOLD + s + END
 
