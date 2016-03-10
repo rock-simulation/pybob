@@ -5,6 +5,7 @@ import sys
 import os
 import colorconsole as c
 import execute
+import bob_package
 
 def uninstall_ode(cfg):
     execute.do(["make", "-C", cfg["devDir"]+"/simulation/ode", "clean"])
@@ -17,7 +18,7 @@ def patch_ode(cfg):
     execute.do(cmd+[srcPath+"ode-0.12-lambda.patch"])
     execute.do(cmd+[srcPath+"ode-0.12-export_joint_internals.patch"])
     execute.do(cmd+[srcPath+"ode-0.12-abort.patch"])
-    
+
 def check_ode(cfg):
     return os.path.isfile(cfg["devDir"]+"/simulation/ode/ode.pc.in")
 
@@ -39,6 +40,7 @@ def fetch_ode(cfg):
             cfg["errors"].append("fetch: simulation/ode")
     os.chdir(cwd)
     cfg["installed"].append("simulation/ode")
+    return True
 
 def install_ode(cfg):
     if os.system("pkg-config --exists ode") == 0:
@@ -69,7 +71,7 @@ def patch_minizip(cfg):
     cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
     execute.do(cmd+[srcPath+"minizip.patch"])
     execute.do(cmd+[srcPath+"minizip_unzip.patch"])
-    
+
 def check_minizip(cfg):
     return os.path.isfile(cfg["devDir"]+"/external/minizip/minizip.pc.in")
 
@@ -89,6 +91,10 @@ def fetch_minizip(cfg):
             cfg["errors"].append("fetch: external/minizip")
     os.chdir(cwd)
     patch_minizip(cfg)
+    return True
+
+def install_kdl(cfg):
+    bob_package.installPackage(cfg, "control/kdl/orocos_kdl")
 
 def loadOverrides(cfg):
     cfg["overrides"] = {"simulation/ode": {"fetch": fetch_ode,
@@ -99,5 +105,6 @@ def loadOverrides(cfg):
                         "external/minizip": {"fetch": fetch_minizip,
                                              "patch": patch_minizip,
                                              "check": check_minizip,
-                                             "uninstall": uninstall_minizip}}
+                                             "uninstall": uninstall_minizip},
+                        "control/kdl": {"install": install_kdl}}
     cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0"]

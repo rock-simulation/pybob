@@ -5,6 +5,7 @@ import yaml
 import colorconsole as c
 import multiprocessing
 import execute
+import re
 
 def setupCfg(cfg):
     # todo: handle this files differently
@@ -47,7 +48,27 @@ def listPackages(cfg):
                         packages.append([d, key])
                     else:
                         wildcard_packages.append([d, key])
+            if os.path.isfile(path+"remotes/"+d+"/libs.autobuild"):
+                with open(path+"remotes/"+d+"/libs.autobuild") as f:
+                    for line in f:
+                        if "_package" in line:
+                            l = line.split("_package")[1]
+                            arrLine = None
+                            if '"' in l:
+                                arrLine = line.split('"')
+                            elif "'" in l:
+                                arrLine = line.split("'")
+                            if arrLine:
+                                if "#" not in arrLine[0]:
+                                    packages.append([d, arrLine[1]])
+
     return (packages, wildcard_packages)
+
+def checkBaseName(package, info):
+    if "$" in info["gitPackage"] and "*" not in package:
+        info["basename"] = info["gitPackage"]
+        info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
+                                                        package.split("/")[-1])
 
 def clonePackage(cfg, package, server, gitPackage):
     clonePath = package
@@ -82,7 +103,7 @@ def getServerInfo(cfg, pDict, info):
                 info["server"] = server
                 info["gitPackage"] = pInfo[key]
                 info["package"] = package
-                return
+                return True
     haveKey = False
     haveServer = False
     for key, value in pDict.items():
@@ -95,12 +116,13 @@ def getServerInfo(cfg, pDict, info):
             info["server"] = cfg["server"][key]
             info["gitPackage"] = value
             if haveKey:
-                return
+                return True
             haveServer = True
     info.clear()
-    return
+    return False
 
 def getPackageInfoHelper(cfg, package, base, info):
+    matches = {}
     with open(cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]+"/source.yml") as f:
         source = yaml.load(f)
         if "version_control" in source:
@@ -108,13 +130,27 @@ def getPackageInfoHelper(cfg, package, base, info):
                 info2 = {}
                 getServerInfo(cfg, pDict, info2)
                 if "package" in info2:
-                    if base == info2["package"]:
-                        info.update(info2)
-                        if "$" in info["gitPackage"] and "*" not in package:
-                            info["basename"] = info["gitPackage"]
-                            info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
-                                                                            package.split("/")[-1])
-                        return True
+                    r = re.compile(info2["package"])
+                    m = r.match(base)
+                    if m and m.group() == base:
+                        i2 = dict(info2)
+                        i2["base"] = package
+                        i2["remote"] = cfg["packages"][base]
+                        checkBaseName(package, i2)
+                        if package in matches:
+                            matches[package].append(i2)
+                        else:
+                            matches[package] = [i2]
+
+    for key, value in matches.items():
+        e = 0
+        g = {}
+        for l in value:
+            if len(l["base"]) > e:
+                g = l
+
+        info.update(g)
+        return True
     return False
 
 def getPackageInfo(cfg, package, info):
@@ -126,15 +162,16 @@ def getPackageInfo(cfg, package, info):
         return
     setupCfg(cfg)
     if package in cfg["packages"]:
-        return getPackageInfoHelper(cfg, package, package, info)
-    else:
-        base = package
-        while "/" in base:
-            base = base[:base.rindex("/")]
-            if base+"/.*" in cfg["packages"]:
-                base = base + "/.*"
-                #c.printNormal("found wildcard packages: "+package+" ("+base+")")
-                return getPackageInfoHelper(cfg, package, base, info)
+        if getPackageInfoHelper(cfg, package, package, info):
+            return True
+
+    base = package
+    while "/" in base:
+        base = base[:base.rindex("/")]
+        if base+"/.*" in cfg["packages"]:
+            base = base + "/.*"
+            #c.printNormal("found wildcard packages: "+package+" ("+base+")")
+            return getPackageInfoHelper(cfg, package, base, info)
     return False
 
 def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
@@ -145,7 +182,43 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
             info2 = {}
             if getServerInfo(cfg, pDict, info2):
                 info.append(info2)
-    # todo: add parsing of libs.autoproj
+    # todo: add parsing of libs.autobuild (which is a ruby script)
+    matches = {}
+    with open(folder+"/libs.autobuild") as f:
+        info3 = []
+        for line in f:
+            if "_package" in line:
+                l = line.split("_package")[1]
+                arrLine = None
+                if '"' in l:
+                    arrLine = l.split('"')
+                elif "'" in l:
+                    arrLine = l.split("'")
+                if arrLine:
+                    if "#" not in arrLine[0]:
+                        p = arrLine[1]
+                        for i in info:
+                            r = re.compile(i["package"])
+                            m = r.match(p)
+                            if m and m.group() == p:
+                                i2 = dict(i)
+                                i2["base"] = i2["package"]
+                                i2["package"] = p
+                                checkBaseName(p, i2)
+                                if p in matches:
+                                    matches[p].append(i2)
+                                else:
+                                    matches[p] = [i2]
+    for key, value in matches.items():
+        e = 0
+        g = {}
+        for l in value:
+            if len(l["base"]) > e:
+                g = l
+
+        info.append(g)
+        #print g["package"] + ": " + g["base"]
+    return True
 
 def fetchPackage(cfg, package, layout_packages):
     print "Check: " + package + " ... " + c.END,
@@ -153,7 +226,7 @@ def fetchPackage(cfg, package, layout_packages):
     setupCfg(cfg)
     if package in cfg["ignorePackages"]:
         c.printWarning("done")
-        return
+        return True
     if package in cfg["osdeps"]:
         if cfg["update"]:
             if len(cfg["osdeps"][package]) > 1:
@@ -161,7 +234,7 @@ def fetchPackage(cfg, package, layout_packages):
             else:
                 cfg["osdeps"][package][0](cfg, package)
             c.printWarning("done")
-        return
+        return True
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
         if cfg["update"]:
@@ -171,10 +244,11 @@ def fetchPackage(cfg, package, layout_packages):
         if len(cfg["errors"]) == le:
             layout_packages.append(package)
             c.printWarning("done")
+            return True
         else:
             cfg["errors"].append("missing: "+package)
             c.printError("error")
-        return
+            return False
 
     path = cfg["devDir"]+"/autoproj/remotes/"
 
@@ -182,34 +256,47 @@ def fetchPackage(cfg, package, layout_packages):
         info = []
         print "\n ",
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):
+            error = False
             for i in info:
+                le = len(cfg["errors"])
                 if "$" not in i["gitPackage"]:
-                    le = len(cfg["errors"])
-                    clonePackage(cfg, i["package"], i["server"],
-                                 i["gitPackage"]);
-                    if "*" not in info["package"]:
-                        layout_packages.append(info["package"])
+                    if cfg["update"]:
+                        clonePackage(cfg, i["package"], i["server"],
+                                     i["gitPackage"]);
+                    if "*" not in i["package"]:
+                        layout_packages.append(i["package"])
+                if cfg["update"]:
                     if len(cfg["errors"]) <= le:
                         c.printWarning("done")
                     else:
                         c.printError("error")
-            return
+            if error:
+                if not cfg["update"]:
+                    c.printError("error")
+                return False
+            else:
+                if not cfg["update"]:
+                    c.printWarning("done")
+                return True
     else:
         info = {}
         if getPackageInfo(cfg, package, info):
             le = len(cfg["errors"])
-            if "basename" in info:
-                clonePackage(cfg, package, info["server"], info["gitPackage"])
-            else:
-                clonePackage(cfg, info["package"], info["server"], info["gitPackage"])
+            if cfg["update"]:
+                if "basename" in info:
+                    clonePackage(cfg, package, info["server"], info["gitPackage"])
+                else:
+                    clonePackage(cfg, info["package"], info["server"], info["gitPackage"])
             layout_packages.append(package)
             if len(cfg["errors"]) <= le:
                 c.printWarning("done")
+                return True
             else:
                 c.printError("error")
-            return
+                return False
     cfg["errors"].append("fetch: "+package)
     c.printError("error")
+    return False
 
 def fetchPackages(cfg, layout_packages):
     setupCfg(cfg)
@@ -265,10 +352,11 @@ def updatePackageSets(cfg):
         if os.path.isdir(path+"remotes/"+d):
             if d not in remotes:
                 remotes.append(d)
-                c.printNormal("  Updating: "+d)
-                out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
-                if len(err) > 0:
-                    c.printError(err)
+                if cfg["update"]:
+                    c.printNormal("  Updating: "+d)
+                    out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
+                    if len(err) > 0:
+                        c.printError(err)
                 with open(path+"remotes/"+d+"/source.yml") as f:
                     info = yaml.load(f)
                 if "imports" in info and info["imports"]:
@@ -296,10 +384,8 @@ def updatePackageSets(cfg):
                 pDict[p[0]] = p[0]
         for p in wildcards:
             if len(p[1]) > 0:
-                f.write(p[1]+"\n")
                 pDict[p[1]] = p[0]
             else:
-                f.write(p[0]+"\n")
                 pDict[p[0]] = p[0]
     with open(path+"packages.yml", "w") as f:
         yaml.dump(pDict, f)
@@ -307,10 +393,11 @@ def updatePackageSets(cfg):
 
 def fetchBuildconf(cfg):
     if os.path.isdir(cfg["devDir"]+"/autoproj"):
-        c.printNormal("  Update buildconf.")
-        out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
-        if len(err) > 0:
-            c.printError(err)
+        if cfg["update"]:
+            c.printNormal("  Update buildconf.")
+            out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
+            if len(err) > 0:
+                c.printError(err)
     else:
         address = cfg["buildconfAdress"]
         if len(address) == 0:
