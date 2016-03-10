@@ -229,7 +229,7 @@ def clonePackageSet(cfg, package, server, path, cloned, remotes, deps):
             if not os.path.isdir(path+"tmp/.git"):
                 c.printNormal(out);
                 c.printError(err);
-                cfg["errors"].apend("clone: "+value)
+                cfg["errors"].append("clone: "+value)
             # get the name of the remote
             with open(path+"tmp/source.yml") as f:
                 info = yaml.load(f)
