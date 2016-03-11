@@ -1,6 +1,6 @@
 #! /bin/bash
 
-PACKAGES_FILE="../autoproj/packages.txt"
+PACKAGES_FILE="../autoproj/bob/packages.txt"
 
 pushd . > /dev/null 2>&1
 

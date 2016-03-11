@@ -42,7 +42,7 @@ def getDeps(cfg, pkg, deps, checked):
                                 #checked.append(d)
         f.close()
 
-def installPackage(cfg, p):
+def installPackage(cfg, p, cmake_options=[]):
     if p in cfg["ignorePackages"]:
         return
     path = cfg["devDir"]+"/"+p
@@ -57,7 +57,8 @@ def installPackage(cfg, p):
     else:
         execute.do(["mkdir", "-p", path+"/build"])
         #cmd = ["cmake", "..", "-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install", "-DCMAKE_BUILD_TYPE=DEBUG", "-Wno-dev"]
-    out, err, r = execute.do(["cmake_debug"], cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
+    cmake = "cmake_"+cfg["defBuildType"]
+    out, err, r = execute.do([cmake]+cmake_options, cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
         print p+c.ERROR+" configure error"+c.END
         cfg["errors"].append("configure: "+p)

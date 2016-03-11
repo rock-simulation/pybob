@@ -15,7 +15,11 @@ import pipes
 import bob_package
 from threading import Thread
 
-# todo: for bootstrap don't update buildconf
+# todo:
+#       - skip orogen project (on install)
+#       - handle branches from source.yml
+#       - extend information for matching patterns instead of taking longest match
+#       - handle autoproj env.sh
 
 start = datetime.datetime.now()
 
@@ -30,6 +34,7 @@ cfg = config.getConfiguration()
 cfg["installed"] = []
 cfg["updated"] = []
 cfg["update"] = True
+cfg["fetch"] = True
 cfg["errors"] = []
 cfg["continueOnError"] = True
 cfg["overrides"] = {}
@@ -81,7 +86,6 @@ def fetch_(returnPackages = False):
     while len(mans) > 0:
         p = mans.pop()
         bob_package.getDeps(cfg, p, deps, None)
-
         while len(deps) > 0:
             d = deps.pop()
             if d not in layout_packages and d not in handled:
@@ -208,9 +212,9 @@ globals()[sys.argv[1]+"_"]()
 printErrors()
 
 if len(cfg["profiling"]) > 0:
-    with open(cfg["devDir"]+"/autoproj/profiling.yml", "w") as f:
+    with open(cfg["devDir"]+"/autoproj/bob/profiling.yml", "w") as f:
         yaml.dump(cfg["profiling"], f, default_flow_style=False)
-    with open(cfg["devDir"]+"/autoproj/depsInverse.yml", "w") as f:
+    with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml", "w") as f:
         yaml.dump(cfg["depsInverse"], f, default_flow_style=False)
 
 c.printBold("Installed packages: ")

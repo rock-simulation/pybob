@@ -7,7 +7,7 @@ import subprocess
 def do(cmd, cfg=None, errorString=None, path=None, logFile=None):
     outpipe = subprocess.PIPE
     if cfg and logFile:
-        logPath = cfg["devDir"] + "/autoproj/logs";
+        logPath = cfg["devDir"] + "/autoproj/bob/logs";
         if not os.path.isdir(logPath):
             os.system("mkdir -p "+logPath)
         outpipe = open(logPath+"/"+logFile, "w")

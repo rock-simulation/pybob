@@ -96,6 +96,9 @@ def fetch_minizip(cfg):
 def install_kdl(cfg):
     bob_package.installPackage(cfg, "control/kdl/orocos_kdl")
 
+def install_blloader(cfg):
+    bob_package.installPackage(cfg, "learning/bolero/src/bl_loader", ["-DPYTHON_SUPPORT=OFF"])
+
 def loadOverrides(cfg):
     cfg["overrides"] = {"simulation/ode": {"fetch": fetch_ode,
                                            "patch": patch_ode,
@@ -106,5 +109,6 @@ def loadOverrides(cfg):
                                              "patch": patch_minizip,
                                              "check": check_minizip,
                                              "uninstall": uninstall_minizip},
+                        "learning/bolero/src/bl_loader": {"install": install_blloader},
                         "control/kdl": {"install": install_kdl}}
-    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0"]
+    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "external/yaml-cpp", "tools/catch"]

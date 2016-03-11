@@ -16,9 +16,11 @@ def setupCfg(cfg):
             cfg["server"] = yaml.load(f)
 
     # load the package information if not already done
-    path = cfg["devDir"]+"/autoproj/"
-    if not "packages" in cfg and os.path.isfile(path+"packages.yml"):
-        with open(path+"packages.yml") as f:
+    path = cfg["devDir"]+"/autoproj/bob"
+    if not os.path.isdir(path):
+        os.system("mkdir -p "+path)
+    if not "packages" in cfg and os.path.isfile(path+"/packages.yml"):
+        with open(path+"/packages.yml") as f:
             cfg["packages"] = yaml.load(f)
 
 def listPackages(cfg):
@@ -48,8 +50,9 @@ def listPackages(cfg):
                         packages.append([d, key])
                     else:
                         wildcard_packages.append([d, key])
-            if os.path.isfile(path+"remotes/"+d+"/libs.autobuild"):
-                with open(path+"remotes/"+d+"/libs.autobuild") as f:
+            files = getAutobuildFiles(path+"remotes/"+d)
+            for i in files:
+                with open(i) as f:
                     for line in f:
                         if "_package" in line:
                             l = line.split("_package")[1]
@@ -64,6 +67,15 @@ def listPackages(cfg):
 
     return (packages, wildcard_packages)
 
+def getAutobuildFiles(path):
+    files = []
+    if os.path.isdir(path):
+        for d in os.listdir(path):
+            if os.path.isfile(path+"/"+d):
+                if ".autobuild" in d:
+                    files.append(path+"/"+d)
+    return files
+
 def checkBaseName(package, info):
     if "$" in info["gitPackage"] and "*" not in package:
         info["basename"] = info["gitPackage"]
@@ -72,10 +84,11 @@ def checkBaseName(package, info):
 
 def clonePackage(cfg, package, server, gitPackage):
     clonePath = package
-    if package[-3:] == "/.*":
-        clonePath = package[:-2] + gitPackage.split("/")[1].split(".")[0]
+    if package[-2:] == ".*":
+
+        clonePath = "/".join(package.split("/")[:-1])+"/" + gitPackage.split("/")[1].split(".")[0]
     if package in cfg["updated"]:
-        return
+        return False
     else:
         cfg["updated"].append(package)
     clonePath = cfg["devDir"]+"/"+clonePath
@@ -83,14 +96,21 @@ def clonePackage(cfg, package, server, gitPackage):
         if cfg["update"]:
             print "Updating "+clonePath+" ... "+c.END,
             execute.do(["git", "-C", clonePath, "pull"], cfg)
+            c.printWarning("done")
+            return True
     else:
-        if not cfg["update"]:
+        if not cfg["fetch"]:
             c.printError(package+" is not cloned, call mars_fetch to update or clone the packages.")
             cfg["errors"].append("missing: "+package)
+            c.printError("error")
+            return True
         else:
             print "Fetching "+clonePath+" ... "+c.END,
             sys.stdout.flush()
             execute.do(["git", "clone", "-q", server+gitPackage, clonePath], cfg)
+            c.printWarning("done")
+            return True
+    return False
 
 def getServerInfo(cfg, pDict, info):
     # todo:
@@ -158,12 +178,11 @@ def getPackageInfo(cfg, package, info):
         return
     if package in cfg["osdeps"]:
         return
-    if package in cfg["overrides"]:
-        return
+    #if package in cfg["overrides"]:
+    #    return
     setupCfg(cfg)
     if package in cfg["packages"]:
-        if getPackageInfoHelper(cfg, package, package, info):
-            return True
+        return getPackageInfoHelper(cfg, package, package, info)
 
     base = package
     while "/" in base:
@@ -184,31 +203,33 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
                 info.append(info2)
     # todo: add parsing of libs.autobuild (which is a ruby script)
     matches = {}
-    with open(folder+"/libs.autobuild") as f:
-        info3 = []
-        for line in f:
-            if "_package" in line:
-                l = line.split("_package")[1]
-                arrLine = None
-                if '"' in l:
-                    arrLine = l.split('"')
-                elif "'" in l:
-                    arrLine = l.split("'")
-                if arrLine:
-                    if "#" not in arrLine[0]:
-                        p = arrLine[1]
-                        for i in info:
-                            r = re.compile(i["package"])
-                            m = r.match(p)
-                            if m and m.group() == p:
-                                i2 = dict(i)
-                                i2["base"] = i2["package"]
-                                i2["package"] = p
-                                checkBaseName(p, i2)
-                                if p in matches:
-                                    matches[p].append(i2)
-                                else:
-                                    matches[p] = [i2]
+    files = getAutobuildFiles(folder)
+    for i in files:
+        with open(i) as f:
+            info3 = []
+            for line in f:
+                if "_package" in line:
+                    l = line.split("_package")[1]
+                    arrLine = None
+                    if '"' in l:
+                        arrLine = l.split('"')
+                    elif "'" in l:
+                        arrLine = l.split("'")
+                    if arrLine:
+                        if "#" not in arrLine[0]:
+                            p = arrLine[1]
+                            for i in info:
+                                r = re.compile(i["package"])
+                                m = r.match(p)
+                                if m and m.group() == p:
+                                    i2 = dict(i)
+                                    i2["base"] = i2["package"]
+                                    i2["package"] = p
+                                    checkBaseName(p, i2)
+                                    if p in matches:
+                                        matches[p].append(i2)
+                                    else:
+                                        matches[p] = [i2]
     for key, value in matches.items():
         e = 0
         g = {}
@@ -256,44 +277,42 @@ def fetchPackage(cfg, package, layout_packages):
         info = []
         print "\n ",
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):
-            error = False
+            le = len(cfg["errors"])
+            endM = True
             for i in info:
-                le = len(cfg["errors"])
                 if "$" not in i["gitPackage"]:
-                    if cfg["update"]:
-                        clonePackage(cfg, i["package"], i["server"],
-                                     i["gitPackage"]);
+                    if clonePackage(cfg, i["package"], i["server"],
+                                    i["gitPackage"]):
+                        endM = False
                     if "*" not in i["package"]:
                         layout_packages.append(i["package"])
-                if cfg["update"]:
-                    if len(cfg["errors"]) <= le:
-                        c.printWarning("done")
-                    else:
-                        c.printError("error")
-            if error:
-                if not cfg["update"]:
+            if len(cfg["errors"]) > le:
+                if endM:
                     c.printError("error")
                 return False
-            else:
-                if not cfg["update"]:
-                    c.printWarning("done")
-                return True
+            if endM:
+                c.printWarning("done")
+            return True
     else:
         info = {}
         if getPackageInfo(cfg, package, info):
+            endM = True
             le = len(cfg["errors"])
-            if cfg["update"]:
-                if "basename" in info:
-                    clonePackage(cfg, package, info["server"], info["gitPackage"])
-                else:
-                    clonePackage(cfg, info["package"], info["server"], info["gitPackage"])
-            layout_packages.append(package)
-            if len(cfg["errors"]) <= le:
-                c.printWarning("done")
-                return True
+            if "basename" in info:
+                if clonePackage(cfg, package, info["server"], info["gitPackage"]):
+                    endM = False
             else:
-                c.printError("error")
+                if clonePackage(cfg, info["package"], info["server"], info["gitPackage"]):
+                    endM = False
+            layout_packages.append(package)
+            if len(cfg["errors"]) > le:
+                if endM:
+                    c.printError("error")
                 return False
+            if endM:
+                c.printWarning("done")
+            return True
+
     cfg["errors"].append("fetch: "+package)
     c.printError("error")
     return False
@@ -307,74 +326,73 @@ def fetchPackages(cfg, layout_packages):
         fetchPackage(cfg, layout, layout_packages)
 
 # todo: add error handling
-def clonePackageSet(cfg, package, server, path, cloned, remotes, deps):
-    for key, value in package.items():
-        if value not in cloned:
-            # clone in tmp folder
-            c.printNormal("  Fetching: "+value)
-            out, err, r = execute.do(["git", "clone", server[key]+value.strip()+".git", path+"tmp"])
-            if not os.path.isdir(path+"tmp/.git"):
-                c.printNormal(out);
-                c.printError(err);
-                cfg["errors"].append("clone: "+value)
-            # get the name of the remote
-            with open(path+"tmp/source.yml") as f:
-                info = yaml.load(f)
-            os.system("rm -rf "+path+"remotes/"+info["name"])
-            os.system("mv "+ path+"tmp "+path+"remotes/"+info["name"]);
-            if "imports" in info and info["imports"]:
-                for i in info["imports"]:
-                    if i not in deps and i not in cloned:
-                        deps.append(i)
-            # store the info which package sets we have cloned already
-            cloned.append(value)
-            remotes.append(info["name"])
+def clonePackageSet(cfg, git, realPath, path, cloned, deps):
+    # clone in tmp folder
+    c.printNormal("  Fetching: "+git)
+    out, err, r = execute.do(["git", "clone", git, realPath])
+    if not os.path.isdir(realPath+"/.git"):
+        c.printNormal(out);
+        c.printError(err);
+        cfg["errors"].append("clone: "+value)
+    # get the name of the remote
+    with open(realPath+"/source.yml") as f:
+        info = yaml.load(f)
+    #os.system("rm -rf "+path+"remotes/"+info["name"])
+    os.system("ln -s "+ realPath + " " + path+"remotes/"+info["name"]);
+    if "imports" in info and info["imports"]:
+        for i in info["imports"]:
+            key, value = i.items()[0]
+            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+            if i not in deps and not os.path.isdir(realPath):
+                deps.append(i)
+    # store the info which package sets we have cloned already
+    cloned.append(info["name"])
 
 def updatePackageSets(cfg):
     # the server configuration are handled in the init.rb for autoproj
     setupCfg(cfg)
     path = cfg["devDir"]+"/autoproj/";
     os.system("mkdir -p "+path+"remotes")
+    os.system("mkdir -p "+cfg["devDir"]+"/.remotes")
     cloned = []
-    remotes = []
     deps = []
-    if os.path.isfile(path+"cloned.yml"):
-        with open(path+"cloned.yml") as f:
-            l = yaml.load(f)
-            cloned = l["list"]
     with open(path+"manifest") as f:
         manifest = yaml.load(f)
     for packageSet in manifest["package_sets"]:
-        clonePackageSet(cfg, packageSet, cfg["server"], path, cloned, remotes, deps)
+        key, value = packageSet.items()[0]
+        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+        if not os.path.isdir(realPath):
+            clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
     # update remotes that are not actually cloned
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            if d not in remotes:
-                remotes.append(d)
+            if d not in cloned:
                 if cfg["update"]:
                     c.printNormal("  Updating: "+d)
                     out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
                     if len(err) > 0:
                         c.printError(err)
-                with open(path+"remotes/"+d+"/source.yml") as f:
-                    info = yaml.load(f)
-                if "imports" in info and info["imports"]:
-                    for i in info["imports"]:
-                        if i not in deps and i not in cloned:
-                            deps.append(i)
+                if d not in cloned:
+                    with open(path+"remotes/"+d+"/source.yml") as f:
+                        info = yaml.load(f)
+                    if "imports" in info and info["imports"]:
+                        for i in info["imports"]:
+                            key, value = i.items()[0]
+                            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+                            if i not in deps and not os.path.isdir(realPath):
+                                deps.append(i)
     # now handle deps
     while len(deps) > 0:
         packageSet = deps.pop(0)
-        clonePackageSet(cfg, packageSet, cfg["server"], path, cloned, remotes, deps)
-
-    with open(path+"cloned.yml", "w") as f:
-        yaml.dump({"list": cloned}, f)
+        key, value = packageSet.items()[0]
+        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+        clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
     # last step: write all packages int a file to speed up pybob usage
     packages, wildcards = listPackages(cfg)
     pDict = {}
-    with open(path+"packages.txt", "w") as f:
+    with open(path+"/bob/packages.txt", "w") as f:
         for p in packages:
             if len(p[1]) > 0:
                 f.write(p[1]+"\n")
@@ -387,7 +405,7 @@ def updatePackageSets(cfg):
                 pDict[p[1]] = p[0]
             else:
                 pDict[p[0]] = p[0]
-    with open(path+"packages.yml", "w") as f:
+    with open(path+"/bob/packages.yml", "w") as f:
         yaml.dump(pDict, f)
 
 
