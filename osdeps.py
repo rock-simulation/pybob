@@ -27,7 +27,8 @@ def loadOsdeps(cfg):
     if platform == "Linux":
         cfg["osdeps"].update({"opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
                               "eigen3": [install],
-                              "yaml-cpp": [install],
+                              "yaml-cpp": [install, "libyaml-cpp-dev"],
+                              "external/yaml-cpp": [install, "libyaml-cpp-dev"],
                               "external/tinyxml": [install, "tinyxml-dev"],
                               "qwt": [install, "libqwt-qt4-dev"]})
     else:

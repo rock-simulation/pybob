@@ -242,9 +242,12 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
                                     i2["base"] = i2["package"]
                                     i2["package"] = p
                                     checkBaseName(p, i2)
-                                    matches.update(i2)
-    if "package" in matches:
-        info.update(matches)
+                                    if i2["package"] in matches:
+                                        matches[i2["package"]].update(i2)
+                                    else:
+                                        matches[i2["package"]] = i2
+    for key, value in matches.items():
+        info.append(value)
 
     # for key, value in matches.items():
     #     e = 0

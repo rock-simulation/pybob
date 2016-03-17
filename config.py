@@ -56,7 +56,7 @@ def getConfiguration():
             cfg["defBuildType"] = str(buildType)
 
         # get the default rock flavor
-        cfg["rockFlavor"] = "stable"
+        cfg["rockFlavor"] = "master"
         pattern = ["stable", "master"]
         print
         flavor = raw_input("Enter default rock flavor (stable|master) [master]: ")

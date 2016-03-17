@@ -109,6 +109,10 @@ def loadOverrides(cfg):
                                              "patch": patch_minizip,
                                              "check": check_minizip,
                                              "uninstall": uninstall_minizip},
+                        "minizip": {"fetch": fetch_minizip,
+                                             "patch": patch_minizip,
+                                             "check": check_minizip,
+                                             "uninstall": uninstall_minizip},
                         "learning/bolero/src/bl_loader": {"install": install_blloader},
                         "control/kdl": {"install": install_kdl}}
-    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "external/yaml-cpp", "tools/catch"]
+    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "tools/catch"]
