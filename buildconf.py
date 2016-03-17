@@ -7,6 +7,8 @@ import multiprocessing
 import execute
 import re
 
+rockBranches = ["$ROCK_BRANCH", "$ROCK_FLAVOR"]
+
 def setupCfg(cfg):
     # todo: handle this files differently
     path = cfg["pyScriptDir"]
@@ -77,12 +79,13 @@ def getAutobuildFiles(path):
     return files
 
 def checkBaseName(package, info):
-    if "$" in info["gitPackage"] and "*" not in package:
-        info["basename"] = info["gitPackage"]
-        info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
-                                                        package.split("/")[-1])
+    if "gitPackage" in info:
+        if "$" in info["gitPackage"] and "*" not in package:
+            info["basename"] = info["gitPackage"]
+            info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
+                                                            package.split("/")[-1])
 
-def clonePackage(cfg, package, server, gitPackage):
+def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = package
     if package[-2:] == ".*":
 
@@ -95,6 +98,7 @@ def clonePackage(cfg, package, server, gitPackage):
     if os.path.isdir(clonePath):
         if cfg["update"]:
             print "Updating "+clonePath+" ... "+c.END,
+            # todo: check branch
             execute.do(["git", "-C", clonePath, "pull"], cfg)
             c.printWarning("done")
             return True
@@ -107,7 +111,10 @@ def clonePackage(cfg, package, server, gitPackage):
         else:
             print "Fetching "+clonePath+" ... "+c.END,
             sys.stdout.flush()
-            execute.do(["git", "clone", "-q", server+gitPackage, clonePath], cfg)
+            cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
+            if branch:
+                cmd += ["-b", branch]
+            execute.do(cmd, cfg)
             c.printWarning("done")
             return True
     return False
@@ -118,14 +125,25 @@ def getServerInfo(cfg, pDict, info):
     setupCfg(cfg)
     if len(pDict) == 1:
         package, pInfo = pDict.items()[0]
+        info["package"] = package
         for key,server in cfg["server"].items():
             if key in pInfo:
                 info["server"] = server
                 info["gitPackage"] = pInfo[key]
-                info["package"] = package
-                return True
+        if "branch" in pInfo:
+            if pInfo["branch"] in rockBranches:
+                info["branch"] = cfg["rockFlavor"]
+            else:
+                info["branch"] = pInfo["branch"]
+        return True
     haveKey = False
     haveServer = False
+    if "branch" in pDict:
+        if pDict["branch"] in rockBranches:
+            info["branch"] = cfg["rockFlavor"]
+        else:
+            info["branch"] = pDict["branch"]
+
     for key, value in pDict.items():
         if not value:
             info["package"] = key
@@ -138,7 +156,7 @@ def getServerInfo(cfg, pDict, info):
             if haveKey:
                 return True
             haveServer = True
-    info.clear()
+    #info.clear()
     return False
 
 def getPackageInfoHelper(cfg, package, base, info):
@@ -157,20 +175,18 @@ def getPackageInfoHelper(cfg, package, base, info):
                         i2["base"] = package
                         i2["remote"] = cfg["packages"][base]
                         checkBaseName(package, i2)
-                        if package in matches:
-                            matches[package].append(i2)
-                        else:
-                            matches[package] = [i2]
-
-    for key, value in matches.items():
-        e = 0
-        g = {}
-        for l in value:
-            if len(l["base"]) > e:
-                g = l
-
-        info.update(g)
+                        matches.update(i2)
+    if "package" in matches:
+        info.update(matches)
         return True
+    # for key, value in matches.items():
+    #     e = 0
+    #     g = {}
+    #     for l in value:
+    #         if len(l["base"]) > e:
+    #             g = l
+    #    info.update(g)
+    #    return True
     return False
 
 def getPackageInfo(cfg, package, info):
@@ -226,19 +242,19 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
                                     i2["base"] = i2["package"]
                                     i2["package"] = p
                                     checkBaseName(p, i2)
-                                    if p in matches:
-                                        matches[p].append(i2)
-                                    else:
-                                        matches[p] = [i2]
-    for key, value in matches.items():
-        e = 0
-        g = {}
-        for l in value:
-            if len(l["base"]) > e:
-                g = l
+                                    matches.update(i2)
+    if "package" in matches:
+        info.update(matches)
 
-        info.append(g)
-        #print g["package"] + ": " + g["base"]
+    # for key, value in matches.items():
+    #     e = 0
+    #     g = {}
+    #     for l in value:
+    #         if len(l["base"]) > e:
+    #             g = l
+
+    #     info.append(g)
+    #     #print g["package"] + ": " + g["base"]
     return True
 
 def fetchPackage(cfg, package, layout_packages):
@@ -249,7 +265,7 @@ def fetchPackage(cfg, package, layout_packages):
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
-        if cfg["update"]:
+        if cfg["fetch"]:
             if len(cfg["osdeps"][package]) > 1:
                 cfg["osdeps"][package][0](cfg, cfg["osdeps"][package][1])
             else:
@@ -258,7 +274,7 @@ def fetchPackage(cfg, package, layout_packages):
         return True
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
-        if cfg["update"]:
+        if cfg["fetch"]:
             cfg["overrides"][package]["fetch"](cfg)
         else:
             cfg["overrides"][package]["check"](cfg)
@@ -281,8 +297,11 @@ def fetchPackage(cfg, package, layout_packages):
             endM = True
             for i in info:
                 if "$" not in i["gitPackage"]:
+                    branch = None
+                    if "branch" in i:
+                        branch = i["branch"]
                     if clonePackage(cfg, i["package"], i["server"],
-                                    i["gitPackage"]):
+                                    i["gitPackage"], branch):
                         endM = False
                     if "*" not in i["package"]:
                         layout_packages.append(i["package"])
@@ -298,12 +317,16 @@ def fetchPackage(cfg, package, layout_packages):
         if getPackageInfo(cfg, package, info):
             endM = True
             le = len(cfg["errors"])
+            branch = None
+            if "branch" in info:
+                branch = info["branch"]
             if "basename" in info:
-                if clonePackage(cfg, package, info["server"], info["gitPackage"]):
+                if clonePackage(cfg, package, info["server"], info["gitPackage"], branch):
                     endM = False
             else:
-                if clonePackage(cfg, info["package"], info["server"], info["gitPackage"]):
-                    endM = False
+                if "server" in info:
+                    if clonePackage(cfg, info["package"], info["server"], info["gitPackage"], branch):
+                        endM = False
             layout_packages.append(package)
             if len(cfg["errors"]) > le:
                 if endM:
@@ -329,7 +352,7 @@ def fetchPackages(cfg, layout_packages):
 def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     # clone in tmp folder
     c.printNormal("  Fetching: "+git)
-    out, err, r = execute.do(["git", "clone", git, realPath])
+    out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
     if not os.path.isdir(realPath+"/.git"):
         c.printNormal(out);
         c.printError(err);
@@ -424,7 +447,7 @@ def fetchBuildconf(cfg):
         branch = cfg["buildconfBranch"]
 
         c.printNormal("   Fetching \""+address+branch+"\" into "+cfg["devDir"]+"/autoproj")
-        command = ["git", "clone", address, cfg["devDir"]+"/autoproj"]
+        command = ["git", "clone", "-o", "autobuild", address, cfg["devDir"]+"/autoproj"]
         if len(branch) > 0:
             command.append("-b")
             command.append(branch)

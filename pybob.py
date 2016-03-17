@@ -17,9 +17,10 @@ from threading import Thread
 
 # todo:
 #       - skip orogen project (on install)
-#       - handle branches from source.yml
-#       - extend information for matching patterns instead of taking longest match
 #       - handle autoproj env.sh
+#       - handle overrides.yml from buildconf
+#       - apply patches
+#       - if readPath exists check wether remote link is also correct
 
 start = datetime.datetime.now()
 

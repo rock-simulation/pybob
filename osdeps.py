@@ -28,9 +28,11 @@ def loadOsdeps(cfg):
         cfg["osdeps"].update({"opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
                               "eigen3": [install],
                               "yaml-cpp": [install],
-                              "external/tinyxml": [install, "tinyxml-dev"]})
+                              "external/tinyxml": [install, "tinyxml-dev"],
+                              "qwt": [install, "libqwt-qt4-dev"]})
     else:
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
                               "yaml-cpp": [install],
-                              "external/tinyxml": [install, "tinyxml"]})
+                              "external/tinyxml": [install, "tinyxml"],
+                              "qwt": [install]})
