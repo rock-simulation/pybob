@@ -7,6 +7,13 @@ Install mantis_sim via pybob:
        ./pybob.py buildconf path="git@git.hb.dfki.de:mantis/buildconf.git"
        cd ..
        source env.sh
-       bob-bootstrap mantis/mantis_sim
+
+Due to the fact that control/urdfdom is broken the following is bit more complex than necessary:
+
+       bob-fetch mantis/mantis_sim
+
+Revert the last merge in control/urdfdom then continue with:
+
+       bob-install mantis/mantis_sim
        cd mantis/mantis_sim
        mars_app -s Szene.smurfs
