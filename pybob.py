@@ -58,7 +58,7 @@ def printErrors():
 def buildconf_():
     global cfg
     for a in sys.argv:
-        if "path:" in a:
+        if "path=" in a:
             cfg["buildconfAdress"] = a.split(":")[1]
     buildconf.fetchBuildconf(cfg)
     buildconf.updatePackageSets(cfg)
