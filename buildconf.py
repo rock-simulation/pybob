@@ -445,7 +445,7 @@ def fetchBuildconf(cfg):
             if len(err) > 0:
                 c.printError(err)
     else:
-        address = cfg["buildconfAdress"]
+        address = cfg["buildconfAddress"]
         if len(address) == 0:
             c.printError("no address given")
             return

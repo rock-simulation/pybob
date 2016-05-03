@@ -31,7 +31,17 @@ if len(sys.argv) < 2 or sys.argv[1] not in commands:
                        ", ".join(commands) + "\n")
     exit(0)
 
-cfg = config.getConfiguration()
+cfg = {}
+for a in sys.argv:
+    if "path=" in a:
+        p = a[5:]
+        if "'" in p:
+            p = p.split("'")[1]
+        elif '"' in p:
+            p = p.split('"')[1]
+        cfg["buildconfAddress"] = p
+
+config.getConfiguration(cfg)
 cfg["installed"] = []
 cfg["updated"] = []
 cfg["update"] = True
@@ -57,9 +67,6 @@ def printErrors():
 
 def buildconf_():
     global cfg
-    for a in sys.argv:
-        if "path=" in a:
-            cfg["buildconfAdress"] = a.split(":")[1]
     buildconf.fetchBuildconf(cfg)
     buildconf.updatePackageSets(cfg)
 
@@ -124,7 +131,7 @@ def diff_remotes():
                     f.write(out)
             else:
                 print d+": ",
-                c.printWarning("no diff")
+                c.printBold("no diff")
 
 def diff_():
     global cfg
@@ -182,7 +189,7 @@ def diff_():
                     f.write(out)
             else:
                 print p2+": ",
-                c.printWarning("no diff")
+                c.printBold("no diff")
 
 
 def install_():

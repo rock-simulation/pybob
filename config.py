@@ -4,15 +4,14 @@ import yaml
 import colorconsole as c
 import multiprocessing
 
-def getConfiguration():
-    cfg = {}
+def getConfiguration(cfg):
     # check wether we have a config file
     path = "../"
     if "AUTOPROJ_CURRENT_ROOT" in os.environ:
         path = os.environ["AUTOPROJ_CURRENT_ROOT"]
     if os.path.isfile(path+"/pybob/pybob.yml"):
         with open(path+"/pybob/pybob.yml") as f:
-            cfg = yaml.load(f)
+            cfg.update(yaml.load(f))
     else:
         # we assume this script is executed from one folder above
         scriptDir = os.getcwd()
@@ -64,10 +63,11 @@ def getConfiguration():
             cfg["rockFlavor"] = str(flavor)
 
         print
-        in_ = raw_input("Enter git address of buildconf to clone: ")
-        if len(in_) > 0:
-            cfg["buildconfAdress"] = in_
-        print
+        if not "buildconfAddress" in cfg:
+            in_ = raw_input("Enter git address of buildconf to clone: ")
+            if len(in_) > 0:
+                cfg["buildconfAddress"] = in_
+            print
         cfg["buildconfBranch"] = ""
         in_ = raw_input("Enter branch of buildconf [default]: ")
         if len(in_) > 0:
