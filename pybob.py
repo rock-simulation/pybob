@@ -57,6 +57,9 @@ def printErrors():
 
 def buildconf_():
     global cfg
+    for a in sys.argv:
+        if "path:" in a:
+            cfg["buildconfAdress"] = a.split(":")[1]
     buildconf.fetchBuildconf(cfg)
     buildconf.updatePackageSets(cfg)
 
@@ -105,6 +108,82 @@ def fetch_(returnPackages = False):
     if returnPackages:
         return layout_packages
     #c.printBold("Buildable packages:\n "+"\n ".join(layout_packages))
+
+def diff_remotes():
+    global cfg
+    path = cfg["devDir"] + "/autoproj/remotes"
+    for d in os.listdir(path):
+        if os.path.isdir(path+"/"+d+"/.git"):
+            out, err, r = execute.do(["git", "diff"], cfg, None, path+"/"+d)
+            if out:
+                logFile = cfg["devDir"] + "/autoproj/bob/logs/"+d.replace("/", "_")+"_diff.txt"
+                print d+": ",
+                c.printWarning("has diff")
+                print "    check: less " + logFile
+                with open(logFile, "w") as f:
+                    f.write(out)
+            else:
+                print d+": ",
+                c.printWarning("no diff")
+
+def diff_():
+    global cfg
+    layout_packages = []
+    cfg["update"] = False
+    if len(sys.argv) < 3:
+        buildconf.fetchPackages(cfg, layout_packages)
+    else:
+        if sys.argv[2] == "buildconf":
+            diff_remotes()
+            return
+        if "-n" in sys.argv:
+            cfg["checkDeps"] = False
+        buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+    deps = []
+    checked = []
+    if cfg["checkDeps"]:
+        for p in layout_packages:
+            bob_package.getDeps(cfg, p, deps, checked)
+    #print deps
+    toInstall = []
+    diffs = []
+    for d in deps[::-1]:
+        if d not in toInstall:
+            toInstall.append(d)
+    for p in layout_packages:
+        if p not in toInstall:
+            toInstall.append(p)
+    for p in toInstall:
+        if p in cfg["osdeps"]:
+            continue
+        if p in cfg["ignorePackages"]:
+            continue
+        if p in cfg["overrides"] and "fetch" in cfg["overrides"][p]:
+            continue
+        path = cfg["devDir"]+"/"+p
+        p2 = p
+        while not os.path.isdir(path+"/.git"):
+            path = "/".join(path.split("/")[:-1])
+            p2 = "/".join(p2.split("/")[:-1])
+            if path == cfg["devDir"]:
+                break
+        if path == cfg["devDir"]:
+            cfg["errors"].append("missing: git for "+p)
+            continue
+        if path not in diffs:
+            diffs.append(path)
+            out, err, r = execute.do(["git", "diff"], cfg, None, path)#, p2.replace("/", "_")+"_diff.txt")
+            if out:
+                logFile = cfg["devDir"] + "/autoproj/bob/logs/"+p2.replace("/", "_")+"_diff.txt"
+                print p2+": ",
+                c.printWarning("has diff")
+                print "    check: less " + logFile
+                with open(logFile, "w") as f:
+                    f.write(out)
+            else:
+                print p2+": ",
+                c.printWarning("no diff")
+
 
 def install_():
     global cfg

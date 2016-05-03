@@ -43,7 +43,7 @@ complete -o default -W "${packages1}" bob
 complete -o default -W "${packages}" bob-install
 complete -o default -W "${packages}" bob-bootstrap
 complete -o default -W "${packages}" bob-rebuild
-complete -o default -W "${packages}" bob-diff
+complete -o default -W "${packages} buildconf" bob-diff
 complete -o default -W "${packages}" bob-fetch
 
 popd > /dev/null 2>&1

@@ -64,7 +64,9 @@ def getConfiguration():
             cfg["rockFlavor"] = str(flavor)
 
         print
-        cfg["buildconfAdress"] = raw_input("Enter git address of buildconf to clone: ")
+        in_ = raw_input("Enter git address of buildconf to clone: ")
+        if len(in_) > 0:
+            cfg["buildconfAdress"] = in_
         print
         cfg["buildconfBranch"] = ""
         in_ = raw_input("Enter branch of buildconf [default]: ")

@@ -88,7 +88,6 @@ def checkBaseName(package, info):
 def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = package
     if package[-2:] == ".*":
-
         clonePath = "/".join(package.split("/")[:-1])+"/" + gitPackage.split("/")[1].split(".")[0]
     if package in cfg["updated"]:
         return False
@@ -174,6 +173,9 @@ def getPackageInfoHelper(cfg, package, base, info):
                         i2 = dict(info2)
                         i2["base"] = package
                         i2["remote"] = cfg["packages"][base]
+                        if "gitPackage" in i2:
+                            if "basename" in matches:
+                                del matches["basename"]
                         checkBaseName(package, i2)
                         matches.update(i2)
     if "package" in matches:

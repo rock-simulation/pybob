@@ -49,6 +49,9 @@ def installPackage(cfg, p, cmake_options=[]):
     if not os.path.isdir(cfg["devDir"]+"/"+p):
         cfg["errors"].append("install: "+p+" path not found")
         return
+    if not os.path.isfile(cfg["devDir"]+"/"+p+"/CMakeLists.txt"):
+        print p+c.WARNING+" skip \"no cmake package\""+c.END
+        return
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
     start = datetime.datetime.now()
