@@ -73,7 +73,7 @@ def getConfiguration():
         if len(in_) > 0:
             cfg["buildconfBranch"] = in_
 
-        c.printBold("The configuration is written to \""+path+"/pybob.yml\".\n")
+        c.printBold("The configuration is written to \""+path+"/pybob/pybob.yml\".\n")
         
         with open(path+"/pybob/pybob.yml", "w") as f:
             yaml.dump(cfg, f, default_flow_style=False)
