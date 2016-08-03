@@ -9,6 +9,7 @@ def getConfiguration(cfg):
     path = "../"
     if "AUTOPROJ_CURRENT_ROOT" in os.environ:
         path = os.environ["AUTOPROJ_CURRENT_ROOT"]
+    cfg["path"] = path
     if os.path.isfile(path+"/pybob/pybob.yml"):
         with open(path+"/pybob/pybob.yml") as f:
             cfg.update(yaml.load(f))

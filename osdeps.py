@@ -31,11 +31,13 @@ def loadOsdeps(cfg):
                               "external/yaml-cpp": [install, "libyaml-cpp-dev"],
                               "external/tinyxml": [install, "tinyxml-dev"],
                               "qwt": [install, "libqwt-qt4-dev"],
-                              "qwt5-qt4": [install, "libqwt-qt4-dev"]})
+                              "qwt5-qt4": [install, "libqwt-qt4-dev"],
+                              "pkg-config": [install]})
     else:
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
                               "yaml-cpp": [install],
                               "external/tinyxml": [install, "tinyxml"],
                               "qwt": [install],
-                              "qwt5-qt4": [install, "qwt"]})
+                              "qwt5-qt4": [install, "qwt"],
+                              "pkg-config": [install] })

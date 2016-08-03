@@ -192,7 +192,7 @@ def getPackageInfoHelper(cfg, package, base, info):
     return False
 
 def getPackageInfo(cfg, package, info):
-    if package in cfg["ignorePackages"]:
+    if package in cfg["ignorePackages"] or "orogen" in package:
         return
     if package in cfg["osdeps"]:
         return
@@ -266,7 +266,7 @@ def fetchPackage(cfg, package, layout_packages):
     print "Check: " + package + " ... " + c.END,
     sys.stdout.flush()
     setupCfg(cfg)
-    if package in cfg["ignorePackages"]:
+    if package in cfg["ignorePackages"] or "orogen" in package:
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
@@ -302,14 +302,8 @@ def fetchPackage(cfg, package, layout_packages):
             endM = True
             for i in info:
                 if "$" not in i["gitPackage"]:
-                    branch = None
-                    if "branch" in i:
-                        branch = i["branch"]
-                    if clonePackage(cfg, i["package"], i["server"],
-                                    i["gitPackage"], branch):
-                        endM = False
                     if "*" not in i["package"]:
-                        layout_packages.append(i["package"])
+                        fetchPackage(cfg, i["package"], layout_packages)
             if len(cfg["errors"]) > le:
                 if endM:
                     c.printError("error")
@@ -323,14 +317,23 @@ def fetchPackage(cfg, package, layout_packages):
             endM = True
             le = len(cfg["errors"])
             branch = None
+            server = info["server"]
+            server2 = info["gitPackage"]
+
             if "branch" in info:
                 branch = info["branch"]
+            if package in cfg["overrides"]:
+                if "branch" in cfg["overrides"][package]:
+                    branch = cfg["overrides"][package]["branch"]
+                if "url" in cfg["overrides"][package]:
+                    server = cfg["overrides"][package]["url"]
+                    server2 = ""
             if "basename" in info:
-                if clonePackage(cfg, package, info["server"], info["gitPackage"], branch):
+                if clonePackage(cfg, package, server, server2, branch):
                     endM = False
             else:
                 if "server" in info:
-                    if clonePackage(cfg, info["package"], info["server"], info["gitPackage"], branch):
+                    if clonePackage(cfg, info["package"], server, server2, branch):
                         endM = False
             layout_packages.append(package)
             if len(cfg["errors"]) > le:

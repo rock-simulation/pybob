@@ -5,6 +5,7 @@ import sys
 import os
 import colorconsole as c
 import execute
+import yaml
 import bob_package
 
 def uninstall_ode(cfg):
@@ -115,4 +116,12 @@ def loadOverrides(cfg):
                                              "uninstall": uninstall_minizip},
                         "learning/bolero/src/bl_loader": {"install": install_blloader},
                         "control/kdl": {"install": install_kdl}}
-    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "tools/catch", "external/yaml-cpp"]
+    cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "boost", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "tools/catch", "external/yaml-cpp", "rtt", "typelib", "qt4", "osg", "simulation/configmaps"]
+
+    filename = cfg["path"]+"/autoproj/overrides.yml"
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            ov = yaml.load(f)
+        for it in ov["overrides"]:
+            for key, value in it.items():
+                cfg["overrides"][key] = value

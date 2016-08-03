@@ -28,7 +28,7 @@ def getDeps(cfg, pkg, deps, checked):
             if l[:4] != "<!--":
                 if "depend package" in line:
                     d = l.split('"')[1]
-                    if d not in cfg["ignorePackages"] and d not in cfg["osdeps"]:
+                    if d not in cfg["ignorePackages"] and d not in cfg["osdeps"] and "orogen" not in d:
                         deps.append(d)
                         if not d in cfg["depsInverse"]:
                             cfg["depsInverse"][d] = []
@@ -43,7 +43,7 @@ def getDeps(cfg, pkg, deps, checked):
         f.close()
 
 def installPackage(cfg, p, cmake_options=[]):
-    if p in cfg["ignorePackages"]:
+    if p in cfg["ignorePackages"] or "orogen" in p:
         return
     path = cfg["devDir"]+"/"+p
     if not os.path.isdir(cfg["devDir"]+"/"+p):
