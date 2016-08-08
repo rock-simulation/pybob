@@ -28,7 +28,8 @@ def getDeps(cfg, pkg, deps, checked):
             if l[:4] != "<!--":
                 if "depend package" in line:
                     d = l.split('"')[1]
-                    if d not in cfg["ignorePackages"] and d not in cfg["osdeps"] and "orogen" not in d:
+                    if d not in cfg["ignorePackages"] and "orogen" not in d:
+                    #d not in cfg["osdeps"] and
                         deps.append(d)
                         if not d in cfg["depsInverse"]:
                             cfg["depsInverse"][d] = []

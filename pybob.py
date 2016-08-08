@@ -241,6 +241,18 @@ def install_():
                             c.printWarning("done")
                         else:
                             c.printError("error")
+                elif p in cfg["osdeps"]:
+                    p_ = p
+                    if len(cfg["osdeps"][p]) > 1:
+                        p_ = cfg["osdeps"][p][1]
+                        c.printNormal("Install: "+p)
+                        # os deps should never be installed in threaded mode
+                        le = len(cfg["errors"])
+                        cfg["osdeps"][p][0](cfg, p_)
+                        if len(cfg["errors"]) <= le:
+                            c.printWarning("done")
+                        else:
+                            c.printError("error")
                 else:
                     if cfg["multiprocessing"]:
                         threads.append(Thread(target=bob_package.installPackage, args=(cfg, p)))

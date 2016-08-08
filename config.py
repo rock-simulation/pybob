@@ -6,10 +6,9 @@ import multiprocessing
 
 def getConfiguration(cfg):
     # check wether we have a config file
-    path = "../"
+    path = ".."
     if "AUTOPROJ_CURRENT_ROOT" in os.environ:
         path = os.environ["AUTOPROJ_CURRENT_ROOT"]
-    cfg["path"] = path
     if os.path.isfile(path+"/pybob/pybob.yml"):
         with open(path+"/pybob/pybob.yml") as f:
             cfg.update(yaml.load(f))
@@ -78,4 +77,5 @@ def getConfiguration(cfg):
         
         with open(path+"/pybob/pybob.yml", "w") as f:
             yaml.dump(cfg, f, default_flow_style=False)
+    cfg["path"] = path
     return cfg
