@@ -391,7 +391,7 @@ def updatePackageSets(cfg):
         manifest = yaml.load(f)
     for packageSet in manifest["package_sets"]:
         key, value = packageSet.items()[0]
-        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
             clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 

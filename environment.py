@@ -45,36 +45,54 @@ def setupEnv(cfg, update=False):
         if os.path.isfile(cfg["devDir"]+"/env.sh"):
             source(cfg["devDir"]+"/env.sh")
             
+    p = subprocess.Popen(['which autoproj'], stdout=subprocess.PIPE, shell=True)
+    out, err = p.communicate()
+    aPath = out.strip()
+    platform = system()
+    if len(aPath) > 0:
+        with open(cfg["devDir"]+"/bobenv.sh", "w") as f:
+            f.write("#! /bin/sh\n")
+            f.write(". env.sh\n")
+            f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
+            f.write("alias bob='${MARS_SCRIPT_DIR}/pybob.py'\n")
+            f.write("alias bob-bootstrap='${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n")
+            f.write("alias bob-install='${MARS_SCRIPT_DIR}/pybob.py install'\n")
+            f.write("alias bob-rebuild='${MARS_SCRIPT_DIR}/pybob.py rebuild'\n")
+            f.write("alias bob-build='${MARS_SCRIPT_DIR}/pybob.py'\n")
+            f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
+            f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
+            f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
+            f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
+    else:
+        with open(cfg["devDir"]+"/env.sh", "w") as f:
+            f.write("#! /bin/sh\n")
+            f.write('export AUTOPROJ_CURRENT_ROOT="'+cfg["devDir"]+'"\n')
+            f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
+            f.write('export PATH="$PATH:'+prefix_bin+'"\n')
+            if platform == "Darwin":
+                f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
+            elif platform == "Linux":
+                f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
+            else:
+                f.write('export PATH="'+prefix_lib+':$PATH"\n')
+            f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
 
-    with open(cfg["devDir"]+"/env.sh", "w") as f:
-        f.write("#! /bin/sh\n")
-        f.write('export AUTOPROJ_CURRENT_ROOT="'+cfg["devDir"]+'"\n')
-        f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
-        f.write('export PATH="$PATH:'+prefix_bin+'"\n')
-        platform = system()
-        if platform == "Darwin":
-            f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
-        elif platform == "Linux":
-            f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
-        else:
-            f.write('export PATH="'+prefix_lib+':$PATH"\n')
-        f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
+            # todo: handle python path
+            f.write('if [ x${PKG_CONFIG_PATH} = "x" ]; then\n')
+            f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+'"\n')
+            f.write('else\n')
+            f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
+            f.write('fi\n')
+            f.write("alias bob='${MARS_SCRIPT_DIR}/pybob.py'\n")
+            f.write("alias bob-bootstrap='${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n")
+            f.write("alias bob-install='${MARS_SCRIPT_DIR}/pybob.py install'\n")
+            f.write("alias bob-rebuild='${MARS_SCRIPT_DIR}/pybob.py rebuild'\n")
+            f.write("alias bob-build='${MARS_SCRIPT_DIR}/pybob.py'\n")
+            f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
+            f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
+            f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
+            f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
 
-        # todo: handle python path
-        f.write('if [ x${PKG_CONFIG_PATH} = "x" ]; then\n')
-        f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+'"\n')
-        f.write('else\n')
-        f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
-        f.write('fi\n')
-        f.write("alias bob='${MARS_SCRIPT_DIR}/pybob.py'\n")
-        f.write("alias bob-bootstrap='${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n")
-        f.write("alias bob-install='${MARS_SCRIPT_DIR}/pybob.py install'\n")
-        f.write("alias bob-rebuild='${MARS_SCRIPT_DIR}/pybob.py rebuild'\n")
-        f.write("alias bob-build='${MARS_SCRIPT_DIR}/pybob.py'\n")
-        f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
-        f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
-        f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
-        f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
     os.system("mkdir -p "+cfg["devDir"]+"/install/bin")
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
