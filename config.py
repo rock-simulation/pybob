@@ -26,7 +26,9 @@ def getConfiguration(cfg):
             else:
                 cfg["defBuildType"] = "debug"
             cfg["rockFlavor"] = acfg["ROCK_FLAVOR"]
+            cfg["autoprojEnv"] = True
         else:
+            cfg["autoprojEnv"] = False
             # we assume this script is executed from one folder above
             scriptDir = os.getcwd()
             cfg["pyScriptDir"] = scriptDir

@@ -96,16 +96,19 @@ def setupEnv(cfg, update=False):
     os.system("mkdir -p "+cfg["devDir"]+"/install/bin")
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
+        options = ""
+        if not "autoprojEnv" in cfg or  not cfg["autoprojEnv"]:
+            options += "-DBINDINGS_RUBY=OFF "
         if platform == "Windows":
-            f.write("cmake .. -DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. -DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG $@\n")
     with open(cfg["devDir"]+"/install/bin/cmake_release", "w") as f:
         f.write("#!/bin/bash\n")
         if platform == "Windows":
-            f.write("cmake .. -DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. -DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
     os.system("chmod +x "+cfg["devDir"]+"/install/bin/cmake_debug")
     os.system("chmod +x "+cfg["devDir"]+"/install/bin/cmake_release")
     source(cfg["devDir"]+"/env.sh")
