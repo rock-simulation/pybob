@@ -115,7 +115,8 @@ def loadOverrides(cfg):
                                              "check": check_minizip,
                                              "uninstall": uninstall_minizip},
                         "learning/bolero/src/bl_loader": {"install": install_blloader},
-                        "control/kdl": {"install": install_kdl}}
+                        "control/kdl": {"install": install_kdl},
+                        "control/urdfdom": {"additional_deps": ["base/console_bridge"]}}
     cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "external/sisl", "rice", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "tools/catch", "external/yaml-cpp", "rtt", "typelib", "simulation/configmaps"]
 
     filename = cfg["path"]+"/autoproj/overrides.yml"

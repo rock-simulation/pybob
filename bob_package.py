@@ -42,6 +42,9 @@ def getDeps(cfg, pkg, deps, checked):
                                 getDeps(cfg, d, deps, checked)
                                 #checked.append(d)
         f.close()
+    if pkg in cfg["overrides"] and "additinal_deps" in cfg["overrides"][pkg]:
+        for dep in cfg["overrides"][pkg]:
+            deps.append(dep)
 
 def installPackage(cfg, p, cmake_options=[]):
     if p in cfg["ignorePackages"] or "orogen" in p:
