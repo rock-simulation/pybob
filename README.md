@@ -1,19 +1,20 @@
-Install mantis_sim via pybob:
+NOTES:
+  - pybob is currently not running on Windows, use the mars_install_scripts
+    instead.
+  - pybob is a preliminary implementation of an project build system compatible
+    to autoproj, if you have problem you might consider using autoproj
 
-       mkdir mantis-sim-dev
-       cd mantis-sim-dev
-       git clone git@git.hb.dfki.de:malter/pybob.git
+Install mars via pybob:
+
+       mkdir mars-dev
+       cd mars-dev
+       git clone git@github.com:rock-simulation/pybob.git
        cd pybob
-       ./pybob.py buildconf path="git@git.hb.dfki.de:mantis/buildconf.git"
+       ./pybob.py buildconf path="git@github.com:rock-simulation/simulation-buildconf.git"
        cd ..
        source env.sh
 
-Due to the fact that control/urdfdom is broken the following is bit more complex than necessary:
+       bob-bootstrap
 
-       bob-fetch mantis/mantis_sim
-
-Revert the last merge in control/urdfdom then continue with:
-
-       bob-install mantis/mantis_sim
-       cd mantis/mantis_sim
-       mars_app -s Szene.smurfs
+You can start MARS in the terminal via `mars_app`.
+Once you open a new terminal you have to `source env.sh` again.
