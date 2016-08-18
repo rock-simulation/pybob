@@ -324,7 +324,6 @@ def fetchPackage(cfg, package, layout_packages):
                 branch = info["branch"]
             if package in cfg["overrides"]:
                 value = cfg["overrides"][package]
-                print value
                 if "branch" in value:
                     branch = value["branch"]
                 if "url" in value:
