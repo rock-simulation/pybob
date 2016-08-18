@@ -1,0 +1,5 @@
+github: "https://github.com/"
+# this are dfki intern servers that are not needed for MARS and will be removed soon
+spacegit: "git@git.hb.dfki.de:"
+dfkigit: "git@git.hb.dfki.de:"
+gitlab: "git@git.hb.dfki.de:"

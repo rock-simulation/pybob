@@ -1,0 +1,63 @@
+--- tinyxml/CMakeLists.txt	1970-01-01 00:00:00 +0000
++++ tinyxml/CMakeLists.txt	2015-02-12 15:41:07 +0000
+@@ -0,0 +1,36 @@
++cmake_minimum_required(VERSION 2.6)
++
++project(tinyxml)
++
++set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
++
++include_directories(./)
++
++add_library(
++	tinyxml
++	SHARED
++	tinyxml.cpp
++	tinystr.cpp
++	tinyxmlerror.cpp
++	tinyxmlparser.cpp
++)
++
++#SET_TARGET_PROPERTIES (tinyxml PROPERTIES DEFINE_SYMBOL  "EXPORT" )
++
++if(WIN32)
++  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
++else(WIN32)
++  set(LIB_INSTALL_DIR lib)
++endif(WIN32)
++
++set(_INSTALL_DESTINATIONS
++	RUNTIME DESTINATION bin
++	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
++	ARCHIVE DESTINATION lib
++)
++
++INSTALL( FILES tinyxml.h tinystr.h DESTINATION include/tinyxml )
++INSTALL( TARGETS tinyxml ${_INSTALL_DESTINATIONS})
++
++configure_file(${PROJECT_NAME}.pc.in ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc @ONLY)
++install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
+--- tinyxml/tinyxml.h	2015-02-12 15:42:08 +0000
++++ tinyxml/tinyxml.h	2015-02-12 15:39:09 +0000
+@@ -26,6 +26,8 @@ distribution.
+ #ifndef TINYXML_INCLUDED
+ #define TINYXML_INCLUDED
+ 
++#define TIXML_USE_STL
++
+ #ifdef _MSC_VER
+ #pragma warning( push )
+ #pragma warning( disable : 4530 )
+--- tinyxml/tinyxml.pc.in	1970-01-01 00:00:00 +0000
++++ tinyxml/tinyxml.pc.in	2015-02-12 15:39:09 +0000
+@@ -0,0 +1,10 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=${prefix}/lib
++includedir=${prefix}/include/tinyxml
++
++Name: @PROJECT_NAME@
++Description: @PROJECT_DESCRIPTION@
++Version: @PROJECT_VERSION@
++Libs: -L${libdir} -l@PROJECT_NAME@
++Cflags: -I${includedir}
