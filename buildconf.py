@@ -322,12 +322,15 @@ def fetchPackage(cfg, package, layout_packages):
 
             if "branch" in info:
                 branch = info["branch"]
-            if package in cfg["overrides"]:
-                if "branch" in cfg["overrides"][package]:
-                    branch = cfg["overrides"][package]["branch"]
-                if "url" in cfg["overrides"][package]:
-                    server = cfg["overrides"][package]["url"]
-                    server2 = ""
+            for key, value in cfg["overrides"].items():
+                r = re.compile(key)
+                m = r.match(package)
+                if m and m.group() == package:
+                    if "branch" in value:
+                        branch = value["branch"]
+                        if "url" in value:
+                            server = value["url"]
+                            server2 = ""
             if "basename" in info:
                 if clonePackage(cfg, package, server, server2, branch):
                     endM = False
