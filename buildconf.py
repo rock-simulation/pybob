@@ -324,11 +324,12 @@ def fetchPackage(cfg, package, layout_packages):
                 branch = info["branch"]
             if package in cfg["overrides"]:
                 value = cfg["overrides"][package]
+                print value
                 if "branch" in value:
                     branch = value["branch"]
-                    if "url" in value:
-                        server = value["url"]
-                        server2 = ""
+                if "url" in value:
+                    server = value["url"]
+                    server2 = ""
             else:
                 for key, value in cfg["overrides"].items():
                     r = re.compile(key)
@@ -336,9 +337,9 @@ def fetchPackage(cfg, package, layout_packages):
                     if m and m.group() == package:
                         if "branch" in value:
                             branch = value["branch"]
-                            if "url" in value:
-                                server = value["url"]
-                                server2 = ""
+                        if "url" in value:
+                            server = value["url"]
+                            server2 = ""
 
             if "basename" in info:
                 if clonePackage(cfg, package, server, server2, branch):
