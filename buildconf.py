@@ -329,7 +329,7 @@ def fetchPackage(cfg, package, layout_packages):
                     if "url" in value:
                         server = value["url"]
                         server2 = ""
-            else
+            else:
                 for key, value in cfg["overrides"].items():
                     r = re.compile(key)
                     m = r.match(package)
