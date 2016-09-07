@@ -317,6 +317,9 @@ def fetchPackage(cfg, package, layout_packages):
             endM = True
             le = len(cfg["errors"])
             branch = None
+            if not "server" in info:
+                cfg["errors"].append("fetch: "+package)
+                return
             server = info["server"]
             server2 = info["gitPackage"]
 
@@ -373,7 +376,7 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     if "imports" in info and info["imports"]:
         for i in info["imports"]:
             key, value = i.items()[0]
-            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
             if i not in deps and not os.path.isdir(realPath):
                 deps.append(i)
     # store the info which package sets we have cloned already
@@ -410,14 +413,14 @@ def updatePackageSets(cfg):
                     if "imports" in info and info["imports"]:
                         for i in info["imports"]:
                             key, value = i.items()[0]
-                            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+                            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
                             if i not in deps and not os.path.isdir(realPath):
                                 deps.append(i)
     # now handle deps
     while len(deps) > 0:
         packageSet = deps.pop(0)
         key, value = packageSet.items()[0]
-        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_") + "_git"
+        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
     # last step: write all packages int a file to speed up pybob usage

@@ -27,7 +27,10 @@ def getDeps(cfg, pkg, deps, checked):
             l = line.strip()
             if l[:4] != "<!--":
                 if "depend package" in line:
-                    d = l.split('"')[1]
+                    arrLine = l.split('"')
+                    if len(arrLine) < 3:
+                        continue
+                    d = arrLine[1]
                     if d not in cfg["ignorePackages"] and "orogen" not in d:
                     #d not in cfg["osdeps"] and
                         deps.append(d)

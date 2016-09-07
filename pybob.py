@@ -25,7 +25,9 @@ from threading import Thread
 start = datetime.datetime.now()
 
 commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
-            "rebuild", "clean", "diff", "envsh", "uninstall", "help"]
+            "rebuild", "clean", "diff", "envsh", "uninstall", "help", "info",
+            "show-log"]
+
 if len(sys.argv) < 2 or sys.argv[1] not in commands:
     print c.printBold("Please specify an action. Your options are:\n" +
                        ", ".join(commands) + "\n")
@@ -300,6 +302,36 @@ def bootstrap_():
     fetch_()
     install_()
 
+def info_():
+    info = {}
+    with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml") as f:
+        info = yaml.load(f)
+    #print info
+    package = sys.argv[2]
+    if package in info:
+        print "packages that depend on "+package+":"
+        print info[package]
+
+def show_log_():
+    package = sys.argv[2]
+    logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package.replace("/", "_")+"_configure.txt"
+    c.printWarning("configure log:")
+    with open(logFile) as f:
+        for l in f:
+            if "error" in l:
+                c.printError(l.strip())
+            else:
+                c.printNormal(l.strip())
+
+    logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package.replace("/", "_")+"_build.txt"
+    c.printWarning("build log:")
+    with open(logFile) as f:
+        for l in f:
+            if "error" in l:
+                c.printError(l.strip())
+            else:
+                c.printNormal(l.strip())
+
 def help_():
     print
     printNormal("  The following commands are available:\n  "),
@@ -307,12 +339,14 @@ def help_():
     printNormal('\n  Once you have the env.sh sourced, most commands\n  can also be used with "mars_command" to have\n  autocompletion (e.g. mars_install)\n')
 
 env.setupEnv(cfg, False)
-globals()[sys.argv[1]+"_"]()
+globals()[sys.argv[1].replace("-", "_")+"_"]()
 printErrors()
 
 if len(cfg["profiling"]) > 0:
     with open(cfg["devDir"]+"/autoproj/bob/profiling.yml", "w") as f:
         yaml.dump(cfg["profiling"], f, default_flow_style=False)
+
+if len(cfg["depsInverse"]) > 0:
     with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml", "w") as f:
         yaml.dump(cfg["depsInverse"], f, default_flow_style=False)
 

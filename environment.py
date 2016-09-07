@@ -62,6 +62,7 @@ def setupEnv(cfg, update=False):
             f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
             f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
             f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
+            f.write("alias bob-show-log='${MARS_SCRIPT_DIR}/pybob.py show-log'\n")
             f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
     else:
         with open(cfg["devDir"]+"/env.sh", "w") as f:
@@ -91,6 +92,7 @@ def setupEnv(cfg, update=False):
             f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
             f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
             f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
+            f.write("alias bob-show-log='${MARS_SCRIPT_DIR}/pybob.py show-log'\n")
             f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
 
     os.system("mkdir -p "+cfg["devDir"]+"/install/bin")
