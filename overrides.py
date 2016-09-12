@@ -123,6 +123,7 @@ def loadOverrides(cfg):
     if os.path.isfile(filename):
         with open(filename) as f:
             ov = yaml.load(f)
-        for it in ov["overrides"]:
-            for key, value in it.items():
-                cfg["overrides"][key] = value
+        if "overrides" in ov and ov["overrides"] is not None:
+            for it in ov["overrides"]:
+                for key, value in it.items():
+                    cfg["overrides"][key] = value
