@@ -27,6 +27,7 @@ start = datetime.datetime.now()
 commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
             "rebuild", "clean", "diff", "envsh", "uninstall", "help", "info",
             "show-log"]
+
 if len(sys.argv) < 2 or sys.argv[1] not in commands:
     print c.printBold("Please specify an action. Your options are:\n" +
                        ", ".join(commands) + "\n")

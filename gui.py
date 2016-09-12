@@ -35,6 +35,7 @@ hLayout.addWidget(logPush)
 vLayout.addLayout(hLayout)
 
 def updatePackageList():
+    global pattern
     global packages
     listWidget.clear()
     exp = QRegExp(pattern)
@@ -66,8 +67,9 @@ def listItemChanged(item):
     print "da: " + currentPackage
 
 def patternChanged(s):
+    global pattern
     pattern = s
-    updatePackages()
+    updatePackageList()
 
 def buildconf():
     os.system("python pybob.py buildconf")
