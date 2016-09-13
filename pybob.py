@@ -28,11 +28,6 @@ commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
             "rebuild", "clean", "diff", "envsh", "uninstall", "help", "info",
             "show-log"]
 
-if len(sys.argv) < 2 or sys.argv[1] not in commands:
-    print c.printBold("Please specify an action. Your options are:\n" +
-                       ", ".join(commands) + "\n")
-    exit(0)
-
 cfg = {}
 for a in sys.argv:
     if "path=" in a:
@@ -78,12 +73,12 @@ def envsh_():
     c.printNormal("  Recreated env.sh.")
 
 
-def fetch_(returnPackages = False):
+def fetchi(package, returnPackages = False):
     layout_packages = []
-    if len(sys.argv) < 3:
+    if len(package) == 0:
         buildconf.fetchPackages(cfg, layout_packages)
     else:
-        buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+        buildconf.fetchPackage(cfg, package, layout_packages)
 
     if not cfg["continueOnError"] and len(cfg["errors"]) > 0:
         printErrors()
@@ -91,7 +86,9 @@ def fetch_(returnPackages = False):
 
     # track dependencies and do the same for build and rebuild
     deps = []
-    mans = list(layout_packages)
+    mans = []
+    if cfg["checkDeps"]:
+        mans = list(layout_packages)
     handled = []
     output = []
     checked = []
@@ -116,7 +113,12 @@ def fetch_(returnPackages = False):
         print c.ERROR + i[0] + c.END + " is dep from: " + ", ".join(i[1])
     if returnPackages:
         return layout_packages
-    #c.printBold("Buildable packages:\n "+"\n ".join(layout_packages))
+    
+def fetch_(returnPackages = False):    
+    if len(sys.argv) < 3:
+        return fetchi("", returnPackages)
+    else:
+        return fetchi(sys.argv[2], returnPackages)
 
 def diff_remotes():
     global cfg
@@ -144,9 +146,8 @@ def diff_():
     else:
         if sys.argv[2] == "buildconf":
             diff_remotes()
+        if not cfg["checkDeps"]:
             return
-        if "-n" in sys.argv:
-            cfg["checkDeps"] = False
         buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
     deps = []
     checked = []
@@ -201,8 +202,6 @@ def install_():
     if len(sys.argv) < 3:
         buildconf.fetchPackages(cfg, layout_packages)
     else:
-        if "-n" in sys.argv:
-            cfg["checkDeps"] = False
         buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
     deps = []
     checked = []
@@ -330,18 +329,27 @@ def help_():
     printNormal('\n  Once you have the env.sh sourced, most commands\n  can also be used with "mars_command" to have\n  autocompletion (e.g. mars_install)\n')
 
 env.setupEnv(cfg, False)
-globals()[sys.argv[1].replace("-", "_")+"_"]()
-printErrors()
 
-if len(cfg["profiling"]) > 0:
-    with open(cfg["devDir"]+"/autoproj/bob/profiling.yml", "w") as f:
-        yaml.dump(cfg["profiling"], f, default_flow_style=False)
+if __name__ == "__main__":
+    if len(sys.argv) < 2 or sys.argv[1] not in commands:
+        print c.printBold("Please specify an action. Your options are:\n" +
+                           ", ".join(commands) + "\n")
+        exit(0)
 
-if len(cfg["depsInverse"]) > 0:
-    with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml", "w") as f:
-        yaml.dump(cfg["depsInverse"], f, default_flow_style=False)
+    if "-n" in sys.argv:
+        cfg["checkDeps"] = False
+    globals()[sys.argv[1].replace("-", "_")+"_"]()
+    printErrors()
 
-c.printBold("Installed packages: ")
-c.printNormal(cfg["installed"])
-diff = datetime.datetime.now() - start
-print "Time: "+str(diff)
+    if len(cfg["profiling"]) > 0:
+        with open(cfg["devDir"]+"/autoproj/bob/profiling.yml", "w") as f:
+            yaml.dump(cfg["profiling"], f, default_flow_style=False)
+
+    if len(cfg["depsInverse"]) > 0:
+        with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml", "w") as f:
+            yaml.dump(cfg["depsInverse"], f, default_flow_style=False)
+
+    c.printBold("Installed packages: ")
+    c.printNormal(cfg["installed"])
+    diff = datetime.datetime.now() - start
+    print "Time: "+str(diff)
