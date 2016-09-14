@@ -31,21 +31,26 @@ errConsole = QTextEdit()
 errConsole.setReadOnly(True)
 vLayout2.addWidget(errConsole)
 
+cmdEdit = QLineEdit()
+
 
 vLayout.addWidget(buildconfPush)
 vLayout.addWidget(lineEdit)
 vLayout.addWidget(listWidget)
 vLayout.addWidget(checkDeps)
+vLayout.addWidget(cmdEdit)
 
 hLayout = QHBoxLayout()
 bootPush = QPushButton("bootstrap")
 fetchPush = QPushButton("fetch")
 buildPush = QPushButton("build")
 logPush = QPushButton("show-log")
+cmdPush = QPushButton("run")
 hLayout.addWidget(bootPush)
 hLayout.addWidget(fetchPush)
 hLayout.addWidget(buildPush)
 hLayout.addWidget(logPush)
+hLayout.addWidget(cmdPush)
 
 
 #hLayout.addWidget(QSpacerItem())
@@ -127,6 +132,9 @@ def log():
     if len(currentPackage) > 0:
         os.system("python pybob.py show-log " + currentPackage)
 
+def cmd():
+    os.system(str(cmdEdit.text()))
+
 
 
 
@@ -139,6 +147,7 @@ bootPush.connect(bootPush, SIGNAL("clicked()"), bootstrap)
 fetchPush.connect(fetchPush, SIGNAL("clicked()"), fetch)
 buildPush.connect(buildPush, SIGNAL("clicked()"), build)
 logPush.connect(logPush, SIGNAL("clicked()"), log)
+cmdPush.connect(cmdPush, SIGNAL("clicked()"), cmd)
 
 window.resize(500, 500)
 window.show()
