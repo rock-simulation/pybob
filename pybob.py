@@ -146,9 +146,9 @@ def diff_():
     else:
         if sys.argv[2] == "buildconf":
             diff_remotes()
-        if not cfg["checkDeps"]:
-            return
-        buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+        else:
+            buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+
     deps = []
     checked = []
     if cfg["checkDeps"]:

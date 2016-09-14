@@ -7,6 +7,8 @@ from platform import system
 
 def install(cfg, pkg):
     platform = system()
+    if pkg == "":
+      return
     if pkg == "cmake":
         if os.popen('which cmake').read():
             return
@@ -50,5 +52,7 @@ def loadOsdeps(cfg):
                               "qwt": [install],
                               "qwt5-qt4": [install, "qwt"],
                               "pkg-config": [install],
-                              "qt4": [install, "da"], "cmake": [install],
-                              "pkg-config": [install]})
+                              "qt4": [install, ""], "cmake": [install],
+                              "pkg-config": [install],
+                              "boost": [install],
+                              "osg": [install, ""]})

@@ -263,6 +263,10 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     return True
 
 def fetchPackage(cfg, package, layout_packages):
+    if not cfg["update"]:
+        if not package in cfg["osdeps"] and not package in cfg["ignorePackages"]:
+            layout_packages.append(package)
+        return True
     print "Check: " + package + " ... " + c.END,
     sys.stdout.flush()
     setupCfg(cfg)
