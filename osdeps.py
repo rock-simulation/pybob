@@ -15,11 +15,15 @@ def install(cfg, pkg):
     elif pkg == "pkg-config":
         if os.popen('which pkg-config').read():
             return
+    elif platform == "Windows":
+        out,err,r = execute.do(["pacman", "-Qq", "mingw-w64-x86_64-"+pkg])
+        if len(out) > 0:
+            return
     elif os.system('pkg-config --exists '+pkg) == 0:
         return
 
     if platform == "Windows":
-        c.printError("Os dependency not fount: "+pkg)
+        execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-"+pkg])
     elif platform == "Darwin":
         c.printBold("Installing os dependency: "+pkg)
         execute.do(["sudo", "port", "install", pkg])
@@ -44,6 +48,19 @@ def loadOsdeps(cfg):
                               "qt": [install, "qt4-default"],
                               "osg": [install, "libopenscenegraph-dev"],
                               "boost": [install, "libboost-all-dev"]})
+    elif platform == "Windows":
+        cfg["osdeps"].update({"opencv": [install],
+                              "eigen3": [install],
+                              "yaml-cpp": [install],
+                              "external/yaml-cpp": [install, "yaml-cpp"],
+                              "external/tinyxml": [install, "tinyxml"],
+                              "qwt": [install, "qwt-qt4"],
+                              "qwt5-qt4": [install, "foo"],
+                              "pkg-config": [install], "cmake": [install],
+                              "qt4": [install, "foo"],
+                              "qt": [install, "qt5"],
+                              "osg": [install, "OpenSceneGraph"],
+                              "boost": [install]})
     else:
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],

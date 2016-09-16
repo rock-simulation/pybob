@@ -28,7 +28,7 @@ def fetch_ode(cfg):
     print c.BOLD+"Fetching "+"external/ode ... "+c.END,
     sys.stdout.flush
     cwd = os.getcwd()
-    execute.do(["mkdir -p "+ path])
+    execute.makeDir(path)
     os.chdir(path)
     if not os.path.isfile(path+"/ode-0.12.tar.gz"):
         if os.path.isdir(path+"/ode"):
@@ -81,7 +81,7 @@ def fetch_minizip(cfg):
     print c.BOLD+"Fetching "+"external/minizip ... "+c.END,
     sys.stdout.flush
     cwd = os.getcwd()
-    os.system("mkdir -p "+ path)
+    execute.makeDir(path)
     os.chdir(path)
     if not os.path.isfile(path+"/unzip101e.zip"):
         if os.path.isdir(path+"/minizip"):

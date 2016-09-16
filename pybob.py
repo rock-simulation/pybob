@@ -109,8 +109,10 @@ def fetchi(package, returnPackages = False):
                         layout_packages.append(m)
                         mans.append(m)
     print
+    sys.stdout.flush()
     for i in output:
         print c.ERROR + i[0] + c.END + " is dep from: " + ", ".join(i[1])
+        sys.stdout.flush()
     if returnPackages:
         return layout_packages
     
@@ -188,6 +190,7 @@ def diff_():
                 print p2+": ",
                 c.printWarning("has diff")
                 print "    check: less " + logFile
+                sys.stdout.flush()
                 with open(logFile, "w") as f:
                     f.write(out)
             else:

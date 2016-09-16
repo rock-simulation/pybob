@@ -5,10 +5,13 @@ import sys
 from platform import system
 import colorconsole as c
 import subprocess
+import execute
 
 def source(sourceFile):
     newenv = {}
-    p = subprocess.Popen(['. '+sourceFile+' &> /dev/null; env'], stdout=subprocess.PIPE, shell=True, executable='/bin/bash')
+    cmd = ["bash", "print_env.sh", sourceFile, "&>", "/dev/null;", "env"]
+    cmdString = " ".join(cmd)
+    p = subprocess.Popen(cmdString, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     for line in out.split("\n"):
         try:
@@ -21,34 +24,41 @@ def source(sourceFile):
 def setupEnv(cfg, update=False):
     global os
     prefix = cfg["devDir"] + "/install"
+    if system() == "Windows":
+        if prefix[1] == ':':
+            prefix = prefix.replace(prefix[:2], "/"+prefix[0])
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
     prefix_config = prefix + "/configuration"
+    platform = system()
 
     # create env.sh
-    p = subprocess.Popen(['which cmake_debug'], stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen("which cmake_debug", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     cmakeDebugPath = out.strip()
     if len(cmakeDebugPath) > 0:
         # check if path is correct
-        if cmakeDebugPath != cfg["devDir"]+"/install/bin/cmake_debug":
-            c.printError('"cmake_debug" found in wrong folder.')
-            c.printError('Found: '+cmakeDebugPath)
-            c.printError('Expected: '+cfg["devDir"]+'/install/bin/cmake_debug')
-            c.printError('Maybe you already sourced an "env.sh" from a different "dev" folder?')
-            return
-        elif not update:
+        expectPath = cfg["devDir"]+"/install/bin/cmake_debug"
+        if platform == "Windows":
+            c.printWarning("cmake_debug path check is not working on Windows currently (please always ensure that you only sourced the env.sh in your current dev folder!")
+        else :
+            if cmakeDebugPath != expectPath:
+                c.printError('"cmake_debug" found in wrong folder.')
+                c.printError('Found: '+cmakeDebugPath)
+                c.printError('Expected: '+expectPath)
+                c.printError('Maybe you already sourced an "env.sh" from a different "dev" folder?')
+                return
+        if not update:
             return
 
     if not update:
         if os.path.isfile(cfg["devDir"]+"/env.sh"):
             source(cfg["devDir"]+"/env.sh")
-            
-    p = subprocess.Popen(['which autoproj'], stdout=subprocess.PIPE, shell=True)
+
+    p = subprocess.Popen("which autoproj", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     aPath = out.strip()
-    platform = system()
     if len(aPath) > 0:
         with open(cfg["devDir"]+"/bobenv.sh", "w") as f:
             f.write("#! /bin/sh\n")
@@ -69,6 +79,7 @@ def setupEnv(cfg, update=False):
             f.write("#! /bin/sh\n")
             f.write('export AUTOPROJ_CURRENT_ROOT="'+cfg["devDir"]+'"\n')
             f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
+
             f.write('export PATH="$PATH:'+prefix_bin+'"\n')
             if platform == "Darwin":
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
@@ -95,10 +106,10 @@ def setupEnv(cfg, update=False):
             f.write("alias bob-show-log='${MARS_SCRIPT_DIR}/pybob.py show-log'\n")
             f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
 
-    os.system("mkdir -p "+cfg["devDir"]+"/install/bin")
+    execute.makeDir(cfg["devDir"]+"/install/bin")
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
-        options = ""
+        options = "-DROCK_TEST_ENABLED=OFF"
         if not "autoprojEnv" in cfg or  not cfg["autoprojEnv"]:
             options += "-DBINDINGS_RUBY=OFF "
         if platform == "Windows":
@@ -111,6 +122,10 @@ def setupEnv(cfg, update=False):
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
         else:
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
-    os.system("chmod +x "+cfg["devDir"]+"/install/bin/cmake_debug")
-    os.system("chmod +x "+cfg["devDir"]+"/install/bin/cmake_release")
+
+    cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_debug"]
+    execute.simpleExecute(cmd)
+
+    cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_release"]
+    execute.simpleExecute(cmd)
     source(cfg["devDir"]+"/env.sh")

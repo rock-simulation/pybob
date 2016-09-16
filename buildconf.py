@@ -20,7 +20,7 @@ def setupCfg(cfg):
     # load the package information if not already done
     path = cfg["devDir"]+"/autoproj/bob"
     if not os.path.isdir(path):
-        os.system("mkdir -p "+path)
+        execute.makeDir(path)
     if not "packages" in cfg and os.path.isfile(path+"/packages.yml"):
         with open(path+"/packages.yml") as f:
             cfg["packages"] = yaml.load(f)
@@ -263,10 +263,6 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     return True
 
 def fetchPackage(cfg, package, layout_packages):
-    if not cfg["update"]:
-        if not package in cfg["osdeps"] and not package in cfg["ignorePackages"]:
-            layout_packages.append(package)
-        return True
     print "Check: " + package + " ... " + c.END,
     sys.stdout.flush()
     setupCfg(cfg)
@@ -402,8 +398,8 @@ def updatePackageSets(cfg):
     # the server configuration are handled in the init.rb for autoproj
     setupCfg(cfg)
     path = cfg["devDir"]+"/autoproj/";
-    os.system("mkdir -p "+path+"remotes")
-    os.system("mkdir -p "+cfg["devDir"]+"/.remotes")
+    execute.makeDir(path+"remotes")
+    execute.makeDir(cfg["devDir"]+"/.remotes")
     cloned = []
     deps = []
     with open(path+"manifest") as f:
@@ -479,5 +475,5 @@ def fetchBuildconf(cfg):
             command.append("-b")
             command.append(branch)
         out, err, r = execute.do(command)
-        #if len(err) > 0:
-            #c.printError(err)
+        if len(err) > 0:
+            c.printError(err)

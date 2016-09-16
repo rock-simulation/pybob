@@ -5,6 +5,8 @@ import yaml
 import os
 import buildconf
 import execute
+from platform import system
+from sys import stdout
 
 # todo: important we need to detect loops
 def getDeps(cfg, pkg, deps, checked):
@@ -58,6 +60,7 @@ def installPackage(cfg, p, cmake_options=[]):
         return
     if not os.path.isfile(cfg["devDir"]+"/"+p+"/CMakeLists.txt"):
         print p+c.WARNING+" skip \"no cmake package\""+c.END
+        stdout.flush()
         return
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
@@ -65,15 +68,20 @@ def installPackage(cfg, p, cmake_options=[]):
     if os.path.isdir(path+"/build"):
         cmd = ["cmake", path]
     else:
-        execute.do(["mkdir", "-p", path+"/build"])
+        execute.makeDir(path+"/build")
         #cmd = ["cmake", "..", "-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install", "-DCMAKE_BUILD_TYPE=DEBUG", "-Wno-dev"]
     cmake = "cmake_"+cfg["defBuildType"]
-    out, err, r = execute.do([cmake]+cmake_options, cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
+    cmd = [cmake] + cmake_options
+    if system() == "Windows":
+        cmd = ["bash"] + cmd
+    out, err, r = execute.do(cmd, cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
         print p+c.ERROR+" configure error"+c.END
+        stdout.flush()
         cfg["errors"].append("configure: "+p)
         return
     print p+c.WARNING+" configured"+c.END
+    stdout.flush()
     end = datetime.datetime.now()
     diff1 = end - start
     start = end

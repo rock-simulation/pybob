@@ -3,8 +3,17 @@ import os
 import yaml
 import colorconsole as c
 import multiprocessing
+import sys
+from platform import system
+
+
+def raw_input_(s):
+  print s,
+  sys.stdout.flush()
+  return raw_input()
 
 def getConfiguration(cfg):
+    platform = system()
     # check wether we have a config file
     path = ".."
     if "AUTOPROJ_CURRENT_ROOT" in os.environ:
@@ -31,6 +40,7 @@ def getConfiguration(cfg):
             cfg["autoprojEnv"] = False
             # we assume this script is executed from one folder above
             scriptDir = os.getcwd()
+            # convert cwd on windows if neseccary
             cfg["pyScriptDir"] = scriptDir
             arrDevDir = scriptDir.split("/")
             arrDevDir.pop()
@@ -40,8 +50,7 @@ def getConfiguration(cfg):
 
             # get the dev dir
             c.printBold("You must set a root directory where all repositories will be checked out and all packages will be installed")
-            c.printBold("On Windows you should use the mingw path and not the windows path and avoid trailing slashes (e.g. /c/dev/mars-git)")
-            in_ = raw_input("Enter root directory or nothing for [\""+devDir+"\"]: ")
+            in_ = raw_input_("Enter root directory or nothing for [\""+devDir+"\"]: ")
             if len(in_) > 0:
                 devDir = in_
 
@@ -58,7 +67,7 @@ def getConfiguration(cfg):
             except:
                 cfg["numCores"] = 1
 
-            in_ = raw_input("Enter number of CORES ["+str(cfg["numCores"])+"]): ")
+            in_ = raw_input_("Enter number of CORES ["+str(cfg["numCores"])+"]): ")
             if len(in_) > 0:
                 cfg["numCores"] = int(in_)
 
@@ -66,7 +75,7 @@ def getConfiguration(cfg):
             cfg["defBuildType"] = "debug"
             pattern = ["debug", "release"]
             print
-            buildType = raw_input("Enter default build type (debug|release) [debug]: ")
+            buildType = raw_input_("Enter default build type (debug|release) [debug]: ")
             if buildType in pattern:
                 cfg["defBuildType"] = str(buildType)
 
@@ -74,18 +83,18 @@ def getConfiguration(cfg):
             cfg["rockFlavor"] = "master"
             pattern = ["stable", "master"]
             print
-            flavor = raw_input("Enter default rock flavor (stable|master) [master]: ")
+            flavor = raw_input_("Enter default rock flavor (stable|master) [master]: ")
             if flavor in pattern:
                 cfg["rockFlavor"] = str(flavor)
 
             print
             if not "buildconfAddress" in cfg:
-                in_ = raw_input("Enter git address of buildconf to clone: ")
+                in_ = raw_input_("Enter git address of buildconf to clone: ")
                 if len(in_) > 0:
                     cfg["buildconfAddress"] = in_
                 print
             cfg["buildconfBranch"] = ""
-            in_ = raw_input("Enter branch of buildconf [default]: ")
+            in_ = raw_input_("Enter branch of buildconf [default]: ")
             if len(in_) > 0:
                 cfg["buildconfBranch"] = in_
 
