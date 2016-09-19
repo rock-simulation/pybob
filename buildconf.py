@@ -114,6 +114,11 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             if branch:
                 cmd += ["-b", branch]
             execute.do(cmd, cfg)
+            # apply patch if we have one
+            patch = cfg["pyScriptDir"] + "/" + package.split("/")[-1] + ".patch"
+            if os.path.exists(patch):
+                cmd = ["patch", "-N", "-p0", "-d", clonePath, "-i", patch]
+                execute.do(cmd)
             c.printWarning("done")
             return True
     return False
