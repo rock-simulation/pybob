@@ -110,8 +110,8 @@ def setupEnv(cfg, update=False):
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
         options = "-DROCK_TEST_ENABLED=OFF"
-        if not "autoprojEnv" in cfg or  not cfg["autoprojEnv"]:
-            options += "-DBINDINGS_RUBY=OFF "
+        if not "autoprojEnv" in cfg or not cfg["autoprojEnv"]:
+            options += " -DBINDINGS_RUBY=OFF "
         if platform == "Windows":
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
         else:

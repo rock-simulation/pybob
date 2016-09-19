@@ -15,10 +15,10 @@ def patch_ode(cfg):
     srcPath = cfg["pyScriptDir"]+"/patches/"
     targetPath = cfg["devDir"]+"/simulation/ode-0.12"
     cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
-    execute.do(cmd+[srcPath+"ode-0.12-va_end.patch"])
-    execute.do(cmd+[srcPath+"ode-0.12-lambda.patch"])
-    execute.do(cmd+[srcPath+"ode-0.12-export_joint_internals.patch"])
-    execute.do(cmd+[srcPath+"ode-0.12-abort.patch"])
+    out, err, r = execute.do(cmd+[srcPath+"ode-0.12-va_end.patch"])
+    out, err, r = execute.do(cmd+[srcPath+"ode-0.12-lambda.patch"])
+    out, err, r = execute.do(cmd+[srcPath+"ode-0.12-export_joint_internals.patch"])
+    out, err, r = execute.do(cmd+[srcPath+"ode-0.12-abort.patch"])
 
 def check_ode(cfg):
     return os.path.isfile(cfg["devDir"]+"/simulation/ode/ode.pc.in")
@@ -44,20 +44,27 @@ def fetch_ode(cfg):
     return True
 
 def install_ode(cfg):
-    if os.system("pkg-config --exists ode") == 0:
+    cmd = ["pkg-config", "--exists", "ode"]
+    out, err, r = execute.do(cmd)
+    if r == 0:
         print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
+        sys.stdout.flush
         return
     path = cfg["devDir"]+"/simulation/ode"
-    cmd = ["./configure", 'CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
-    execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
+    cmd = ["bash", "configure", 'CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
+    out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
+
     print c.BOLD + "simulation/ode"+c.WARNING+" configured"+c.END
+    sys.stdout.flush()
     if system() == "Linux":
         libtool = os.popen('which libtool').read()
         if len(libtool) > 0:
             execute.do(["mv", "libtool", "libtool_old"], None, None, path)
             execute.do(["ln", "-s", libtool, "libtool"], None, None, path)
-    execute.do(["make", "-C", path, "install", "-j", str(cfg["numCores"])], cfg, None, None, "simulation_ode_configure.txt")
+    execute.do(["make", "-C", path, "install", "-j", str(cfg["numCores"])], cfg, None, None, "simulation_ode_install.txt")
     print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
+    sys.stdout.flush()
+    
 
 def uninstall_minizip(cfg):
     path = cfg["devDir"]+"/external"
