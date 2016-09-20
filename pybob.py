@@ -117,7 +117,7 @@ def fetchi(package, returnPackages = False):
         return layout_packages
     
 def fetch_(returnPackages = False):    
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 3 or not "path=" in sys.argv[2]:
         return fetchi("", returnPackages)
     else:
         return fetchi(sys.argv[2], returnPackages)

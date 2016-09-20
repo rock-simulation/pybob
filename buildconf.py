@@ -464,9 +464,7 @@ def fetchBuildconf(cfg):
     if os.path.isdir(cfg["devDir"]+"/autoproj"):
         if cfg["update"]:
             c.printNormal("  Update buildconf.")
-            out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
-            if len(err) > 0:
-                c.printError(err)
+            execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
     else:
         address = cfg["buildconfAddress"]
         if len(address) == 0:
@@ -479,6 +477,4 @@ def fetchBuildconf(cfg):
         if len(branch) > 0:
             command.append("-b")
             command.append(branch)
-        out, err, r = execute.do(command)
-        if len(err) > 0:
-            c.printError(err)
+        execute.do(command)
