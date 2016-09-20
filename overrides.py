@@ -51,7 +51,12 @@ def install_ode(cfg):
         sys.stdout.flush
         return
     path = cfg["devDir"]+"/simulation/ode"
-    cmd = ["bash", "configure", 'CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
+    cmd = ['CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
+    if system() == "Windows":
+        cmd = ["bash", "configure"] + cmd
+    else:
+        cmd = ["./configure"] + cmd
+    
     out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
 
     print c.BOLD + "simulation/ode"+c.WARNING+" configured"+c.END
@@ -61,7 +66,12 @@ def install_ode(cfg):
         if len(libtool) > 0:
             execute.do(["mv", "libtool", "libtool_old"], None, None, path)
             execute.do(["ln", "-s", libtool, "libtool"], None, None, path)
-    execute.do(["make", "-C", path, "install", "-j", str(cfg["numCores"])], cfg, None, None, "simulation_ode_install.txt")
+    cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
+    print " ".join(cmd)
+    out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode_install.txt")
+    print out
+    print err
+    print r
     print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
     sys.stdout.flush()
     
