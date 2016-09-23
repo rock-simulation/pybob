@@ -11,15 +11,15 @@
      (**important** do not use the msys shell)
   4. perform following steps in the shell:
 
-     pacman -S git wget tar unzip which cmake pkg-config patch make
-     pacman -S mingw-w64-x86_64-python2
-     pacman -S mingw-w64-x86_64-python2-pyqt5
-     pacman -S mingw-w64-x86_64-libyaml
-     pacman -S mingw-w64-x86_64-gcc
-     wget http://pyyaml.org/download/pyyaml/PyYAML-3.12.tar.gz
-     tar -xzvf PyYAML-3.12.tar.gt
-     cd PyYAML-3.12
-     python setup.py --with-libyaml install
+        pacman -S git wget tar unzip which cmake pkg-config patch make
+        pacman -S mingw-w64-x86_64-python2
+        pacman -S mingw-w64-x86_64-python2-pyqt5
+        pacman -S mingw-w64-x86_64-libyaml
+        pacman -S mingw-w64-x86_64-gcc
+        wget http://pyyaml.org/download/pyyaml/PyYAML-3.12.tar.gz
+        tar -xzvf PyYAML-3.12.tar.gt
+        cd PyYAML-3.12
+        python setup.py --with-libyaml install
 
   5. continue with general install notes
 
