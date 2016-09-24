@@ -11,7 +11,8 @@
      (**important** do not use the msys shell)
   4. perform following steps in the shell:
 
-        pacman -S git wget tar unzip which cmake pkg-config patch make
+        pacman -S git wget tar unzip which pkg-config patch make
+        pacman -S mingw-w64-x86_64-cmake
         pacman -S mingw-w64-x86_64-python2
         pacman -S mingw-w64-x86_64-python2-pyqt5
         pacman -S mingw-w64-x86_64-libyaml
