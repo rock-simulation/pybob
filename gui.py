@@ -1,7 +1,14 @@
 import os
 import sys
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+haveQT5 = True
+try:
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import *
+except:
+    haveQT5 = False
+if not haveQT5:
+    from PyQt4.QtCore import *
+    from PyQt4.QtGui import *
 #import pybob
 
 packages = []
@@ -40,21 +47,27 @@ vLayout.addWidget(listWidget)
 vLayout.addWidget(checkDeps)
 vLayout.addWidget(cmdEdit)
 
-hLayout = QHBoxLayout()
 bootPush = QPushButton("bootstrap")
 fetchPush = QPushButton("fetch")
+rebuildPush = QPushButton("rebuild")
 buildPush = QPushButton("build")
 logPush = QPushButton("show-log")
 cmdPush = QPushButton("run")
+
+hLayout = QHBoxLayout()
 hLayout.addWidget(bootPush)
 hLayout.addWidget(fetchPush)
+hLayout.addWidget(cmdPush)
+vLayout.addLayout(hLayout)
+
+hLayout = QHBoxLayout()
+hLayout.addWidget(rebuildPush)
 hLayout.addWidget(buildPush)
 hLayout.addWidget(logPush)
-hLayout.addWidget(cmdPush)
+vLayout.addLayout(hLayout)
 
 
 #hLayout.addWidget(QSpacerItem())
-vLayout.addLayout(hLayout)
 
 def updatePackageList():
     global pattern
@@ -85,8 +98,12 @@ def updatePackages():
 
 def listItemChanged(item):
     global currentPackage
-    currentPackage = str(item.data(0).toString())
+    if haveQT5:
+        currentPackage = str(item.data(0))
+    else: 
+        currentPackage = str(item.data(0).toString())
     print "da: " + currentPackage
+    sys.stdout.flush()
 
 def patternChanged(s):
     global pattern
@@ -97,57 +114,56 @@ def buildconf():
     os.system("python pybob.py buildconf")
     updatePackages()
 
-def bootstrap():
+def execute(action):
     global currentPackage
     global checkDeps
-    add = ""
+    if len(currentPackage) == 0:
+        return
+    cmd = ["python", "pybob.py", action, currentPackage]
     if not checkDeps.isChecked():
-        add += " -n"
-    if len(currentPackage) > 0:
-        os.system("python pybob.py bootstrap " + currentPackage + add)
+        cmd.append("-n")
+    os.system(" ".join(cmd))
+    
+def bootstrap():
+    execute("bootstrap")
 
 def fetch():
-    global currentPackage
-    global checkDeps
-    #cfg["checkDeps"] = checkDeps.isChecked()
-    add = ""
-    if not checkDeps.isChecked():
-        add += " -n"
-    if len(currentPackage) > 0:
-        #call(["python", "pybob.py", "fetch", currentPackage, add])
-        os.system("python pybob.py fetch " + currentPackage + add)
-        #fetch_(
+    execute("fetch")
+
+def rebuild():
+    execute("rebuild")
 
 def build():
-    global currentPackage
-    add = ""
-    if not checkDeps.isChecked():
-        add += " -n"
-    if len(currentPackage) > 0:
-        #call(["python", "pybob.py", "install", currentPackage, add])
-        os.system("python pybob.py install " + currentPackage + add)
+    execute("install")
 
 def log():
-    global currentPackage
-    if len(currentPackage) > 0:
-        os.system("python pybob.py show-log " + currentPackage)
+    execute("show-log")
 
 def cmd():
     os.system(str(cmdEdit.text()))
 
 
-
-
 updatePackages()
-lineEdit.connect(lineEdit, SIGNAL("textChanged(const QString&)"), patternChanged)
-listWidget.connect(listWidget, SIGNAL("itemPressed(QListWidgetItem*)"),
-                   listItemChanged)
-buildconfPush.connect(buildconfPush, SIGNAL("clicked()"), buildconf)
-bootPush.connect(bootPush, SIGNAL("clicked()"), bootstrap)
-fetchPush.connect(fetchPush, SIGNAL("clicked()"), fetch)
-buildPush.connect(buildPush, SIGNAL("clicked()"), build)
-logPush.connect(logPush, SIGNAL("clicked()"), log)
-cmdPush.connect(cmdPush, SIGNAL("clicked()"), cmd)
+if haveQT5:
+    lineEdit.textChanged.connect(patternChanged)
+    buildconfPush.clicked.connect(buildconf)
+    bootPush.clicked.connect(bootstrap)
+    fetchPush.clicked.connect(fetch)
+    rebuildPush.clicked.connect(rebuild)
+    buildPush.clicked.connect(build)
+    logPush.clicked.connect(log)
+    cmdPush.clicked.connect(cmd)
+    listWidget.itemPressed.connect(listItemChanged)
+else:
+    lineEdit.connect(lineEdit, SIGNAL("textChanged(const QString&)"), patternChanged)
+    listWidget.connect(listWidget, SIGNAL("itemPressed(QListWidgetItem*)"),
+                       listItemChanged)
+    buildconfPush.connect(buildconfPush, SIGNAL("clicked()"), buildconf)
+    bootPush.connect(bootPush, SIGNAL("clicked()"), bootstrap)
+    fetchPush.connect(fetchPush, SIGNAL("clicked()"), fetch)
+    buildPush.connect(buildPush, SIGNAL("clicked()"), build)
+    logPush.connect(logPush, SIGNAL("clicked()"), log)
+    cmdPush.connect(cmdPush, SIGNAL("clicked()"), cmd)
 
 window.resize(500, 500)
 window.show()
