@@ -26,6 +26,10 @@
 
   5. continue with general install notes
 
+# Prepare Ubuntu for pybob:
+
+       sudo apt-get install git python-yaml
+
 # Install MARS via pybob
 
        mkdir mars-dev
@@ -36,7 +40,8 @@
        cd ..
        source env.sh
 
-       bob-bootstrap
+       bob-fetch
+       bob-install
 
   You can start MARS in the terminal via `mars_app`.
   Once you open a new terminal you have to `source env.sh` again.
