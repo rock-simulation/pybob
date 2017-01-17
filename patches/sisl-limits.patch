@@ -1,0 +1,12 @@
+diff -ur sisl-4.5.0/include/sislP.h sisl/include/sislP.h
+--- sisl-4.5.0/include/sislP.h	2010-09-22 10:11:39.000000000 +0200
++++ sisl/include/sislP.h	2017-01-17 11:06:48.000000000 +0100
+@@ -84,7 +84,7 @@
+ #  define M_SQRT2     1.41421356237309504880
+ #  define M_SQRT1_2   0.70710678118654752440
+ #else
+-#  include <values.h>
++#  include <limits.h>
+ #endif
+ 
+ /* Get floating point limits */
