@@ -25,6 +25,10 @@ def install(cfg, pkg):
     if platform == "Windows":
         execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-"+pkg])
     elif platform == "Darwin":
+        pkgstr = '" '+pkg+' "'
+        out, err, r = execute.do(['port', 'installed', '|' ,'grep', pkgstr])
+        if len(out) > len(pkg):
+            return
         c.printBold("Installing os dependency: "+pkg)
         execute.do(["sudo", "port", "install", pkg])
     else:
