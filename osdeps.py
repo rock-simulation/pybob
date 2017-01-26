@@ -29,11 +29,13 @@ def install(cfg, pkg):
         out, err, r = execute.do(['port', 'installed', '|' ,'grep', pkgstr])
         if len(out) > len(pkg):
             return
-        c.printBold("Installing os dependency: "+pkg)
+        print c.BOLD + "Installing os dependency: "+pkg + c.END,
         execute.do(["sudo", "port", "install", pkg])
     else:
-        c.printBold("Installing os dependency: "+pkg)
-        os.system("sudo apt-get install " + pkg)
+        out, err, r = execute.do(['dpkg', '-l', pkg])
+        if "no packages found" in err:
+            print c.BOLD + "Installing os dependency: "+pkg + c.END,
+            os.system("sudo apt-get install " + pkg)
 
 def loadOsdeps(cfg):
     platform = system()
