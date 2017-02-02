@@ -389,7 +389,8 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     if not os.path.isdir(realPath+"/.git"):
         c.printNormal(out);
         c.printError(err);
-        cfg["errors"].append("clone: "+value)
+        cfg["errors"].append("clone: "+git)
+        return
     # get the name of the remote
     with open(realPath+"/source.yml") as f:
         info = yaml.load(f)
@@ -418,7 +419,10 @@ def updatePackageSets(cfg):
         key, value = packageSet.items()[0]
         realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
-            clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
+            if key == "url":
+                clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps)
+            else:
+                clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
     # update remotes that are not actually cloned
     for d in os.listdir(path+"remotes"):
