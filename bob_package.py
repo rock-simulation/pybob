@@ -44,8 +44,8 @@ def getDeps(cfg, pkg, deps, checked):
                             cfg["deps"][pkg].append(d)
                         if checked != None:
                             if d not in checked:
+                                checked.append(d)
                                 getDeps(cfg, d, deps, checked)
-                                #checked.append(d)
         f.close()
     if pkg in cfg["overrides"] and "additinal_deps" in cfg["overrides"][pkg]:
         for dep in cfg["overrides"][pkg]:
