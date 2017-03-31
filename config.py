@@ -19,6 +19,10 @@ def getConfiguration(cfg):
     if "AUTOPROJ_CURRENT_ROOT" in os.environ:
         path = os.environ["AUTOPROJ_CURRENT_ROOT"]
     if os.path.isfile(path+"/pybob/pybob.yml"):
+        try:
+            cfg["numCores"] = multiprocessing.cpu_count()
+        except:
+            cfg["numCores"] = 1
         with open(path+"/pybob/pybob.yml") as f:
             cfg.update(yaml.load(f))
     else:
