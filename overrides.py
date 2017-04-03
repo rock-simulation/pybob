@@ -166,7 +166,8 @@ def loadOverrides(cfg):
     cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "rice", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "external/yaml-cpp", "rtt", "typelib", "simulation/configmaps", "qt4-opengl"]
 
     if system() == "Darwin":
-        cfg["ignorePackages"].append("python", "python-dev")
+        cfg["ignorePackages"].append("python")
+        cfg["ignorePackages"].append("python-dev")
 
     filename = cfg["path"]+"/autoproj/overrides.yml"
     if os.path.isfile(filename):
