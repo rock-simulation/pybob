@@ -1,0 +1,30 @@
+diff --git CMakeLists.txt CMakeLists.txt
+new file mode 100644
+index 0000000..78e27b5
+--- /dev/null
++++ CMakeLists.txt
+@@ -0,0 +1,14 @@
++cmake_minimum_required(VERSION 2.8)
++
++project(catch)
++SET(PROJECT_VERSION dev)
++SET(PROJECT_DESCRIPTION "c++ unit testing framework")
++
++SET(HEADERS single_include/catch.hpp)
++
++SET(PKG_CONFIG_CFLAGS -I${CMAKE_INSTALL_PREFIX}/include)
++
++CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/catch.pc.in ${CMAKE_CURRENT_SOURCE_DIR}/catch.pc)
++
++INSTALL(FILES ${HEADERS} DESTINATION include/${PROJECT_NAME})
++INSTALL(FILES catch.pc DESTINATION lib/pkgconfig)
+diff --git catch.pc.in catch.pc.in
+new file mode 100644
+index 0000000..cef9e7d
+--- /dev/null
++++ catch.pc.in
+@@ -0,0 +1,4 @@
++Name: ${PROJECT_NAME}
++Description: ${PROJECT_DESCRIPTION}
++Version: ${PROJECT_VERSION}
++Cflags: ${PKG_CONFIG_CFLAGS}

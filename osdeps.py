@@ -53,7 +53,11 @@ def loadOsdeps(cfg):
                               "qt4": [install, "qt4-default"],
                               "qt": [install, "qt4-default"],
                               "osg": [install, "libopenscenegraph-dev"],
-                              "boost": [install, "libboost-all-dev"]})
+                              "boost": [install, "libboost-all-dev"],
+                              "python": [install],
+                              "python-dev": [install],
+                              "python-numpy": [install],
+                              "cython": [install]})
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
@@ -78,4 +82,7 @@ def loadOsdeps(cfg):
                               "qt4": [install, ""], "cmake": [install],
                               "pkg-config": [install],
                               "boost": [install],
-                              "osg": [install, ""]})
+                              "osg": [install, ""],
+                              "python-numpy": [install, "py-numpy"],
+                              "cython": [install, "py-cython"]})
+        cfg["ignorePackages"].append("python", "python-dev")

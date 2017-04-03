@@ -103,7 +103,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             return True
     else:
         if not cfg["fetch"]:
-            c.printError(package+" is not cloned, call mars_fetch to update or clone the packages.")
+            c.printError(package+" is not cloned, call bob-fetch to update or clone the packages.")
             cfg["errors"].append("missing: "+package)
             c.printError("error")
             return True
@@ -130,20 +130,30 @@ def clonePackage(cfg, package, server, gitPackage, branch):
 
 def getServerInfo(cfg, pDict, info):
     # todo:
-    #    - parse type git / url / etc.
+    #    - parse patches
+    #    - impelment clean tag support
+    # tag can be used as branches with git clone if no branch with
+    # the same name exists
     setupCfg(cfg)
     if len(pDict) == 1:
         package, pInfo = pDict.items()[0]
         info["package"] = package
-        for key,server in cfg["server"].items():
-            if key in pInfo:
-                info["server"] = server
-                info["gitPackage"] = pInfo[key]
+        if "type" in pInfo:
+            if pInfo["type"] == "git":
+                info["server"] = pInfo["url"]
+                info["gitPackage"] = ""
+        else:
+            for key,server in cfg["server"].items():
+                if key in pInfo:
+                    info["server"] = server
+                    info["gitPackage"] = pInfo[key]
         if "branch" in pInfo:
             if pInfo["branch"] in rockBranches:
                 info["branch"] = cfg["rockFlavor"]
             else:
                 info["branch"] = pInfo["branch"]
+        if "tag" in pInfo:
+            info["branch"] = pInfo["tag"]
         return True
     haveKey = False
     haveServer = False
@@ -152,6 +162,8 @@ def getServerInfo(cfg, pDict, info):
             info["branch"] = cfg["rockFlavor"]
         else:
             info["branch"] = pDict["branch"]
+    if "tag" in pDict:
+        info["branch"] = pDict["tag"]
 
     for key, value in pDict.items():
         if not value:
@@ -165,6 +177,12 @@ def getServerInfo(cfg, pDict, info):
             if haveKey:
                 return True
             haveServer = True
+
+    if "type" in pDict:
+        if pDict["type"] == "git":
+            info["server"] = pDict["url"]
+            info["gitPackage"] = ""
+            return True
     #info.clear()
     return False
 

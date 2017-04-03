@@ -28,7 +28,7 @@ def getDeps(cfg, pkg, deps, checked):
         for line in f:
             l = line.strip()
             if l[:4] != "<!--":
-                if "depend package" in line:
+                if "depend package" in line or "rosdep name" in line:
                     arrLine = l.split('"')
                     if len(arrLine) < 3:
                         continue
