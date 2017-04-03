@@ -33,7 +33,7 @@ def install(cfg, pkg):
         execute.do(["sudo", "port", "install", pkg])
     else:
         out, err, r = execute.do(['dpkg', '-l', pkg])
-        if "no packages found" in err:
+        if len(err) >  5:
             print c.BOLD + "Installing os dependency: "+pkg + c.END,
             os.system("sudo apt-get install " + pkg)
 
@@ -57,7 +57,8 @@ def loadOsdeps(cfg):
                               "python": [install],
                               "python-dev": [install],
                               "python-numpy": [install],
-                              "cython": [install]})
+                              "cython": [install],
+                              "zlib": [install, "zlib1g-dev"]})
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
