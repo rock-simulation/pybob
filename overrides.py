@@ -7,6 +7,7 @@ import colorconsole as c
 import execute
 import yaml
 import bob_package
+from platform import system
 
 def uninstall_ode(cfg):
     execute.do(["make", "-C", cfg["devDir"]+"/simulation/ode", "clean"])
@@ -163,6 +164,9 @@ def loadOverrides(cfg):
                         "control/kdl": {"install": install_kdl},
                         "control/urdfdom": {"additional_deps": ["base/console_bridge"]}}
     cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "rice", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "external/yaml-cpp", "rtt", "typelib", "simulation/configmaps", "qt4-opengl"]
+
+    if system() == "Darwin":
+        cfg["ignorePackages"].append("python", "python-dev")
 
     filename = cfg["path"]+"/autoproj/overrides.yml"
     if os.path.isfile(filename):

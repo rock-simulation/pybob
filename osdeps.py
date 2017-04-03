@@ -86,4 +86,3 @@ def loadOsdeps(cfg):
                               "osg": [install, ""],
                               "python-numpy": [install, "py-numpy"],
                               "cython": [install, "py-cython"]})
-        cfg["ignorePackages"].append("python", "python-dev")
