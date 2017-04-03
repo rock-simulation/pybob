@@ -168,6 +168,7 @@ def loadOverrides(cfg):
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
+        cfg["ignorePackages"].append("zlib")
 
     filename = cfg["path"]+"/autoproj/overrides.yml"
     if os.path.isfile(filename):
