@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import os
 import sys
 import execute as ex
@@ -140,6 +142,11 @@ def execute(action):
     global currentPackage
     global checkDeps
     global process
+    global debugConsole
+
+    cursor = debugConsole.textCursor()
+    cursor.setPosition(debugConsole.toPlainText().size())
+    debugConsole.setTextCursor(cursor)
 
     if len(currentPackage) == 0:
         return
@@ -147,7 +154,9 @@ def execute(action):
     if not checkDeps.isChecked():
         cmd.append("-n")
 
+    #print "call: " + " ".join(cmd)
     process = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
     #out, err = p.communicate()
     # stdout = []
         #print line
@@ -224,6 +233,7 @@ else:
     bootPush.connect(bootPush, SIGNAL("clicked()"), bootstrap)
     fetchPush.connect(fetchPush, SIGNAL("clicked()"), fetch)
     buildPush.connect(buildPush, SIGNAL("clicked()"), build)
+    rebuildPush.connect(rebuildPush, SIGNAL("clicked()"), rebuild)
     logPush.connect(logPush, SIGNAL("clicked()"), log)
     cmdPush.connect(cmdPush, SIGNAL("clicked()"), cmd)
 
