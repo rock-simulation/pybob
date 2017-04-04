@@ -1,5 +1,8 @@
 import os
 import sys
+import execute as ex
+import subprocess
+
 haveQT5 = True
 try:
     from PyQt5.QtWidgets import *
@@ -14,14 +17,22 @@ if not haveQT5:
 packages = []
 pattern = ""
 currentPackage = ""
-
 app = QApplication(sys.argv)
 
 window = QWidget()
 window.setWindowTitle("PyBob")
+
+left = QWidget()
+right = QWidget()
+
 hLayout = QHBoxLayout(window)
 vLayout = QVBoxLayout()
-hLayout.addLayout(vLayout)
+hLayout.addWidget(left)
+hLayout.addWidget(right)
+left.setLayout(vLayout)
+spLeft = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+spLeft.setHorizontalStretch(1)
+left.setSizePolicy(spLeft)
 
 checkDeps = QCheckBox("check dependencies")
 checkDeps.setChecked(True)
@@ -30,9 +41,20 @@ lineEdit = QLineEdit()
 listWidget = QListWidget()
 
 vLayout2 = QVBoxLayout()
-hLayout.addLayout(vLayout2)
+right.setLayout(vLayout2)
+spRight = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+spRight.setHorizontalStretch(3)
+right.setSizePolicy(spRight)
+#hLayout.addLayout(vLayout2)
 outConsole = QTextEdit()
 outConsole.setReadOnly(True)
+outConsole.ensureCursorVisible()
+debugConsole = outConsole
+
+font = QFont()
+font.setPointSize(16)
+outConsole.setFont(font)
+
 vLayout2.addWidget(outConsole)
 errConsole = QTextEdit()
 errConsole.setReadOnly(True)
@@ -66,7 +88,7 @@ hLayout.addWidget(buildPush)
 hLayout.addWidget(logPush)
 vLayout.addLayout(hLayout)
 
-
+process = None
 #hLayout.addWidget(QSpacerItem())
 
 def updatePackageList():
@@ -100,9 +122,9 @@ def listItemChanged(item):
     global currentPackage
     if haveQT5:
         currentPackage = str(item.data(0))
-    else: 
+    else:
         currentPackage = str(item.data(0).toString())
-    print "da: " + currentPackage
+    #print "da: " + currentPackage
     sys.stdout.flush()
 
 def patternChanged(s):
@@ -117,13 +139,24 @@ def buildconf():
 def execute(action):
     global currentPackage
     global checkDeps
+    global process
+
     if len(currentPackage) == 0:
         return
     cmd = ["python", "pybob.py", action, currentPackage]
     if not checkDeps.isChecked():
         cmd.append("-n")
-    os.system(" ".join(cmd))
-    
+
+    process = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #out, err = p.communicate()
+    # stdout = []
+        #print line
+
+    #print out
+    #print err
+    #print r
+    #os.system(" ".join(cmd))
+
 def bootstrap():
     execute("bootstrap")
 
@@ -137,11 +170,40 @@ def build():
     execute("install")
 
 def log():
+    global debugConsole
+    debugConsole = errConsole
     execute("show-log")
 
 def cmd():
     os.system(str(cmdEdit.text()))
 
+def update():
+    global process, debugConsole, outConsole
+
+    if process:
+        line = process.stdout.readline()
+        if line == "":
+            process = None
+            debugConsole.insertPlainText("\n")
+            debugConsole = outConsole
+        else:
+            arrLine = line.split("\033")
+            for l in arrLine:
+                if l[:3] == "[0m":
+                    l = l[3:]
+                    debugConsole.setTextColor(QColor("black"))
+                elif l[:6] == "[32;1m":
+                    l = l[6:]
+                    debugConsole.setTextColor(QColor("#228822"))
+                elif l[:6] == "[31;1m":
+                    l = l[6:]
+                    debugConsole.setTextColor(QColor("#882222"))
+                elif l[:10] == "[38;5;166m":
+                    l = l[10:]
+                    debugConsole.setTextColor(QColor("#aa5522"))
+                debugConsole.insertPlainText(l)
+                debugConsole.verticalScrollBar().setValue(
+                    debugConsole.verticalScrollBar().maximum())
 
 updatePackages()
 if haveQT5:
@@ -165,7 +227,11 @@ else:
     logPush.connect(logPush, SIGNAL("clicked()"), log)
     cmdPush.connect(cmdPush, SIGNAL("clicked()"), cmd)
 
-window.resize(500, 500)
+window.resize(800, 500)
 window.show()
+
+timer = QTimer()
+timer.timeout.connect(update)
+timer.start(20)
 
 sys.exit(app.exec_())
