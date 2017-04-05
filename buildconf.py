@@ -139,7 +139,7 @@ def getServerInfo(cfg, pDict, info):
         package, pInfo = pDict.items()[0]
         info["package"] = package
         if "type" in pInfo:
-            if pInfo["type"] == "git":
+            if pInfo["type"] == "git" and "url" in pInfo:
                 info["server"] = pInfo["url"]
                 info["gitPackage"] = ""
         else:
@@ -179,7 +179,7 @@ def getServerInfo(cfg, pDict, info):
             haveServer = True
 
     if "type" in pDict:
-        if pDict["type"] == "git":
+        if pDict["type"] == "git" and "url" in pDict:
             info["server"] = pDict["url"]
             info["gitPackage"] = ""
             return True

@@ -144,6 +144,38 @@ def install_kdl(cfg):
 def install_blloader(cfg):
     bob_package.installPackage(cfg, "learning/bolero/src/bl_loader", ["-DPYTHON_SUPPORT=OFF"])
 
+def check_protobuf(cfg):
+    return os.path.isfile(cfg["devDir"]+"/external/protobuf/protobuf.pc.in")
+
+def install_protobuf(cfg):
+    cmd = ["pkg-config", "--exists", "protobuf"]
+    out, err, r = execute.do(cmd)
+    if r == 0:
+        print c.BOLD + "external/protobuf"+c.WARNING+" installed"+c.END
+        sys.stdout.flush
+        return
+    path = cfg["devDir"]+"/external/protobuf"
+    cmd = ['./autogen.sh; ./configure -prefix='+cfg["devDir"]+'/install']
+    out, err, r = execute.do(cmd, cfg, None, path, "external_protobuf_configure.txt")
+
+    print c.BOLD + "external/protobuf"+c.WARNING+" configured"+c.END
+    sys.stdout.flush()
+    cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
+    #print " ".join(cmd)
+    out, err, r = execute.do(cmd, cfg, None, None, "external_protobuf_build.txt")
+    #print out
+    #print err
+    #print r
+    print c.BOLD + "external/protobuf"+c.WARNING+" installed"+c.END
+    sys.stdout.flush()
+
+def uninstall_protobuf(cfg):
+    path = cfg["devDir"]+"/external"
+    cwd = os.getcwd()
+    os.chdir(path+"/protobuf")
+    execute.do(["make", "clean"])
+    os.chdir(cwd)
+
 def loadOverrides(cfg):
     cfg["overrides"] = {"simulation/ode": {"fetch": fetch_ode,
                                            "patch": patch_ode,
@@ -159,7 +191,10 @@ def loadOverrides(cfg):
                                              "check": check_minizip,
                                              "uninstall": uninstall_minizip},
                         "external/sisl": {"fetch": fetch_sisl,
-                                             "patch": patch_sisl},
+                                          "patch": patch_sisl},
+                        "external/protobuf": {"check": check_protobuf,
+                                              "install": install_protobuf,
+                                              "uninstall": uninstall_protobuf},
                         "learning/bolero/src/bl_loader": {"install": install_blloader},
                         "control/kdl": {"install": install_kdl},
                         "control/urdfdom": {"additional_deps": ["base/console_bridge"]}}
