@@ -85,4 +85,5 @@ def loadOsdeps(cfg):
                               "boost": [install],
                               "osg": [install, ""],
                               "python-numpy": [install, "py-numpy"],
-                              "cython": [install, "py-cython"]})
+                              "cython": [install, "py-cython"],
+                              "yaml": [install, "libyaml"]})

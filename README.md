@@ -46,3 +46,5 @@
   You can start MARS in the terminal via `mars_app`.
   Once you open a new terminal you have to `source env.sh` again.
   
+# Todo:
+  - check if "git pull" fails
