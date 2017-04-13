@@ -88,6 +88,7 @@ def setupEnv(cfg, update=False):
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
+            f.write('export PYTHONPATH="'+prefix_lib+'/python2.7/site-packages:$PYTHONPATH"\n')
 
             # todo: handle python path
             f.write('if [ x${PKG_CONFIG_PATH} = "x" ]; then\n')
