@@ -195,7 +195,7 @@ def loadOverrides(cfg):
                         "external/protobuf": {"check": check_protobuf,
                                               "install": install_protobuf,
                                               "uninstall": uninstall_protobuf},
-                        "learning/bolero/src/bl_loader": {"install": install_blloader},
+                        #"learning/bolero/src/bl_loader": {"install": install_blloader},
                         "control/kdl": {"install": install_kdl},
                         "control/urdfdom": {"additional_deps": ["base/console_bridge"]}}
     cfg["ignorePackages"] = ["autotools", "gui/vizkit3d", "rice", "dummy-dependency-n", "dummy-dependency-n-1", "dummy-dependency-0", "external/yaml-cpp", "rtt", "typelib", "simulation/configmaps", "qt4-opengl"]
