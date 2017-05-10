@@ -35,7 +35,7 @@ def install(cfg, pkg):
         out, err, r = execute.do(['dpkg', '-l', pkg])
         if len(err) >  5:
             print c.BOLD + "Installing os dependency: "+pkg + c.END,
-            os.system("sudo apt-get install " + pkg)
+            os.system("sudo apt-get install -y " + pkg)
 
 def loadOsdeps(cfg):
     platform = system()
