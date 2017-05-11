@@ -45,9 +45,7 @@ def fetch_ode(cfg):
     return True
 
 def install_ode(cfg):
-    cmd = ["pkg-config", "--exists", "ode"]
-    out, err, r = execute.do(cmd)
-    if r == 0:
+    if os.path.isfile(cfg["devDir"]+"/install/lib/pkgconfig/ode.pc"):
         print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
         sys.stdout.flush
         return
