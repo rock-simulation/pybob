@@ -34,9 +34,9 @@
 
        mkdir mars-dev
        cd mars-dev
-       git clone git@github.com:rock-simulation/pybob.git
+       git clone https://github.com/rock-simulation/pybob.git
        cd pybob
-       ./pybob.py buildconf path="git@github.com:rock-simulation/simulation-buildconf.git"
+       ./pybob.py buildconf path="https://github.com/rock-simulation/simulation-buildconf.git"
        cd ..
        source env.sh
 
