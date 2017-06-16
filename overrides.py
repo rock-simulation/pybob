@@ -146,6 +146,7 @@ def check_protobuf(cfg):
     return os.path.isfile(cfg["devDir"]+"/external/protobuf/protobuf.pc.in")
 
 def install_protobuf(cfg):
+    # todo add curl dependency
     cmd = ["pkg-config", "--exists", "protobuf"]
     out, err, r = execute.do(cmd)
     if r == 0:

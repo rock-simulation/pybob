@@ -58,7 +58,8 @@ def loadOsdeps(cfg):
                               "python-dev": [install],
                               "python-numpy": [install],
                               "cython": [install],
-                              "zlib": [install, "zlib1g-dev"]})
+                              "zlib": [install, "zlib1g-dev"],
+                              "jsoncpp": [install, "libjsoncpp-dev"]})
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
