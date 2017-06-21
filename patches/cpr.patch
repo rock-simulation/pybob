@@ -1,6 +1,6 @@
---- CMakeLists.txt	2017-04-04 12:34:29.000000000 +0200
-+++ CMakeLists.txt	2017-04-04 12:33:25.000000000 +0200
-@@ -56,8 +56,8 @@
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -56,8 +56,8 @@ endmacro()
  message(STATUS "C++ Requests CMake Options")
  message(STATUS "=======================================================")
  cpr_option(USE_SYSTEM_CURL
@@ -11,14 +11,12 @@
  cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
  cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
  cpr_option(USE_SYSTEM_GTEST
-diff -aurN cpr_original/cpr/CMakeLists.txt cpr_patched/cpr/CMakeLists.txt
---- cpr/CMakeLists.txt	2017-04-04 12:34:29.000000000 +0200
-+++ cpr/CMakeLists.txt	2017-04-04 12:33:25.000000000 +0200
-@@ -45,3 +45,19 @@
- message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
+--- cpr/CMakeLists.txt
++++ cpr/CMakeLists.txt
+@@ -43,6 +43,22 @@ message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
  target_link_libraries(${CPR_LIBRARIES}
      ${CURL_LIBRARIES})
-+
+ 
 +file(GLOB public_headers ${CPR_INCLUDE_DIRS}/cpr/[a-z]*.h)
 +
 +install(
@@ -34,7 +32,10 @@ diff -aurN cpr_original/cpr/CMakeLists.txt cpr_patched/cpr/CMakeLists.txt
 +set(PC_FILE ${CMAKE_BINARY_DIR}/cpr.pc)
 +configure_file("cpr.pc.in" ${PC_FILE} @ONLY)
 +install(FILES ${PC_FILE} DESTINATION lib/pkgconfig)
-diff -aurN cpr_original/cpr/cpr.pc.in cpr_patched/cpr/cpr.pc.in
++
+ if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
+     target_include_directories(${CPR_LIBRARIES}
+         PUBLIC
 --- cpr/cpr.pc.in	1970-01-01 01:00:00.000000000 +0100
 +++ cpr/cpr.pc.in	2017-04-04 12:33:25.000000000 +0200
 @@ -0,0 +1,12 @@
