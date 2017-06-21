@@ -1,6 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ea4f46a..cf2611d 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -56,8 +56,8 @@ endmacro()
+@@ -7,6 +7,9 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
+ 
+ project(cpr)
+ 
++find_package(lib_manager)
++lib_defaults()
++
+ if(NOT ${CMAKE_VERSION} LESS 3.2)
+     set(CMAKE_CXX_STANDARD 11)
+     set(CMAKE_CXX_STANDARD_REQUIRED ON)
+@@ -56,8 +59,8 @@ endmacro()
  message(STATUS "C++ Requests CMake Options")
  message(STATUS "=======================================================")
  cpr_option(USE_SYSTEM_CURL
@@ -11,6 +23,8 @@
  cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
  cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
  cpr_option(USE_SYSTEM_GTEST
+diff --git a/cpr/CMakeLists.txt b/cpr/CMakeLists.txt
+index 39c6c12..cb83637 100644
 --- cpr/CMakeLists.txt
 +++ cpr/CMakeLists.txt
 @@ -43,6 +43,22 @@ message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
