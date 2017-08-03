@@ -356,3 +356,6 @@ if __name__ == "__main__":
     c.printNormal(cfg["installed"])
     diff = datetime.datetime.now() - start
     print "Time: "+str(diff)
+
+    exit_status = len(cfg["errors"])
+    exit(exit_status)
