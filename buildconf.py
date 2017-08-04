@@ -88,7 +88,6 @@ def checkBaseName(package, info):
 def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = package
     if package[-2:] == ".*":
-        print package + " " + gitPackage
         arrPackage = package.split("/")[:-1]
         p = gitPackage.split("/")[1].split(".")[0]
         if arrPackage[-1] != p:
