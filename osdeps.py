@@ -59,7 +59,7 @@ def loadOsdeps(cfg):
                               "python-numpy": [install],
                               "cython": [install],
                               "zlib": [install, "zlib1g-dev"],
-                              "jsoncpp": [install, "libjsoncpp-dev"]})
+                              "json-cpp": [install, "libjsoncpp-dev"]})
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
@@ -77,6 +77,7 @@ def loadOsdeps(cfg):
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
                               "yaml-cpp": [install],
+                              "json-cpp": [install, "jsoncpp"],
                               "external/tinyxml": [install, "tinyxml"],
                               "qwt": [install],
                               "qwt5-qt4": [install, "qwt"],
