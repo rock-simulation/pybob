@@ -219,10 +219,22 @@ def install_():
     for p in layout_packages:
         if p not in toInstall:
             toInstall.append(p)
+    iList = []
     while len(toInstall) > 0:
         threads = []
         jobs = []
+        oldList = iList
         iList = list(toInstall)
+        if oldList == iList :
+            # detect unresolved deps loop
+            for p in oldList:
+                c.printError("detect dependency cycle:\n  " + str(p))
+                c.printWarning("  deps:")
+                if p in cfg["deps"]:
+                    for d in cfg["deps"][p]:
+                        if d in iList:
+                            c.printWarning("    - "+str(d))
+            exit(-1)
         toInstall = []
         for p in iList:
             wait = False
