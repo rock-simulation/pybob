@@ -54,7 +54,7 @@ def loadOsdeps(cfg):
                               "qt": [install, "qt4-default"],
                               "osg": [install, "libopenscenegraph-dev"],
                               "boost": [install, "libboost-all-dev"],
-                              "python": [install, pyhton-dev],
+                              "python": [install, "pyhton-dev"],
                               "numpy": [install, "python-numpy"],
                               "cython": [install],
                               "zlib": [install, "zlib1g-dev"],
