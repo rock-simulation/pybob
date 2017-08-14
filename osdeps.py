@@ -54,9 +54,8 @@ def loadOsdeps(cfg):
                               "qt": [install, "qt4-default"],
                               "osg": [install, "libopenscenegraph-dev"],
                               "boost": [install, "libboost-all-dev"],
-                              "python": [install],
-                              "python-dev": [install],
-                              "python-numpy": [install],
+                              "python": [install, pyhton-dev],
+                              "numpy": [install, "python-numpy"],
                               "cython": [install],
                               "zlib": [install, "zlib1g-dev"],
                               "jsoncpp": [install, "libjsoncpp-dev"]})
@@ -86,6 +85,6 @@ def loadOsdeps(cfg):
                               "pkg-config": [install],
                               "boost": [install],
                               "osg": [install, ""],
-                              "python-numpy": [install, "py-numpy"],
+                              "numpy": [install, "py-numpy"],
                               "cython": [install, "py-cython"],
                               "yaml": [install, "libyaml"]})
