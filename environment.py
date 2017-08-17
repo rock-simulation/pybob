@@ -30,8 +30,11 @@ def setupEnv(cfg, update=False):
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
-    prefix_config = prefix + "/configuration"
     platform = system()
+    if platform == "Linux":
+        prefix_lib = ":" + prefix + "/lib/x86_64-linux-gnu"
+        prefix_pkg = ":" + prefix + "/lib/x86_64-linux-gnu/pkgconfig"
+    prefix_config = prefix + "/configuration"
 
     # create env.sh
     p = subprocess.Popen("which cmake_debug", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
