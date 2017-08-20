@@ -56,6 +56,7 @@ def loadOsdeps(cfg):
                               "osg": [install, "libopenscenegraph-dev"],
                               "boost": [install, "libboost-all-dev"],
                               "python": [install, "python-dev"],
+                              "python-dev": [install],
                               "python-yaml": [install],
                               "python-numpy": [install],
                               "numpy": [install, "python-numpy"],
