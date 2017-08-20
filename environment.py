@@ -30,6 +30,7 @@ def setupEnv(cfg, update=False):
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
+    pythonpath = prefix_lib + "/python%d.%d/site-packages" % (sys.version_info.major, sys.version_info.minor)
     platform = system()
     if platform == "Linux":
         prefix_lib += ":" + prefix + "/lib/x86_64-linux-gnu"
@@ -91,7 +92,7 @@ def setupEnv(cfg, update=False):
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
-            f.write('export PYTHONPATH="'+prefix_lib+'/python2.7/site-packages:$PYTHONPATH"\n')
+            f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
 
             # todo: handle python path
             f.write('if [ x${PKG_CONFIG_PATH} = "x" ]; then\n')
