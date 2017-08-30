@@ -9,6 +9,7 @@ haveQT5 = True
 try:
     from PyQt5.QtWidgets import *
     from PyQt5.QtCore import *
+    from PyQt5.QtGui import *
 except:
     haveQT5 = False
 if not haveQT5:
