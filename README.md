@@ -20,7 +20,7 @@
           pacman -S mingw-w64-x86_64-gcc
           pacman -S mingw-w64-x86_64-make
           wget http://pyyaml.org/download/pyyaml/PyYAML-3.12.tar.gz
-          tar -xzvf PyYAML-3.12.tar.gt
+          tar -xzvf PyYAML-3.12.tar.gz
           cd PyYAML-3.12
           python setup.py --with-libyaml install
 
