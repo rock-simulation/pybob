@@ -476,7 +476,7 @@ def updatePackageSets(cfg):
     # last step: write all packages int a file to speed up pybob usage
     packages, wildcards = listPackages(cfg)
     pDict = {}
-    with open(path+"/bob/packages.txt", "w") as f:
+    with open(path+"/bob/packages.txt", "wb") as f:
         for p in packages:
             if len(p[1]) > 0:
                 f.write(p[1]+"\n")
