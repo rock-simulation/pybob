@@ -75,6 +75,7 @@ def loadOsdeps(cfg):
                               "qt4": [install, "foo"],
                               "qt": [install, "qt5"],
                               "osg": [install, "OpenSceneGraph"],
+                              "osgQt": [install, "osgQt"],
                               "boost": [install],
                               "jsoncpp": [install],
                               "python-numpy": [install, "python2-numpy"],
