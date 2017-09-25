@@ -115,6 +115,7 @@ def patch_sisl(cfg):
     targetPath = cfg["devDir"]+"/external/"
     cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
     execute.do(cmd+[srcPath+"sisl-limits.patch"])
+    execute.do(cmd+[srcPath+"sisl-win-install.patch"])
 
 def fetch_sisl(cfg):
     path = cfg["devDir"]+"/external"
@@ -204,6 +205,10 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
         cfg["ignorePackages"].append("zlib")
+    elif system() == "Windows":
+        cfg["ignorePackages"].append("python")
+        cfg["ignorePackages"].append("python-dev")
+        cfg["ignorePackages"].append("python-yaml")
 
     filename = cfg["path"]+"/autoproj/overrides.yml"
     if os.path.isfile(filename):

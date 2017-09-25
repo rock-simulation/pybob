@@ -75,7 +75,13 @@ def loadOsdeps(cfg):
                               "qt4": [install, "foo"],
                               "qt": [install, "qt5"],
                               "osg": [install, "OpenSceneGraph"],
-                              "boost": [install]})
+                              "boost": [install],
+                              "jsoncpp": [install],
+                              "python-numpy": [install, "python2-numpy"],
+                              "numpy": [install, "python2-numpy"],
+                              "cython": [install],
+                              "yaml": [install, "libyaml"],
+                              "zlib": [install]})
     else:
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],

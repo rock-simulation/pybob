@@ -1,0 +1,43 @@
+diff -ur sisl-4.5.0/CMakeLists.txt sisl/CMakeLists.txt
+--- sisl-4.5.0/CMakeLists.txt	2010-09-22 10:11:39.000000000 +0200
++++ sisl/CMakeLists.txt	2017-09-25 11:30:38.030132700 +0200
+@@ -45,18 +45,18 @@
+ 
+ # 'install' target
+ 
+-IF(WIN32)
+-  # Windows
+-  SET(CMAKE_INSTALL_PREFIX CACHE INTERNAL "")
+-  SET(sisl_INSTALL_PREFIX "$ENV{PROGRAMFILES}/sisl"
+-    CACHE PATH "Path to install SISL")
+-  INSTALL(TARGETS sisl DESTINATION ${sisl_INSTALL_PREFIX}/lib)
+-  INSTALL(DIRECTORY include/
+-    DESTINATION ${sisl_INSTALL_PREFIX}/include
+-    FILES_MATCHING PATTERN "*.h"
+-    PATTERN ".svn" EXCLUDE
+-    )
+-ELSE(WIN32)
++# IF(WIN32)
++#   # Windows
++#   SET(CMAKE_INSTALL_PREFIX CACHE INTERNAL "")
++#   SET(sisl_INSTALL_PREFIX "$ENV{PROGRAMFILES}/sisl"
++#     CACHE PATH "Path to install SISL")
++#   INSTALL(TARGETS sisl DESTINATION ${sisl_INSTALL_PREFIX}/lib)
++#   INSTALL(DIRECTORY include/
++#     DESTINATION ${sisl_INSTALL_PREFIX}/include
++#     FILES_MATCHING PATTERN "*.h"
++#     PATTERN ".svn" EXCLUDE
++#     )
++# ELSE(WIN32)
+   # Linux
+   # lib
+   INSTALL(TARGETS sisl DESTINATION lib)
+@@ -66,7 +66,7 @@
+     FILES_MATCHING PATTERN "*.h"
+     PATTERN ".svn" EXCLUDE
+     )
+-ENDIF(WIN32)
++#ENDIF(WIN32)
+ 
+ 
+ # CPack stuff
