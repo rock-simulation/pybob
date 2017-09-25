@@ -29,11 +29,12 @@
      // (http://pubs.opengroup.org/onlinepubs/007904975/functions/strptime.html)
 --- src/Time.hpp
 +++ src/Time.hpp
-@@ -5,6 +5,10 @@
+@@ -5,6 +5,11 @@
  #include <ostream>
  #include <stdint.h>
  
 +#ifdef WIN32
++#include <Time.h>
 +typedef long suseconds_t;
 +#endif
 +
