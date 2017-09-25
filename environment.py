@@ -32,7 +32,10 @@ def setupEnv(cfg, update=False):
     prefix_pkg = prefix_lib + "/pkgconfig"
     pythonpath = prefix_lib + "/python%d.%d/site-packages" % (sys.version_info.major, sys.version_info.minor)
     platform = system()
-    if platform == "Linux":
+    if platform == "Windows":
+        # todo: make this more generic
+        pythonpath = "/mingw64/lib/python2.7:/mingw64/lib/python2.7/plat-win32:/mingw64/lib/python2.7/lib-tk:/mingw64/lib/python2.7/lib-dynload:/mingw64/lib/python2.7/site-packages:"+pythonpath
+    elif platform == "Linux":
         prefix_lib += ":" + prefix + "/lib/x86_64-linux-gnu"
         prefix_pkg += ":" + prefix + "/lib/x86_64-linux-gnu/pkgconfig"
     prefix_config = prefix + "/configuration"
