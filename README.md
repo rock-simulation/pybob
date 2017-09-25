@@ -16,7 +16,6 @@
           pacman -S mingw-w64-x86_64-pkg-config
           pacman -S mingw-w64-x86_64-python2
           pacman -S mingw-w64-x86_64-python2-pyqt5
-          pacman -S mingw-w64-x86_64-python2-numpy
           pacman -S mingw-w64-x86_64-libyaml
           pacman -S mingw-w64-x86_64-gcc
           pacman -S mingw-w64-x86_64-make
@@ -25,6 +24,7 @@
           tar -xzvf PyYAML-3.12.tar.gz
           cd PyYAML-3.12
           python setup.py --with-libyaml install
+          ln -s /mingw64/bin/mingw32-make.exe /mingw64/bin/make.exe
 
   5. continue with general install notes
 
