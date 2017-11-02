@@ -214,7 +214,7 @@ def loadOverrides(cfg):
     if os.path.isfile(filename):
         with open(filename) as f:
             ov = yaml.load(f)
-        if "overrides" in ov and ov["overrides"] is not None:
+        if ov is not None and "overrides" in ov and ov["overrides"] is not None :
             for it in ov["overrides"]:
                 for key, value in it.items():
                     cfg["overrides"][key] = value
