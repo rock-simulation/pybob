@@ -15,7 +15,12 @@ def install(cfg, pkg):
     elif pkg == "pkg-config":
         if os.popen('which pkg-config').read():
             return
-    elif platform == "Windows":
+
+    log = cfg["devDir"] + "/autoproj/bob/logs/os_deps.txt"
+    with open(log, "a") as f:
+        f.write(pkg)
+
+    if platform == "Windows":
         out,err,r = execute.do(["pacman", "-Qq", "mingw-w64-x86_64-"+pkg])
         if len(out) > 0:
             return
