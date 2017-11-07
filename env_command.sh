@@ -1,2 +1,4 @@
+#!/bin/bash
+
 source ../env.sh
-bob $@
+./pybob.py $@
