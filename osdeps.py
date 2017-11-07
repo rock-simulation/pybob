@@ -17,10 +17,10 @@ def install(cfg, pkg):
             return
 
     log = cfg["devDir"] + "/autoproj/bob/logs/os_deps.txt"
-    mode = "w"
-    if os.path.exists(log):
-        mode = "a"
-    with open(log, mode) as f:
+    path = cfg["devDir"]+"/autoproj/bob/logs"
+    if not os.path.isdir(path):
+        execute.makeDir(path)
+    with open(log, "a") as f:
         f.write(" "+pkg)
 
     if platform == "Windows":
