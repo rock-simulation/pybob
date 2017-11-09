@@ -1,10 +1,9 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ea4f46a..cf2611d 100644
---- CMakeLists.txt
-+++ CMakeLists.txt
-@@ -7,6 +7,9 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
+diff -rupN cpr_orig/CMakeLists.txt cpr/CMakeLists.txt
+--- CMakeLists.txt	2017-11-09 12:49:23.343411418 +0100
++++ CMakeLists.txt	2017-11-09 12:32:27.411397944 +0100
+@@ -12,6 +12,9 @@ set_property(GLOBAL PROPERTY PREDEFINED_
  
- project(cpr)
+ project(cpr CXX)
  
 +find_package(lib_manager)
 +lib_defaults()
@@ -12,7 +11,7 @@ index ea4f46a..cf2611d 100644
  if(NOT ${CMAKE_VERSION} LESS 3.2)
      set(CMAKE_CXX_STANDARD 11)
      set(CMAKE_CXX_STANDARD_REQUIRED ON)
-@@ -56,8 +59,8 @@ endmacro()
+@@ -61,8 +64,8 @@ endmacro()
  message(STATUS "C++ Requests CMake Options")
  message(STATUS "=======================================================")
  cpr_option(USE_SYSTEM_CURL
@@ -23,11 +22,10 @@ index ea4f46a..cf2611d 100644
  cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
  cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
  cpr_option(USE_SYSTEM_GTEST
-diff --git a/cpr/CMakeLists.txt b/cpr/CMakeLists.txt
-index 39c6c12..cb83637 100644
---- cpr/CMakeLists.txt
-+++ cpr/CMakeLists.txt
-@@ -43,6 +43,22 @@ message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
+diff -rupN cpr_orig/cpr/CMakeLists.txt cpr/cpr/CMakeLists.txt
+--- cpr/CMakeLists.txt	2017-11-09 12:49:23.343411418 +0100
++++ cpr/CMakeLists.txt	2017-11-09 12:32:27.411397944 +0100
+@@ -43,6 +43,22 @@ message(STATUS "Using CURL_LIBRARIES: ${
  target_link_libraries(${CPR_LIBRARIES}
      ${CURL_LIBRARIES})
  
@@ -50,8 +48,9 @@ index 39c6c12..cb83637 100644
  if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
      target_include_directories(${CPR_LIBRARIES}
          PUBLIC
+diff -rupN cpr_orig/cpr/cpr.pc.in cpr/cpr/cpr.pc.in
 --- cpr/cpr.pc.in	1970-01-01 01:00:00.000000000 +0100
-+++ cpr/cpr.pc.in	2017-04-04 12:33:25.000000000 +0200
++++ cpr/cpr.pc.in	2017-11-09 12:32:27.411397944 +0100
 @@ -0,0 +1,12 @@
 +prefix=@CMAKE_INSTALL_PREFIX@
 +exec_prefix=@CMAKE_INSTALL_PREFIX@
@@ -65,3 +64,16 @@ index 39c6c12..cb83637 100644
 +
 +Cflags: -I${includedir}
 +
+diff -rupN cpr_orig/manifest.xml cpr/manifest.xml
+--- manifest.xml	1970-01-01 01:00:00.000000000 +0100
++++ manifest.xml	2017-11-09 12:48:10.527410452 +0100
+@@ -0,0 +1,9 @@
++<package>
++    <description brief="cpr">
++      Manifest for external cpr needed due to patch
++    </description>
++
++    <depend package="simulation/lib_manager" />
++    <rosdep name="curl" />
++    <tags>needs_opt</tags>
++</package>

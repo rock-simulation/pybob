@@ -44,6 +44,15 @@ def install(cfg, pkg):
         if len(err) >  5:
             print c.BOLD + "Installing os dependency: "+pkg + c.END,
             os.system("sudo apt-get install -y " + pkg)
+        else:
+            for line in out.split("\n"):
+                arrLine = line.split()
+                if len(arrLine) > 2 and arrLine[1] == pkg:
+                    if arrLine[0] != "ii":
+                        print c.BOLD + "Installing os dependency: "+pkg + c.END,
+                        os.system("sudo apt-get install -y " + pkg)
+                    break
+
 
 def loadOsdeps(cfg):
     platform = system()
@@ -70,7 +79,8 @@ def loadOsdeps(cfg):
                               "numpy": [install, "python-numpy"],
                               "cython": [install],
                               "zlib": [install, "zlib1g-dev"],
-                              "jsoncpp": [install, "libjsoncpp-dev"]})
+                              "jsoncpp": [install, "libjsoncpp-dev"],
+                              "curl": [install, "libcurl4-gnutls-dev"]})
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
