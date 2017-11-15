@@ -28,6 +28,8 @@ def getDeps(cfg, pkg, deps, checked):
         for line in f:
             l = line.strip()
             if l[:4] != "<!--":
+                if not cfg["buildOptional"] and "optional" in line:
+                    continue
                 if "depend package" in line or "rosdep name" in line:
                     arrLine = l.split('"')
                     if len(arrLine) < 3:

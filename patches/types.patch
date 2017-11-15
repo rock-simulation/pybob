@@ -41,3 +41,14 @@
  namespace base
  {
      struct Time
+--- manifest.xml
++++ manifest.xml
+@@ -17,7 +17,7 @@
+     <depend package="base/logging" />
+
+     <depend package="rice" optional="1" />
+-    <depend package="external/sisl" optional="1" />
++    <depend package="external/sisl" />
+     <depend package="gui/vizkit3d" optional="1" />
+     <tags>stable</tags>
+ </package>

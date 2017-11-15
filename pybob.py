@@ -29,14 +29,24 @@ commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
             "show-log"]
 
 cfg = {}
+cfg["buildOptional"] = True
+copyArgs = []
 for a in sys.argv:
-    if "path=" in a:
-        p = a[5:]
-        if "'" in p:
-            p = p.split("'")[1]
-        elif '"' in p:
-            p = p.split('"')[1]
-        cfg["buildconfAddress"] = p
+    if "=" in a:
+        arrArg = a.split("=")
+        if "path" in arrArg[0]:
+            p = arrArg[1]
+            if "'" in p:
+                p = p.split("'")[1]
+            elif '"' in p:
+                p = p.split('"')[1]
+            cfg["buildconfAddress"] = p
+        elif "buildOptional" in arrArg[0]:
+            if arrArg[1].lower() in ['false', '0', 'n', 'no']:
+                cfg["buildOptional"] = False
+    else:
+        copyArgs.append(a)
+sys.argv = copyArgs
 
 config.getConfiguration(cfg)
 cfg["installed"] = []
