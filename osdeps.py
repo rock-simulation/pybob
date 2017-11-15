@@ -84,7 +84,7 @@ def loadOsdeps(cfg):
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
             cfg["osdeps"]["qt"] = [install, "libqt4-dev"]
-            cfg["osdeps"]["boost"] = [install, "libboost-system-dev libboost-thread-dev libboost-test-dev"]
+            cfg["osdeps"]["boost"] = [install, "libboost-system-dev libboost-thread-dev libboost-test-dev  libboost-filesystem-dev"]
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
