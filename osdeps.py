@@ -81,9 +81,11 @@ def loadOsdeps(cfg):
                               "zlib": [install, "zlib1g-dev"],
                               "jsoncpp": [install, "libjsoncpp-dev"],
                               "curl": [install, "libcurl4-gnutls-dev"]})
-        if cfg["buildOptional"]:
+        if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
+            cfg["osdeps"]["qt"] = [install, "libqt4-dev"]
             cfg["osdeps"]["boost"] = [install, "libboost-system-dev libboost-thread-dev"]
+        print cfg
     elif platform == "Windows":
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
