@@ -121,15 +121,15 @@ def setupEnv(cfg, update=False):
         if not "autoprojEnv" in cfg or not cfg["autoprojEnv"]:
             options += " -DBINDINGS_RUBY=OFF "
         if platform == "Windows":
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=DEBUG $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=DEBUG $@\n")
     with open(cfg["devDir"]+"/install/bin/cmake_release", "w") as f:
         f.write("#!/bin/bash\n")
         if platform == "Windows":
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
 
     cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_debug"]
     execute.simpleExecute(cmd)
