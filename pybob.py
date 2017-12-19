@@ -128,6 +128,10 @@ def fetchi(package, returnPackages = False):
     
 def fetch_(returnPackages = False):    
     if len(sys.argv) < 3 or "path=" in sys.argv[2]:
+        cfg["rebuild"] = False
+        cfg["update"] = False
+        env.setupEnv(cfg, False)
+        buildconf_()
         return fetchi("", returnPackages)
     else:
         return fetchi(sys.argv[2], returnPackages)
