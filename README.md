@@ -32,6 +32,13 @@
 
        sudo apt-get install git python-yaml
 
+# Prepare Mac OS X for pybob:
+
+  1. install MacPorts (https://www.macports.org), which is used by pybob to install system dependencies
+  2. install python yaml package via MacPorts:
+  
+          sudo port install py-yaml
+
 # Install MARS via pybob
 
        mkdir mars-dev
