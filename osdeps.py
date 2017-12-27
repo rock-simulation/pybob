@@ -5,6 +5,25 @@ import colorconsole as c
 import execute
 from platform import system
 
+def installWinSKLearn(cfg, pkg):
+    platform = system()
+    log = cfg["devDir"] + "/autoproj/bob/logs/os_deps.txt"
+    path = cfg["devDir"]+"/autoproj/bob/logs"
+    if not os.path.isdir(path):
+        execute.makeDir(path)
+    with open(log, "a") as f:
+        f.write(" "+pkg)
+
+    if platform == "Windows":
+        if not os.popen('which pip').read():
+            out,err,r = execute.do(["pacman", "-S", "mingw-w64-x86_64-python2-pip"])
+            if len(out) > 0:
+                return
+
+        out,err,r = execute.do(["pip", "install", "-U", "scikit-learn"])
+        if len(out) > 0:
+            return
+
 def install(cfg, pkg):
     platform = system()
     if pkg == "":
@@ -105,6 +124,9 @@ def loadOsdeps(cfg):
                               "jsoncpp": [install],
                               "python-numpy": [install, "python2-numpy"],
                               "numpy": [install, "python2-numpy"],
+                              "python-scipy": [install, "python2-scipy"],
+                              "python-sklearn": [installWinSKLearn],
+                              "python-matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
                               "zlib": [install]})
