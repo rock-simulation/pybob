@@ -50,6 +50,8 @@ def install(cfg, pkg):
         return
 
     if platform == "Windows":
+        if pkg == "cython":
+            execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-cython2"])
         execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-"+pkg])
     elif platform == "Darwin":
         pkgstr = '" '+pkg+' "'
@@ -127,7 +129,7 @@ def loadOsdeps(cfg):
                               "python-scipy": [install, "python2-scipy"],
                               "python-sklearn": [pipInstall, "scikit-learn"],
                               "python-matplotlib": [install, "python2-matplotlib"],
-                              "cython": [install, "cython2"],
+                              "cython": [install],
                               "yaml": [install, "libyaml"],
                               "zlib": [install]})
     else:
