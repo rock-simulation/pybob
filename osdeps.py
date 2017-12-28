@@ -20,7 +20,7 @@ def pipInstall(cfg, pkg):
             if len(out) > 0:
                 return
 
-        out,err,r = execute.do(["pip", "install", "-U", pkg])
+        out,err,r = execute.do(["pip", "install", "-U", "--noinput", pkg])
         if len(out) > 0:
             return
 
@@ -127,7 +127,7 @@ def loadOsdeps(cfg):
                               "python-scipy": [install, "python2-scipy"],
                               "python-sklearn": [pipInstall, "scikit-learn"],
                               "python-matplotlib": [install, "python2-matplotlib"],
-                              "cython": [install],
+                              "cython": [install, "cython2"],
                               "yaml": [install, "libyaml"],
                               "zlib": [install]})
     else:
