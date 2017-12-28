@@ -16,7 +16,7 @@ def pipInstall(cfg, pkg):
 
     if platform == "Windows":
         if not os.popen('which pip').read():
-            out,err,r = execute.do(["pacman", "-S", "mingw-w64-x86_64-python2-pip"])
+            out,err,r = execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-python2-pip"])
             if len(out) > 0:
                 return
 
