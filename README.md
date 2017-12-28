@@ -12,10 +12,7 @@
   4. perform following steps in the shell:
 
           pacman -S git wget tar unzip which patch
-          pacman -S mingw-w64-x86_64-cmake
-          pacman -S mingw-w64-x86_64-pkg-config
           pacman -S mingw-w64-x86_64-python2
-          pacman -S mingw-w64-x86_64-python2-pyqt5
           pacman -S mingw-w64-x86_64-libyaml
           pacman -S mingw-w64-x86_64-gcc
           pacman -S mingw-w64-x86_64-make
