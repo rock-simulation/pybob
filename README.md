@@ -11,17 +11,9 @@
      (**important** do not use the msys shell)
   4. perform following steps in the shell:
 
-          pacman -S git wget tar unzip which patch
-          pacman -S mingw-w64-x86_64-python2
-          pacman -S mingw-w64-x86_64-libyaml
-          pacman -S mingw-w64-x86_64-gcc
-          pacman -S mingw-w64-x86_64-make
-          pacman -S mingw-w64-x86_64-glew
-          wget http://pyyaml.org/download/pyyaml/PyYAML-3.12.tar.gz
-          tar -xzvf PyYAML-3.12.tar.gz
-          cd PyYAML-3.12
-          python setup.py --with-libyaml install
-          ln -s /mingw64/bin/mingw32-make.exe /mingw64/bin/make.exe
+          pacman -S wget
+          wget https://raw.githubusercontent.com/rock-simulatioin/pybob/master/prepare_msys2.sh
+          bash prepare_msys2.sh
 
   5. continue with general install notes
 
