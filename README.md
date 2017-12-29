@@ -12,7 +12,7 @@
   4. perform following steps in the shell:
 
           pacman -S wget
-          wget https://raw.githubusercontent.com/rock-simulatioin/pybob/master/prepare_msys2.sh
+          wget https://raw.githubusercontent.com/rock-simulation/pybob/master/prepare_msys2.sh
           bash prepare_msys2.sh
 
   5. continue with general install notes
