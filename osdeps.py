@@ -127,7 +127,7 @@ def loadOsdeps(cfg):
                               "python-numpy": [install, "python2-numpy"],
                               "numpy": [install, "python2-numpy"],
                               "python-scipy": [install, "python2-scipy"],
-                              "python-sklearn": [pipInstall, "scikit-learn"],
+                              "python-sklearn": [pipInstall, "sklearn"],
                               "python-matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
