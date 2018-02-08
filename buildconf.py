@@ -83,7 +83,8 @@ def checkBaseName(package, info):
         if "$" in info["gitPackage"] and "*" not in package:
             info["basename"] = info["gitPackage"]
             info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
-                                                            package.split("/")[-1])
+                                                            '-'.join((package.split("/")[1:])))                                                           
+
 
 def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = package
