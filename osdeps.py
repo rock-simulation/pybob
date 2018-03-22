@@ -115,6 +115,7 @@ def loadOsdeps(cfg):
                               "yaml-cpp": [install],
                               "external/yaml-cpp": [install, "yaml-cpp"],
                               "external/tinyxml": [install, "tinyxml"],
+                              "external/protobuf": [install, "protobuf"],
                               "qwt": [install, "qwt-qt4"],
                               "qwt5-qt4": [install, "foo"],
                               "pkg-config": [install], "cmake": [install],
