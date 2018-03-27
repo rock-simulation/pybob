@@ -24,7 +24,7 @@ from threading import Thread
 
 start = datetime.datetime.now()
 
-commands = ["buildconf", "list", "bootstrap", "fetch", "update", "install",
+commands = ["buildconf", "list", "bootstrap", "fetch", "install",
             "rebuild", "clean", "diff", "envsh", "uninstall", "help", "info",
             "show-log"]
 
@@ -125,8 +125,8 @@ def fetchi(package, returnPackages = False):
         sys.stdout.flush()
     if returnPackages:
         return layout_packages
-    
-def fetch_(returnPackages = False):    
+
+def fetch_(returnPackages = False):
     if len(sys.argv) < 3 or "path=" in sys.argv[2]:
         return fetchi("", returnPackages)
     else:
@@ -363,7 +363,13 @@ if __name__ == "__main__":
 
     if "-n" in sys.argv:
         cfg["checkDeps"] = False
-    globals()[sys.argv[1].replace("-", "_")+"_"]()
+    command = sys.argv[1].replace("-", "_")+"_"
+    if not command in globals():
+        print c.printBold("Please specify an action. Your options are:\n" +
+                           ", ".join(commands) + "\n")
+        exit(0)
+
+    globals()[command]()
     printErrors()
 
     if len(cfg["profiling"]) > 0:
