@@ -102,7 +102,9 @@ def clonePackage(cfg, package, server, gitPackage, branch):
         if cfg["update"]:
             print "Updating "+clonePath+" ... "+c.END,
             # todo: check branch
-            execute.do(["git", "-C", clonePath, "pull"], cfg)
+            out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
+            if r != 0:
+                c.printError("\ncan't update \""+clonePath+"\":\n" + err)
             c.printWarning("done")
             return True
     else:
@@ -455,8 +457,8 @@ def updatePackageSets(cfg):
                 if cfg["update"]:
                     c.printNormal("  Updating: "+d)
                     out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
-                    if len(err) > 0:
-                        c.printError(err)
+                    if r !=  0:
+                        c.printError("\ncan't update package set \""+d+"\":\n"+err)
                 if d not in cloned:
                     with open(path+"remotes/"+d+"/source.yml") as f:
                         info = yaml.load(f)
@@ -497,7 +499,9 @@ def fetchBuildconf(cfg):
     if os.path.isdir(cfg["devDir"]+"/autoproj"):
         if cfg["update"]:
             c.printNormal("  Update buildconf.")
-            execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
+            out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
+            if r != 0:
+                c.printError("\ncan't update buildconf:\n" + err)
     else:
         address = cfg["buildconfAddress"]
         if len(address) == 0:
