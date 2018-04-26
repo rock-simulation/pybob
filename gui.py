@@ -146,7 +146,10 @@ def execute(action):
     global debugConsole
 
     cursor = debugConsole.textCursor()
-    cursor.setPosition(debugConsole.toPlainText().size())
+    if haveQT5:
+        cursor.setPosition(len(debugConsole.toPlainText()))
+    else:
+        cursor.setPosition(debugConsole.toPlainText().size())
     debugConsole.setTextCursor(cursor)
 
     if len(currentPackage) == 0:
