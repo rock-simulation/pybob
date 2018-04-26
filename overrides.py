@@ -163,6 +163,14 @@ def install_protobuf(cfg):
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
     #print " ".join(cmd)
     out, err, r = execute.do(cmd, cfg, None, None, "external_protobuf_build.txt")
+    cmd = ["python", "setup.py", "build"]
+    #print " ".join(cmd)
+    out, err, r = execute.do(cmd, cfg, None, path+"/python", "external_protobuf_build_python.txt")
+
+    cmd = ["cp", "-r", "build/lib/google", cfg["devDir"]+'/install/lib/python2.7/site-packages']
+    #print " ".join(cmd)
+    out, err, r = execute.do(cmd, cfg, None, path+"/python", "external_protobuf_build_python_install.txt")
+
     #print out
     #print err
     #print r
