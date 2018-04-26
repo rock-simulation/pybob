@@ -104,6 +104,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             # todo: check branch
             out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
+                cfg["errors"].append("update: "+package)
                 c.printError("\ncan't update \""+clonePath+"\":\n" + err)
             c.printWarning("done")
             return True
@@ -458,6 +459,7 @@ def updatePackageSets(cfg):
                     c.printNormal("  Updating: "+d)
                     out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
                     if r !=  0:
+                        cfg["errors"].append("update: "+d)
                         c.printError("\ncan't update package set \""+d+"\":\n"+err)
                 if d not in cloned:
                     with open(path+"remotes/"+d+"/source.yml") as f:
@@ -501,6 +503,7 @@ def fetchBuildconf(cfg):
             c.printNormal("  Update buildconf.")
             out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
             if r != 0:
+                cfg["errors"].append("update: buildconf")
                 c.printError("\ncan't update buildconf:\n" + err)
     else:
         address = cfg["buildconfAddress"]
