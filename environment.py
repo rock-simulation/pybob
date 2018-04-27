@@ -115,6 +115,13 @@ def setupEnv(cfg, update=False):
             f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
 
     execute.makeDir(cfg["devDir"]+"/install/bin")
+    if len(aPath) == 0:
+        with open(cfg["devDir"]+"/install/bin/amake", "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write("${AUTOPROJ_CURRENT_ROOT}/pybob/pybob.py install $@\n")
+        cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/amake"]
+        execute.simpleExecute(cmd)
+
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
         options = "-DROCK_TEST_ENABLED=OFF"

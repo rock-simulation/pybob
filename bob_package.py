@@ -14,7 +14,7 @@ def getDeps(cfg, pkg, deps, checked):
         cfg["deps"][pkg] = []
     #c.printWarning("get deps for " + pkg)
     f = None
-    if os.path.isfile(cfg["devDir"]+"/"+pkg+"/manifest.xml"):
+    if os.path.isfile(os.path.join(cfg["devDir"], pkg+"/manifest.xml")):
         f = open(cfg["devDir"]+"/"+pkg+"/manifest.xml", "r")
     if not f:
         # check for a manifest file in the package_set

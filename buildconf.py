@@ -229,7 +229,7 @@ def getPackageInfoHelper(cfg, package, base, info):
     return False
 
 def getPackageInfo(cfg, package, info):
-    if package in cfg["ignorePackages"] or "orogen" in package:
+    if package in cfg["ignorePackages"] :#or "orogen" in package:
         return
     if package in cfg["osdeps"]:
         return
@@ -303,7 +303,7 @@ def fetchPackage(cfg, package, layout_packages):
     print "Check: " + package + " ... " + c.END,
     sys.stdout.flush()
     setupCfg(cfg)
-    if package in cfg["ignorePackages"] or "orogen" in package:
+    if package in cfg["ignorePackages"]:# or "orogen" in package:
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
@@ -331,7 +331,18 @@ def fetchPackage(cfg, package, layout_packages):
 
     path = cfg["devDir"]+"/autoproj/remotes/"
 
-    if package in cfg["packages"] and package == cfg["packages"][package]:
+    matches = []
+    for key, value in cfg["packages"].items():
+        if package in key and key not in layout_packages:
+            matches.append(key)
+
+    if package not in cfg["packages"]:
+        result = True
+        for match in matches:
+            if not fetchPackage(cfg, match, layout_packages):
+                result = False
+        return result
+    elif package == cfg["packages"][package]:
         info = []
         print "\n ",
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):

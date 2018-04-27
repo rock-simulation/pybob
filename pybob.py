@@ -212,10 +212,35 @@ def install_():
     global cfg
     layout_packages = []
     cfg["update"] = False
-    if len(sys.argv) < 3:
-        buildconf.fetchPackages(cfg, layout_packages)
+    if len(sys.argv) < 3 or sys.argv[2] == "-n":
+        # search path upwards for a manifest.xml
+        # if not found build manifest from buildconf
+        pathToCheck = os.getcwd()
+        found = False
+        done = False
+        while not done:
+            if os.path.isfile(pathToCheck+"/manifest.xml"):
+                found = True
+                done = True
+            elif os.path.exists(pathToCheck+"/autoproj"):
+                # found dev root
+                done = True
+            else:
+                arrPath = pathToCheck.split("/")
+                if len(arrPath) == 1:
+                    done = True
+                else:
+                    pathToCheck = "/".join(arrPath[:-1])
+        if found:
+            layout_packages.append(os.path.relpath(pathToCheck, cfg["devDir"]))
+        else:
+            buildconf.fetchPackages(cfg, layout_packages)
     else:
-        buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+        pathToCheck = os.path.join(os.getcwd(), sys.argv[2])
+        if os.path.isfile(pathToCheck+"/manifest.xml"):
+            layout_packages.append(os.path.relpath(pathToCheck, cfg["devDir"]))
+        else:
+            buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
     deps = []
     checked = []
     if cfg["checkDeps"]:
