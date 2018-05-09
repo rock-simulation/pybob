@@ -213,7 +213,7 @@ def install_():
     layout_packages = []
     cfg["update"] = False
     filterArgs = ["-n", "-k"]
-    if len(sys.argv) < 3 and sys.argv[2] not in filterArgs:
+    if len(sys.argv) < 3 or sys.argv[2] in filterArgs:
         # search path upwards for a manifest.xml
         # if not found build manifest from buildconf
         pathToCheck = os.getcwd()
