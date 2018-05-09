@@ -212,7 +212,8 @@ def install_():
     global cfg
     layout_packages = []
     cfg["update"] = False
-    if len(sys.argv) < 3 or sys.argv[2] == "-n":
+    filterArgs = ["-n", "-k"]
+    if len(sys.argv) < 3 and sys.argv[2] not in filterArgs:
         # search path upwards for a manifest.xml
         # if not found build manifest from buildconf
         pathToCheck = os.getcwd()
@@ -353,24 +354,29 @@ def info_():
         print info[package]
 
 def show_log_():
-    package = sys.argv[2]
-    logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package.replace("/", "_")+"_configure.txt"
-    c.printWarning("configure log:")
-    with open(logFile) as f:
-        for l in f:
-            if "error" in l:
-                c.printError(l.strip())
-            else:
-                c.printNormal(l.strip())
+    packageList = []
+    package = sys.argv[2].replace("/", "_")
+    for file in os.listdir(os.path.join(cfg["devDir"], "autoproj/bob/logs")):
+        if file[-13:] == "configure.txt" and package in file:
+            packageList.append(file[:-14])
+    for package in packageList:
+        logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package+"_configure.txt"
+        c.printWarning("configure log:")
+        with open(logFile) as f:
+            for l in f:
+                if "error" in l:
+                    c.printError(l.strip())
+                else:
+                    c.printNormal(l.strip())
 
-    logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package.replace("/", "_")+"_build.txt"
-    c.printWarning("build log:")
-    with open(logFile) as f:
-        for l in f:
-            if "error" in l:
-                c.printError(l.strip())
-            else:
-                c.printNormal(l.strip())
+        logFile = cfg["devDir"] + "/autoproj/bob/logs/"+package+"_build.txt"
+        c.printWarning("build log:")
+        with open(logFile) as f:
+            for l in f:
+                if "error" in l:
+                    c.printError(l.strip())
+                else:
+                    c.printNormal(l.strip())
 
 def help_():
     print
