@@ -437,7 +437,7 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     if "imports" in info and info["imports"]:
         for i in info["imports"]:
             key, value = i.items()[0]
-            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+            realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
             if i not in deps and not os.path.isdir(realPath):
                 deps.append(i)
     # store the info which package sets we have cloned already
@@ -448,14 +448,14 @@ def updatePackageSets(cfg):
     setupCfg(cfg)
     path = cfg["devDir"]+"/autoproj/";
     execute.makeDir(path+"remotes")
-    execute.makeDir(cfg["devDir"]+"/.remotes")
+    execute.makeDir(cfg["devDir"]+"/.autoproj/remotes")
     cloned = []
     deps = []
     with open(path+"manifest") as f:
         manifest = yaml.load(f)
     for packageSet in manifest["package_sets"]:
         key, value = packageSet.items()[0]
-        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+        realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
             if key == "url":
                 clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps)
@@ -478,14 +478,14 @@ def updatePackageSets(cfg):
                     if "imports" in info and info["imports"]:
                         for i in info["imports"]:
                             key, value = i.items()[0]
-                            realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+                            realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
                             if i not in deps and not os.path.isdir(realPath):
                                 deps.append(i)
     # now handle deps
     while len(deps) > 0:
         packageSet = deps.pop(0)
         key, value = packageSet.items()[0]
-        realPath = cfg["devDir"]+"/.remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+        realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
     # last step: write all packages int a file to speed up pybob usage
