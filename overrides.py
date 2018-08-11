@@ -26,8 +26,8 @@ def check_ode(cfg):
 
 def fetch_ode(cfg):
     path = cfg["devDir"]+"/simulation"
-    print(c.BOLD + "Fetching " + "external/ode ... " + c.END,
-    sys.stdout.flush
+    print(c.BOLD + "Fetching " + "external/ode ... " + c.END, end="")
+    sys.stdout.flush()
     cwd = os.getcwd()
     execute.makeDir(path)
     os.chdir(path)
