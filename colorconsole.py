@@ -7,17 +7,17 @@ ERROR = '\033[31;1m'
 END = '\033[0m'
 
 def printNormal(s):
-    print s
+    print(s)
     stdout.flush()
 
 def printBold(s):
-    print BOLD + s + END
+    print(BOLD + s + END)
     stdout.flush()
 
 def printWarning(s):
-    print WARNING + s + END
+    print(WARNING + s + END)
     stdout.flush()
 
 def printError(s):
-    print ERROR + s + END
+    print(ERROR + s + END)
     stdout.flush()

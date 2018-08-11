@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import os
 import sys
 import yaml
@@ -100,7 +101,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = cfg["devDir"]+"/"+clonePath
     if os.path.isdir(clonePath):
         if cfg["update"]:
-            print "Updating "+clonePath+" ... "+c.END,
+            print("Updating " + clonePath + " ... " + c.END, end="")
             # todo: check branch
             out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
@@ -115,7 +116,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             c.printError("error")
             return True
         else:
-            print "Fetching "+clonePath+" ... "+c.END,
+            print("Fetching " + clonePath + " ... " + c.END, end="")
             sys.stdout.flush()
             cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
             if branch:
@@ -123,14 +124,14 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             execute.do(cmd, cfg)
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
-            print "check for patches",
+            print("check for patches", end="")
             if os.path.exists(patch):
                 cmd = ["patch", "-N", "-p0", "-d", clonePath, "-i", patch]
-                print " ".join(cmd)
+                print(" ".join(cmd))
                 out, err, r = execute.do(cmd)
-                print out
-                print err
-                print r
+                print(out)
+                print(err)
+                print(r)
             c.printWarning("done")
             return True
     return False
@@ -288,19 +289,10 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     for key, value in matches.items():
         info.append(value)
 
-    # for key, value in matches.items():
-    #     e = 0
-    #     g = {}
-    #     for l in value:
-    #         if len(l["base"]) > e:
-    #             g = l
-
-    #     info.append(g)
-    #     #print g["package"] + ": " + g["base"]
     return True
 
 def fetchPackage(cfg, package, layout_packages):
-    print "Check: " + package + " ... " + c.END,
+    print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
     if package in cfg["ignorePackages"]:# or "orogen" in package:
@@ -344,7 +336,7 @@ def fetchPackage(cfg, package, layout_packages):
         return result
     elif package == cfg["packages"][package]:
         info = []
-        print "\n ",
+        print("\n ", end="")
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):
             le = len(cfg["errors"])
             endM = True

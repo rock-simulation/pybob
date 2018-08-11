@@ -61,7 +61,7 @@ def installPackage(cfg, p, cmake_options=[]):
         cfg["errors"].append("install: "+p+" path not found")
         return
     if not os.path.isfile(cfg["devDir"]+"/"+p+"/CMakeLists.txt"):
-        print p+c.WARNING+" skip \"no cmake package\""+c.END
+        print(p + c.WARNING + " skip \"no cmake package\"" + c.END)
         stdout.flush()
         return
     if cfg["rebuild"]:
@@ -78,22 +78,22 @@ def installPackage(cfg, p, cmake_options=[]):
         cmd = ["bash"] + cmd
     out, err, r = execute.do(cmd, cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
-        print p+c.ERROR+" configure error"+c.END
+        print(p + c.ERROR + " configure error" + c.END)
         stdout.flush()
         cfg["errors"].append("configure: "+p)
         return
-    print p+c.WARNING+" configured"+c.END
+    print(p + c.WARNING + " configured" + c.END)
     stdout.flush()
     end = datetime.datetime.now()
     diff1 = end - start
     start = end
     out, err, r = execute.do(["make", "install", "-j", str(cfg["numCores"]), "-C", path+"/build"], cfg , None, None, p.replace("/", "_")+"_build.txt")
     if r != 0:
-        print p+c.ERROR+" build error"+c.END
+        print(p + c.ERROR + " build error" + c.END)
         cfg["errors"].append("build: "+p)
         return
     end = datetime.datetime.now()
     diff2 = end - start
-    print p+c.WARNING+" installed"+c.END
+    print(p + c.WARNING + " installed" + c.END)
     cfg["profiling"].append([p, {"configure time": str(diff1)}, {"compile time": str(diff2)}])
     cfg["installed"].append(p)

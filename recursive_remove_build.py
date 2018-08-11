@@ -22,7 +22,7 @@ def removeBuild(rootDir):
             if d == "build":
                 cmd = ["rm", "-rf", path]
                 if show:
-                    print " ".join(cmd)
+                    print(" ".join(cmd))
                 else:
                     os.system(" ".join(cmd))
 

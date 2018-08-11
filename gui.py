@@ -111,7 +111,7 @@ def updatePackages():
         path = os.environ["AUTOPROJ_CURRENT_ROOT"]
 
     pFile = path+"/autoproj/bob/packages.txt"
-    print pFile
+    print(pFile)
     del packages[:]
     if os.path.isfile(pFile):
         with open(pFile) as f:
@@ -127,7 +127,6 @@ def listItemChanged(item):
         currentPackage = str(item.data(0))
     else:
         currentPackage = str(item.data(0).toString())
-    #print "da: " + currentPackage
     sys.stdout.flush()
 
 def patternChanged(s):
@@ -158,17 +157,7 @@ def execute(action):
     if not checkDeps.isChecked():
         cmd.append("-n")
 
-    #print "call: " + " ".join(cmd)
     process = subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    #out, err = p.communicate()
-    # stdout = []
-        #print line
-
-    #print out
-    #print err
-    #print r
-    #os.system(" ".join(cmd))
 
 def bootstrap():
     execute("bootstrap")

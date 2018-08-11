@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import os
 import yaml
 import colorconsole as c
@@ -8,7 +9,7 @@ from platform import system
 
 
 def raw_input_(s):
-  print s,
+  print(s, end="")
   sys.stdout.flush()
   return raw_input()
 
@@ -64,7 +65,7 @@ def getConfiguration(cfg):
             cfg["devDir"] = devDir
 
             # get the numbers of cores to build
-            print
+            print()
             c.printBold("You can specify the number of CORES you want to use when compiling packages.")
             try:
                 cfg["numCores"] = multiprocessing.cpu_count()
@@ -78,7 +79,7 @@ def getConfiguration(cfg):
             # get the default build type
             cfg["defBuildType"] = "debug"
             pattern = ["debug", "release"]
-            print
+            print()
             buildType = raw_input_("Enter default build type (debug|release) [debug]: ")
             if buildType in pattern:
                 cfg["defBuildType"] = str(buildType)
@@ -86,17 +87,17 @@ def getConfiguration(cfg):
             # get the default rock flavor
             cfg["rockFlavor"] = "master"
             pattern = ["stable", "master"]
-            print
+            print()
             flavor = raw_input_("Enter default rock flavor (stable|master) [master]: ")
             if flavor in pattern:
                 cfg["rockFlavor"] = str(flavor)
 
-            print
+            print()
             if not "buildconfAddress" in cfg:
                 in_ = raw_input_("Enter git address of buildconf to clone: ")
                 if len(in_) > 0:
                     cfg["buildconfAddress"] = in_
-                print
+                print()
             cfg["buildconfBranch"] = ""
             in_ = raw_input_("Enter branch of buildconf [default]: ")
             if len(in_) > 0:

@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+from __future__ import print_function
 import os
 import colorconsole as c
 import execute
@@ -58,19 +58,19 @@ def install(cfg, pkg):
         out, err, r = execute.do(['port', 'installed', '|' ,'grep', pkgstr])
         if len(out) > len(pkg):
             return
-        print c.BOLD + "Installing os dependency: "+pkg + c.END,
+        print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
         execute.do(["sudo", "port", "install", pkg])
     else:
         out, err, r = execute.do(['dpkg', '-l', pkg])
         if len(err) >  5:
-            print c.BOLD + "Installing os dependency: "+pkg + c.END,
+            print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
             os.system("sudo apt-get install -y " + pkg)
         else:
             for line in out.split("\n"):
                 arrLine = line.split()
                 if len(arrLine) > 2 and arrLine[1] == pkg:
                     if arrLine[0] != "ii":
-                        print c.BOLD + "Installing os dependency: "+pkg + c.END,
+                        print(c.BOLD + "Installing os dependency: " + pkg + c.END, end="")
                         os.system("sudo apt-get install -y " + pkg)
                     break
 
