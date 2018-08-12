@@ -66,7 +66,7 @@ def install(cfg, pkg):
             print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
             os.system("sudo apt-get install -y " + pkg)
         else:
-            for line in out.split("\n"):
+            for line in out.split(b"\n"):
                 arrLine = line.split()
                 if len(arrLine) > 2 and arrLine[1] == pkg:
                     if arrLine[0] != "ii":
