@@ -392,8 +392,8 @@ if __name__ == "__main__":
         cfg["checkDeps"] = False
     command = sys.argv[1].replace("-", "_")+"_"
     if not command in globals():
-        print c.printBold("Please specify an action. Your options are:\n" +
-                           ", ".join(commands) + "\n")
+        print(c.printBold("Please specify an action. Your options are:\n" +
+                           ", ".join(commands) + "\n"))
         exit(0)
 
     globals()[command]()
