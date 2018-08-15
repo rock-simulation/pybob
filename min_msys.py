@@ -10,7 +10,7 @@ includePath = path + "include/"
 sharePath = path + "share/"
 
 def remove_(s):
-    print "remove " + s
+    print("remove " + s)
     sys.stdout.flush()
     os.system("rm -rf " + s)
 
@@ -56,7 +56,7 @@ remove_(includePath + "QtClucende*")
 remove_(includePath + "QtLocation*")
 remove_(includePath + "QtWeb*")
 
-print "clean pacman cache"
+print("clean pacman cache")
 sys.stdout.flush()
 os.system("pacman -Sc --noconfirm")
 

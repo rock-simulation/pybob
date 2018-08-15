@@ -50,10 +50,10 @@ def setupEnv(cfg, update=False):
         if platform == "Windows":
             c.printWarning("cmake_debug path check is not working on Windows currently (please always ensure that you only sourced the env.sh in your current dev folder!")
         else :
-            if cmakeDebugPath != expectPath:
+            if cmakeDebugPath.decode("utf-8") != expectPath:
                 c.printError('"cmake_debug" found in wrong folder.')
-                c.printError('Found: '+cmakeDebugPath)
-                c.printError('Expected: '+expectPath)
+                c.printError('Found: ' + cmakeDebugPath.decode("utf-8"))
+                c.printError('Expected: ' + expectPath)
                 c.printError('Maybe you already sourced an "env.sh" from a different "dev" folder?')
                 return
         if not update:

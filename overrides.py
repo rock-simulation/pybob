@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+from __future__ import print_function
 from platform import system
 import sys
 import os
@@ -26,8 +26,8 @@ def check_ode(cfg):
 
 def fetch_ode(cfg):
     path = cfg["devDir"]+"/simulation"
-    print c.BOLD+"Fetching "+"external/ode ... "+c.END,
-    sys.stdout.flush
+    print(c.BOLD + "Fetching " + "external/ode ... " + c.END, end="")
+    sys.stdout.flush()
     cwd = os.getcwd()
     execute.makeDir(path)
     os.chdir(path)
@@ -46,7 +46,7 @@ def fetch_ode(cfg):
 
 def install_ode(cfg):
     if os.path.isfile(cfg["devDir"]+"/install/lib/pkgconfig/ode.pc"):
-        print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
+        print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
         sys.stdout.flush
         return
     path = cfg["devDir"]+"/simulation/ode"
@@ -59,7 +59,7 @@ def install_ode(cfg):
     
     out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
 
-    print c.BOLD + "simulation/ode"+c.WARNING+" configured"+c.END
+    print(c.BOLD + "simulation/ode" + c.WARNING + " configured" + c.END)
     sys.stdout.flush()
     if system() == "Linux":
         libtool = os.popen('which libtool').read()
@@ -67,12 +67,12 @@ def install_ode(cfg):
             execute.do(["mv", "libtool", "libtool_old"], None, None, path)
             execute.do(["ln", "-s", libtool, "libtool"], None, None, path)
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
-    print " ".join(cmd)
+    print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode_install.txt")
-    print out
-    print err
-    print r
-    print c.BOLD + "simulation/ode"+c.WARNING+" installed"+c.END
+    print(out)
+    print(err)
+    print(r)
+    print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()
     
 
@@ -95,7 +95,7 @@ def check_minizip(cfg):
 
 def fetch_minizip(cfg):
     path = cfg["devDir"]+"/external"
-    print c.BOLD+"Fetching "+"external/minizip ... "+c.END,
+    print(c.BOLD + "Fetching " + "external/minizip ... " + c.END, end="")
     sys.stdout.flush
     cwd = os.getcwd()
     execute.makeDir(path)
@@ -120,7 +120,7 @@ def patch_sisl(cfg):
 
 def fetch_sisl(cfg):
     path = cfg["devDir"]+"/external"
-    print c.BOLD+"Fetching "+"external/sisl ... "+c.END,
+    print(c.BOLD + "Fetching " + "external/sisl ... " + c.END, end="")
     sys.stdout.flush
     cwd = os.getcwd()
     execute.makeDir(path)
@@ -152,30 +152,25 @@ def install_protobuf(cfg):
     cmd = ["pkg-config", "--exists", "protobuf"]
     out, err, r = execute.do(cmd)
     if r == 0:
-        print c.BOLD + "external/protobuf"+c.WARNING+" installed"+c.END
-        sys.stdout.flush
+        print(c.BOLD + "external/protobuf" + c.WARNING + " installed" + c.END)
+        sys.stdout.flush()
         return
     path = cfg["devDir"]+"/external/protobuf"
     cmd = ['./autogen.sh; ./configure -prefix='+cfg["devDir"]+'/install']
     out, err, r = execute.do(cmd, cfg, None, path, "external_protobuf_configure.txt")
 
-    print c.BOLD + "external/protobuf"+c.WARNING+" configured"+c.END
+    print(c.BOLD + "external/protobuf" + c.WARNING + " configured" + c.END)
     sys.stdout.flush()
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
-    #print " ".join(cmd)
     out, err, r = execute.do(cmd, cfg, None, None, "external_protobuf_build.txt")
     cmd = ["python", "setup.py", "build"]
     #print " ".join(cmd)
     out, err, r = execute.do(cmd, cfg, None, path+"/python", "external_protobuf_build_python.txt")
 
     cmd = ["cp", "-r", "build/lib/google", cfg["devDir"]+'/install/lib/python2.7/site-packages']
-    #print " ".join(cmd)
     out, err, r = execute.do(cmd, cfg, None, path+"/python", "external_protobuf_build_python_install.txt")
 
-    #print out
-    #print err
-    #print r
-    print c.BOLD + "external/protobuf"+c.WARNING+" installed"+c.END
+    print(c.BOLD + "external/protobuf" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()
 
 def uninstall_protobuf(cfg):

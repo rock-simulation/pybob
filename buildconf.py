@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 import os
 import sys
 import yaml
@@ -42,7 +43,7 @@ def listPackages(cfg):
                     key = ""
                     items = p.items()
                     if len(items) == 1:
-                        key, value = items[0]
+                        key, value = list(items)[0]
                     else:
                         for k, v in items:
                             if not v:
@@ -100,7 +101,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = cfg["devDir"]+"/"+clonePath
     if os.path.isdir(clonePath):
         if cfg["update"]:
-            print "Updating "+clonePath+" ... "+c.END,
+            print("Updating " + clonePath + " ... " + c.END, end="")
             # todo: check branch
             out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
@@ -115,7 +116,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             c.printError("error")
             return True
         else:
-            print "Fetching "+clonePath+" ... "+c.END,
+            print("Fetching " + clonePath + " ... " + c.END, end="")
             sys.stdout.flush()
             cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
             if branch:
@@ -123,14 +124,14 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             execute.do(cmd, cfg)
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
-            print "check for patches",
+            print("check for patches", end="")
             if os.path.exists(patch):
                 cmd = ["patch", "-N", "-p0", "-d", clonePath, "-i", patch]
-                print " ".join(cmd)
+                print(" ".join(cmd))
                 out, err, r = execute.do(cmd)
-                print out
-                print err
-                print r
+                print(out)
+                print(err)
+                print(r)
             c.printWarning("done")
             return True
     return False
@@ -143,7 +144,7 @@ def getServerInfo(cfg, pDict, info):
     # the same name exists
     setupCfg(cfg)
     if len(pDict) == 1:
-        package, pInfo = pDict.items()[0]
+        package, pInfo = list(pDict.items())[0]
         info["package"] = package
         haveServer = False
         if "type" in pInfo:
@@ -288,19 +289,10 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     for key, value in matches.items():
         info.append(value)
 
-    # for key, value in matches.items():
-    #     e = 0
-    #     g = {}
-    #     for l in value:
-    #         if len(l["base"]) > e:
-    #             g = l
-
-    #     info.append(g)
-    #     #print g["package"] + ": " + g["base"]
     return True
 
 def fetchPackage(cfg, package, layout_packages):
-    print "Check: " + package + " ... " + c.END,
+    print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
     if package in cfg["ignorePackages"]:# or "orogen" in package:
@@ -344,7 +336,7 @@ def fetchPackage(cfg, package, layout_packages):
         return result
     elif package == cfg["packages"][package]:
         info = []
-        print "\n ",
+        print("\n ", end="")
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):
             le = len(cfg["errors"])
             endM = True
@@ -454,7 +446,7 @@ def updatePackageSets(cfg):
     with open(path+"manifest") as f:
         manifest = yaml.load(f)
     for packageSet in manifest["package_sets"]:
-        key, value = packageSet.items()[0]
+        key, value = list(packageSet.items())[0]
         realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
             if key == "url":
@@ -477,8 +469,8 @@ def updatePackageSets(cfg):
                         info = yaml.load(f)
                     if "imports" in info and info["imports"]:
                         for i in info["imports"]:
-                            key, value = i.items()[0]
-                            realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+                            key, value = list(i.items())[0]
+                            realPath = cfg["devDir"] + "/.autoproj/remotes/" + key + "__" + value.strip().replace("/", "_").replace("-", "_") + "_git"
                             if i not in deps and not os.path.isdir(realPath):
                                 deps.append(i)
     # now handle deps
@@ -491,13 +483,19 @@ def updatePackageSets(cfg):
     # last step: write all packages int a file to speed up pybob usage
     packages, wildcards = listPackages(cfg)
     pDict = {}
-    with open(path+"/bob/packages.txt", "wb") as f:
+    with open(path + "/bob/packages.txt", "wb") as f:
         for p in packages:
             if len(p[1]) > 0:
-                f.write(p[1]+"\n")
+                if sys.version_info.major <= 2:
+                    f.write(p[1] + "\n")
+                else:
+                    f.write(bytes(p[1] + "\n", "utf-8"))
                 pDict[p[1]] = p[0]
             else:
-                f.write(p[0]+"\n")
+                if sys.version_info.major <= 2:
+                    f.write(p[0] + "\n")
+                else:
+                    f.write(bytes(p[0] + "\n", "utf-8"))
                 pDict[p[0]] = p[0]
         for p in wildcards:
             if len(p[1]) > 0:

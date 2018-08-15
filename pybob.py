@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-
+from __future__ import print_function
 import sys
 import os
 import config
@@ -118,10 +118,10 @@ def fetchi(package, returnPackages = False):
                     if m not in layout_packages:
                         layout_packages.append(m)
                         mans.append(m)
-    print
+    print()
     sys.stdout.flush()
     for i in output:
-        print c.ERROR + i[0] + c.END + " is dep from: " + ", ".join(i[1])
+        print(c.ERROR + i[0] + c.END + " is dep from: " + ", ".join(i[1]))
         sys.stdout.flush()
     if returnPackages:
         return layout_packages
@@ -140,13 +140,13 @@ def diff_remotes():
             out, err, r = execute.do(["git", "diff"], cfg, None, path+"/"+d)
             if out:
                 logFile = cfg["devDir"] + "/autoproj/bob/logs/"+d.replace("/", "_")+"_diff.txt"
-                print d+": ",
+                print(d + ": ", end="")
                 c.printWarning("has diff")
-                print "    check: less " + logFile
+                print("    check: less " + logFile)
                 with open(logFile, "w") as f:
                     f.write(out)
             else:
-                print d+": ",
+                print(d + ": ", end="")
                 c.printBold("no diff")
 
 def diff_():
@@ -166,7 +166,6 @@ def diff_():
     if cfg["checkDeps"]:
         for p in layout_packages:
             bob_package.getDeps(cfg, p, deps, checked)
-    #print deps
     toInstall = []
     diffs = []
     for d in deps[::-1]:
@@ -197,14 +196,14 @@ def diff_():
             out, err, r = execute.do(["git", "diff"], cfg, None, path)#, p2.replace("/", "_")+"_diff.txt")
             if out:
                 logFile = cfg["devDir"] + "/autoproj/bob/logs/"+p2.replace("/", "_")+"_diff.txt"
-                print p2+": ",
+                print(p2 + ": ", end="")
                 c.printWarning("has diff")
-                print "    check: less " + logFile
+                print("    check: less " + logFile)
                 sys.stdout.flush()
                 with open(logFile, "w") as f:
                     f.write(out)
             else:
-                print p2+": ",
+                print(p2+": ", end="")
                 c.printBold("no diff")
 
 
@@ -247,7 +246,6 @@ def install_():
     if cfg["checkDeps"]:
         for p in layout_packages:
             bob_package.getDeps(cfg, p, deps, checked)
-    #print deps
     toInstall = []
     for d in deps[::-1]:
         if d not in toInstall:
@@ -274,7 +272,6 @@ def install_():
         toInstall = []
         for p in iList:
             wait = False
-            #c.printWarning(str(cfg["deps"][p]))
             if p in cfg["deps"]:
                 for d in cfg["deps"][p]:
                     if d in iList:
@@ -324,10 +321,10 @@ def list_():
     packages, w = buildconf.listPackages(cfg)
     for p in packages:
         if len(p[1]) > 0:
-            print p[0],
+            print(p[0], end="")
             c.printBold(p[1])
         else:
-            print p[0],
+            print(p[0], end="")
             c.printWarning(p[0])
 
 def rebuild_():
@@ -347,11 +344,10 @@ def info_():
     info = {}
     with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml") as f:
         info = yaml.load(f)
-    #print info
     package = sys.argv[2]
     if package in info:
-        print "packages that depend on "+package+":"
-        print info[package]
+        print("packages that depend on " + package + ":")
+        print(info[package])
 
 def show_log_():
     packageList = []
@@ -379,7 +375,7 @@ def show_log_():
                     c.printNormal(l.strip())
 
 def help_():
-    print
+    print()
     printNormal("  The following commands are available:\n  "),
     c.printBold(", ".join(commands))
     printNormal('\n  Once you have the env.sh sourced, most commands\n  can also be used with "mars_command" to have\n  autocompletion (e.g. mars_install)\n')
@@ -388,16 +384,16 @@ env.setupEnv(cfg, False)
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        print c.printBold("Please specify an action. Your options are:\n" +
-                           ", ".join(commands) + "\n")
+        print(c.printBold("Please specify an action. Your options are:\n" +
+                           ", ".join(commands) + "\n"))
         exit(0)
 
     if "-n" in sys.argv:
         cfg["checkDeps"] = False
     command = sys.argv[1].replace("-", "_")+"_"
     if not command in globals():
-        print c.printBold("Please specify an action. Your options are:\n" +
-                           ", ".join(commands) + "\n")
+        print(c.printBold("Please specify an action. Your options are:\n" +
+                           ", ".join(commands) + "\n"))
         exit(0)
 
     globals()[command]()
@@ -414,7 +410,7 @@ if __name__ == "__main__":
     c.printBold("Installed packages: ")
     c.printNormal(cfg["installed"])
     diff = datetime.datetime.now() - start
-    print "Time: "+str(diff)
+    print("Time: " + str(diff))
 
     exit_status = len(cfg["errors"])
     exit(exit_status)
