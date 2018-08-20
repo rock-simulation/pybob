@@ -476,7 +476,7 @@ def updatePackageSets(cfg):
     # now handle deps
     while len(deps) > 0:
         packageSet = deps.pop(0)
-        key, value = packageSet.items()[0]
+        key, value = list(packageSet.items())[0]
         realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
 
