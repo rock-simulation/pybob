@@ -428,7 +428,7 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     os.system("ln -s "+ realPath + " " + path+"remotes/"+info["name"]);
     if "imports" in info and info["imports"]:
         for i in info["imports"]:
-            key, value = i.items()[0]
+            key, value = list(i.items())[0]
             realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
             if i not in deps and not os.path.isdir(realPath):
                 deps.append(i)
