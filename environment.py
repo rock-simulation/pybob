@@ -13,7 +13,7 @@ def source(sourceFile):
     cmdString = " ".join(cmd)
     p = subprocess.Popen(cmdString, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
-    for line in out.split("\n"):
+    for line in out.split(b"\n"):
         try:
             k,v = line.strip().split('=',1)
         except:
