@@ -37,7 +37,7 @@
   
   4. It is recommended to select python3.6 as default for the terminal:
   
-          sudo port select --set pyhton python3.6
+          sudo port select --set python python3.6
   
   5. To use the pybob gui and exported plot gui of MARS:
   
