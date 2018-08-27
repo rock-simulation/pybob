@@ -23,10 +23,33 @@
 
 # Prepare Mac OS X for pybob:
 
-  1. install MacPorts (https://www.macports.org), which is used by pybob to install system dependencies
-  2. install python yaml package via MacPorts:
+  For OS X it is recommended to use python3.6 and Qt5, although the tools generally are compatible to python2.7 and Qt4.
   
-          sudo port install py-yaml
+  1. Install MacPorts (https://www.macports.org), which is used by pybob to install system dependencies.
+     **Note**: follow the install instructions on the macports website carefully.
+  2. Install git:
+  
+          sudo port install git
+    
+  3. Install python36 and python yaml package via MacPorts:
+  
+          sudo port install py36-yaml
+  
+  4. It is recommended to select python3.6 as default for the terminal:
+  
+          sudo port select --set pyhton python3.6
+  
+  5. To use the pybob gui and exported plot gui of MARS:
+  
+          sudo port install py36-sip py36-pyqt5
+  
+  6. To use the exported plot gui of MARS some more packages are needed:
+  
+          sudo port install py36-scipy py36-matplotlib
+  
+  7. To generate pdf plots with latex support:
+  
+          sudo port install texlive texlive-latex-extra
 
 # Install MARS via pybob
 
