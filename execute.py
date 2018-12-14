@@ -34,7 +34,7 @@ def do(cmd, cfg=None, errorString=None, path=None, logFile=None):
     else:
         out, err = p.communicate()
     if len(err) > 0:
-        if cfg and errorString > 0:
+        if cfg and errorString:
             c.printError(err)
             cfg["errors"].append(errorString)
     return out,err,p.returncode
