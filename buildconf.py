@@ -417,8 +417,8 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     c.printNormal("  Fetching: "+git)
     out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
     if not os.path.isdir(realPath+"/.git"):
-        c.printNormal(out);
-        c.printError(err);
+        c.printNormal(str(out));
+        c.printError(str(err));
         cfg["errors"].append("clone: "+git)
         return
     # get the name of the remote

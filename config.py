@@ -11,7 +11,10 @@ from platform import system
 def raw_input_(s):
   print(s, end="")
   sys.stdout.flush()
-  return raw_input()
+  if sys.version_info[0] < 3:
+    return raw_input()
+  else:
+    return input()
 
 def getConfiguration(cfg):
     platform = system()
