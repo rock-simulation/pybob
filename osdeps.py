@@ -104,6 +104,7 @@ def loadOsdeps(cfg):
                               "cython": [install],
                               "zlib": [install, "zlib1g-dev"],
                               "jsoncpp": [install, "libjsoncpp-dev"],
+                              "lua51": [install, "liblua5.1-0-dev"],
                               "curl": [install, "libcurl4-gnutls-dev"]})
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]

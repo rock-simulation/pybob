@@ -1,0 +1,59 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 70a9edc..24c6cef 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -13,6 +13,13 @@ INCLUDE_DIRECTORIES(
+   ${sisl_SOURCE_DIR}/include
+   )
+ 
++if(WIN32)
++       set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--enable-auto-import")
++       set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--enable-auto-import")
++else()
++       set(CMAKE_CXX_FLAGS "-fPIC")
++       set(CMAKE_C_FLAGS "-fPIC")
++endif()
+ 
+ # Make the sisl library
+ 
+@@ -56,18 +63,18 @@ ENDFOREACH(app)
+ 
+ # 'install' target
+ 
+-IF(WIN32)
+-  # Windows
+-  SET(CMAKE_INSTALL_PREFIX CACHE INTERNAL "")
+-  SET(sisl_INSTALL_PREFIX "$ENV{PROGRAMFILES}/SINTEF/sisl"
+-    CACHE PATH "Path to install SISL")
+-  INSTALL(TARGETS sisl DESTINATION ${sisl_INSTALL_PREFIX}/lib)
+-  INSTALL(DIRECTORY include/
+-    DESTINATION ${sisl_INSTALL_PREFIX}/include
+-    FILES_MATCHING PATTERN "*.h"
+-    PATTERN ".svn" EXCLUDE
+-    )
+-ELSE(WIN32)
++# IF(WIN32)
++#   # Windows
++#   SET(CMAKE_INSTALL_PREFIX CACHE INTERNAL "")
++#   SET(sisl_INSTALL_PREFIX "$ENV{PROGRAMFILES}/SINTEF/sisl"
++#     CACHE PATH "Path to install SISL")
++#   INSTALL(TARGETS sisl DESTINATION ${sisl_INSTALL_PREFIX}/lib)
++#   INSTALL(DIRECTORY include/
++#     DESTINATION ${sisl_INSTALL_PREFIX}/include
++#     FILES_MATCHING PATTERN "*.h"
++#     PATTERN ".svn" EXCLUDE
++#     )
++# ELSE(WIN32)
+   # Linux
+   # lib
+   INSTALL(TARGETS sisl DESTINATION lib COMPONENT sisl)
+@@ -78,8 +85,7 @@ ELSE(WIN32)
+     FILES_MATCHING PATTERN "*.h"
+     PATTERN ".svn" EXCLUDE
+     )
+-ENDIF(WIN32)
+-
++#ENDIF(WIN32)
+ 
+ # CPack stuff
+ IF(NOT GoTools_ALL_COMPILE)

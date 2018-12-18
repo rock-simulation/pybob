@@ -132,41 +132,6 @@ def fetch_minizip(cfg):
     patch_minizip(cfg)
     return True
 
-
-def patch_sisl(cfg):
-    srcPath = cfg["pyScriptDir"] + "/patches/"
-    targetPath = cfg["devDir"] + "/external/"
-    cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
-    execute.do(cmd + [srcPath + "sisl-limits.patch"])
-    execute.do(cmd + [srcPath + "sisl-win-install.patch"])
-
-
-def fetch_sisl(cfg):
-    path = cfg["devDir"] + "/external"
-    print(c.BOLD + "Fetching " + "external/sisl ... " + c.END, end="")
-    sys.stdout.flush
-    cwd = os.getcwd()
-    execute.makeDir(path)
-    os.chdir(path)
-    if not os.path.isfile(path + "/sisl-4.5.0.tar.gz"):
-        if os.path.isdir(path + "/sisl"):
-            execute.do(["rm", "-rf", "sisl"])
-        execute.do(
-            [
-                "wget",
-                "-q",
-                "http://www.sintef.no/upload/IKT/9011/geometri/sisl/sisl-4.5.0.tar.gz",
-            ]
-        )
-        execute.do(["tar", "-xzf", "sisl-4.5.0.tar.gz"])
-        execute.do(["mv", "sisl-4.5.0", "sisl"])
-        if not os.path.isfile("sisl/CMakeLists.txt"):
-            cfg["errors"].append("fetch: external/sisl")
-    os.chdir(cwd)
-    patch_sisl(cfg)
-    return True
-
-
 def fetch_rbdl(cfg):
     path = cfg["devDir"] + "/external"
     print(c.BOLD + "Fetching " + "external/rbdl ... " + c.END, end="")
@@ -265,7 +230,6 @@ def loadOverrides(cfg):
             "check": check_minizip,
             "uninstall": uninstall_minizip,
         },
-        "external/sisl": {"fetch": fetch_sisl, "patch": patch_sisl},
         "external/protobuf": {
             "check": check_protobuf,
             "install": install_protobuf,
