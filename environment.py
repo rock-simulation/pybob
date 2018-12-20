@@ -85,6 +85,11 @@ def setupEnv(cfg, update=False):
         with open(cfg["devDir"]+"/env.sh", "w") as f:
             f.write("#! /bin/sh\n")
             f.write('export AUTOPROJ_CURRENT_ROOT="'+cfg["devDir"]+'"\n')
+            f.write('if [ x${CMAKE_PREFIX_PATH} = "x" ]; then\n')
+            f.write('  export CMAKE_PREFIX_PATH="'+cfg["devDir"]+'/install"\n')
+            f.write('else\n')
+            f.write('  export CMAKE_PREFIX_PATH="'+cfg["devDir"]+'/install:$CMAKE_PREFIX_PATH"\n')
+            f.write('fi\n')
             f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
 
             f.write('export PATH="$PATH:'+prefix_bin+'"\n')
