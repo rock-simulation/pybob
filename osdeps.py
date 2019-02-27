@@ -4,8 +4,11 @@ import os
 import colorconsole as c
 import execute
 from platform import system
+import sys
+
 
 def pipInstall(cfg, pkg):
+    """PIP installation command."""
     platform = system()
     log = cfg["devDir"] + "/autoproj/bob/logs/os_deps.txt"
     path = cfg["devDir"]+"/autoproj/bob/logs"
@@ -20,11 +23,13 @@ def pipInstall(cfg, pkg):
             if len(out) > 0:
                 return
 
-        out,err,r = execute.do(["pip", "install", "-U", "--noinput", pkg])
+        out, err, r = execute.do(["pip", "install", "-U", "--noinput", pkg])
         if len(out) > 0:
             return
 
+
 def install(cfg, pkg):
+    """Standard system package manager installation command."""
     platform = system()
     if pkg == "":
       return
@@ -80,32 +85,49 @@ def loadOsdeps(cfg):
     cfg["osdeps"] = {"cmake": [install]}
 
     if platform == "Linux":
-        cfg["osdeps"].update({"opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
-                              "eigen3": [install, "libeigen3-dev"],
-                              "yaml-cpp": [install, "libyaml-cpp-dev"],
-                              "yaml": [install, "libyaml-dev"],
-                              "external/yaml-cpp": [install, "libyaml-cpp-dev"],
-                              "external/tinyxml": [install, "libtinyxml-dev"],
-                              "qwt": [install, "libqwt-qt4-dev"],
-                              "qwt5-qt4": [install, "libqwt-qt4-dev"],
-                              "pkg-config": [install], "cmake": [install],
-                              "qt4": [install, "qt4-default"],
-                              "qt": [install, "qt4-default"],
-                              "osg": [install, "libopenscenegraph-dev"],
-                              "boost": [install, "libboost-all-dev"],
-                              "python": [install, "python-dev"],
-                              "python-dev": [install],
-                              "python-yaml": [install],
-                              "python-numpy": [install],
-                              "python-scipy": [install],
-                              "python-sklearn": [install],
-                              "python-matplotlib": [install],
-                              "numpy": [install, "python-numpy"],
-                              "cython": [install],
-                              "zlib": [install, "zlib1g-dev"],
-                              "jsoncpp": [install, "libjsoncpp-dev"],
-                              "lua51": [install, "liblua5.1-0-dev"],
-                              "curl": [install, "libcurl4-gnutls-dev"]})
+        if sys.version_info.major >= 3:
+            cfg["osdeps"].update({
+                "python": [install, "python3-dev"],
+                "python-dev": [install, "python3-dev"],
+                "python-yaml": [install, "python3-yaml"],
+                "python-numpy": [install, "python3-numpy"],
+                "python-scipy": [install, "python3-scipy"],
+                "python-sklearn": [install, "python3-sklearn"],
+                "python-matplotlib": [install, "python3-matplotlib"],
+                "numpy": [install, "python3-numpy"],
+                })
+        else:
+            cfg["osdeps"].update({
+                "python": [install, "python-dev"],
+                "python-dev": [install],
+                "python-yaml": [install],
+                "python-numpy": [install],
+                "python-scipy": [install],
+                "python-sklearn": [install],
+                "python-matplotlib": [install],
+                "numpy": [install, "python-numpy"],
+                })
+
+        cfg["osdeps"].update({
+            "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
+            "eigen3": [install, "libeigen3-dev"],
+            "yaml-cpp": [install, "libyaml-cpp-dev"],
+            "yaml": [install, "libyaml-dev"],
+            "external/yaml-cpp": [install, "libyaml-cpp-dev"],
+            "external/tinyxml": [install, "libtinyxml-dev"],
+            "qwt": [install, "libqwt-qt4-dev"],
+            "qwt5-qt4": [install, "libqwt-qt4-dev"],
+            "pkg-config": [install], "cmake": [install],
+            "qt4": [install, "qt4-default"],
+            "qt": [install, "qt4-default"],
+            "osg": [install, "libopenscenegraph-dev"],
+            "boost": [install, "libboost-all-dev"],
+            "cython": [install],
+            "zlib": [install, "zlib1g-dev"],
+            "jsoncpp": [install, "libjsoncpp-dev"],
+            "lua51": [install, "liblua5.1-0-dev"],
+            "curl": [install, "libcurl4-gnutls-dev"],
+            })
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
             cfg["osdeps"]["qt"] = [install, "libqt4-dev"]
