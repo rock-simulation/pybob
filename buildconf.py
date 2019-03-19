@@ -513,7 +513,7 @@ def fetchBuildconf(cfg):
             out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
             if r != 0:
                 cfg["errors"].append("update: buildconf")
-                c.printError("\ncan't update buildconf:\n" + err)
+                c.printError("\ncan't update buildconf:\n" + str(err))
     else:
         address = cfg["buildconfAddress"]
         if len(address) == 0:
