@@ -69,14 +69,18 @@ def install(cfg, pkg):
         out, err, r = execute.do(['dpkg', '-l', pkg])
         if len(err) >  5:
             print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
-            os.system("sudo apt-get install -y " + pkg)
+            arrPkg = pkg.split()
+            for p in arrPkg:
+                os.system("sudo apt-get install -y " + p)
         else:
             for line in out.split(b"\n"):
                 arrLine = line.split()
                 if len(arrLine) > 2 and arrLine[1] == pkg:
                     if arrLine[0] != "ii":
                         print(c.BOLD + "Installing os dependency: " + pkg + c.END, end="")
-                        os.system("sudo apt-get install -y " + pkg)
+                        arrPkg = pkg.split()
+                        for p in arrPkg:
+                            os.system("sudo apt-get install -y " + p)
                     break
 
 
