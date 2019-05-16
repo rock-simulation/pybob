@@ -95,8 +95,10 @@ def setupEnv(cfg, update=False):
             f.write('export PATH="$PATH:'+prefix_bin+'"\n')
             if platform == "Darwin":
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
+                f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$LD_LIBRARY_PATH"\n')
+                f.write('export CXXFLAGS="-std=c++11"\n')
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
