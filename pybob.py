@@ -48,7 +48,6 @@ for a in sys.argv:
         copyArgs.append(a)
 sys.argv = copyArgs
 
-config.getConfiguration(cfg)
 cfg["installed"] = []
 cfg["updated"] = []
 cfg["update"] = True
@@ -62,6 +61,7 @@ cfg["checkDeps"] = True
 cfg["deps"] = {}
 cfg["multiprocessing"] = True
 cfg["depsInverse"] = {}
+config.getConfiguration(cfg)
 
 overrides.loadOverrides(cfg)
 osdeps.loadOsdeps(cfg)
