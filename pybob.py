@@ -30,6 +30,7 @@ commands = ["buildconf", "list", "bootstrap", "fetch", "install",
 
 cfg = {}
 cfg["buildOptional"] = True
+cfg["no_os_deps"] = False
 copyArgs = []
 for a in sys.argv:
     if "=" in a:
@@ -44,6 +45,9 @@ for a in sys.argv:
         elif "buildOptional" in arrArg[0]:
             if arrArg[1].lower() in ['false', '0', 'n', 'no']:
                 cfg["buildOptional"] = False
+        elif "no_os_deps" in arrArg[0]:
+            if arrArg[1].lower() in ['true', '1', 'y', 'yes']:
+                cfg["no_os_deps"] = True
     else:
         copyArgs.append(a)
 sys.argv = copyArgs
@@ -60,7 +64,6 @@ cfg["profiling"] = []
 cfg["checkDeps"] = True
 cfg["deps"] = {}
 cfg["multiprocessing"] = True
-cfg["no_os_deps"] = False
 cfg["depsInverse"] = {}
 config.getConfiguration(cfg)
 
