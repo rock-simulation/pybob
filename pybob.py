@@ -60,6 +60,7 @@ cfg["profiling"] = []
 cfg["checkDeps"] = True
 cfg["deps"] = {}
 cfg["multiprocessing"] = True
+cfg["no_os_deps"] = False
 cfg["depsInverse"] = {}
 config.getConfiguration(cfg)
 

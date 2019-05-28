@@ -299,7 +299,7 @@ def fetchPackage(cfg, package, layout_packages):
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
-        if cfg["fetch"]:
+        if cfg["fetch"] and cfg["no_os_deps"] == False:
             if len(cfg["osdeps"][package]) > 1:
                 cfg["osdeps"][package][0](cfg, cfg["osdeps"][package][1])
             else:
