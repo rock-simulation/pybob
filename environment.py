@@ -66,21 +66,13 @@ def setupEnv(cfg, update=False):
     p = subprocess.Popen("which autoproj", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
     aPath = out.strip()
+
     if len(aPath) > 0:
         with open(cfg["devDir"]+"/bobenv.sh", "w") as f:
             f.write("#! /bin/sh\n")
             f.write(". env.sh\n")
             f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
-            f.write("alias bob='${MARS_SCRIPT_DIR}/pybob.py'\n")
-            f.write("alias bob-bootstrap='${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n")
-            f.write("alias bob-install='${MARS_SCRIPT_DIR}/pybob.py install'\n")
-            f.write("alias bob-rebuild='${MARS_SCRIPT_DIR}/pybob.py rebuild'\n")
-            f.write("alias bob-build='${MARS_SCRIPT_DIR}/pybob.py'\n")
-            f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
-            f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
-            f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
-            f.write("alias bob-show-log='${MARS_SCRIPT_DIR}/pybob.py show-log'\n")
-            f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
+            _make_pybob_aliases(f)
     else:
         with open(cfg["devDir"]+"/env.sh", "w") as f:
             f.write("#! /bin/sh\n")
@@ -104,22 +96,12 @@ def setupEnv(cfg, update=False):
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
             f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
 
-            # todo: handle python path
             f.write('if [ x${PKG_CONFIG_PATH} = "x" ]; then\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+'"\n')
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
-            f.write("alias bob='${MARS_SCRIPT_DIR}/pybob.py'\n")
-            f.write("alias bob-bootstrap='${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n")
-            f.write("alias bob-install='${MARS_SCRIPT_DIR}/pybob.py install'\n")
-            f.write("alias bob-rebuild='${MARS_SCRIPT_DIR}/pybob.py rebuild'\n")
-            f.write("alias bob-build='${MARS_SCRIPT_DIR}/pybob.py'\n")
-            f.write("alias bob-diff='${MARS_SCRIPT_DIR}/pybob.py diff'\n")
-            f.write("alias bob-list='${MARS_SCRIPT_DIR}/pybob.py list'\n")
-            f.write("alias bob-fetch='${MARS_SCRIPT_DIR}/pybob.py fetch'\n")
-            f.write("alias bob-show-log='${MARS_SCRIPT_DIR}/pybob.py show-log'\n")
-            f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
+            _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")
     if len(aPath) == 0:
@@ -151,3 +133,38 @@ def setupEnv(cfg, update=False):
     cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_release"]
     execute.simpleExecute(cmd)
     source(cfg["devDir"]+"/env.sh")
+
+
+def _make_pybob_aliases(f):
+    env_variables = []
+    if "PYTHON" in os.environ:
+        PYTHON_ALIAS_PREFIX = "$PYTHON "
+    else:
+        PYTHON_ALIAS_PREFIX = ""
+
+    f.write("alias bob='%s${MARS_SCRIPT_DIR}/pybob.py'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-bootstrap='%s${MARS_SCRIPT_DIR}/pybob.py bootstrap'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-install='%s${MARS_SCRIPT_DIR}/pybob.py install'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-rebuild='%s${MARS_SCRIPT_DIR}/pybob.py rebuild'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-build='%s${MARS_SCRIPT_DIR}/pybob.py'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-diff='%s${MARS_SCRIPT_DIR}/pybob.py diff'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-list='%s${MARS_SCRIPT_DIR}/pybob.py list'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-fetch='%s${MARS_SCRIPT_DIR}/pybob.py fetch'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-show-log='%s${MARS_SCRIPT_DIR}/pybob.py show-log'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-envsh='%s${MARS_SCRIPT_DIR}/pybob.py envsh'\n"
+            % PYTHON_ALIAS_PREFIX)
+    f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")
+
+    if "PYTHON" in os.environ:
+        f.write("export PYTHON=%s\n" % os.environ["PYTHON"])
+    if "CYTHON" in os.environ:
+        f.write("export CYTHON=%s\n" % os.environ["CYTHON"])
