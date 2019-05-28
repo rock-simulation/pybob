@@ -69,13 +69,13 @@ def setupEnv(cfg, update=False):
 
     if len(aPath) > 0:
         with open(cfg["devDir"]+"/bobenv.sh", "w") as f:
-            f.write("#! /bin/sh\n")
+            f.write("#! /bin/bash\n")
             f.write(". env.sh\n")
             f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
             _make_pybob_aliases(f)
     else:
         with open(cfg["devDir"]+"/env.sh", "w") as f:
-            f.write("#! /bin/sh\n")
+            f.write("#! /bin/bash\n")
             f.write('export AUTOPROJ_CURRENT_ROOT="'+cfg["devDir"]+'"\n')
             f.write('if [ x${CMAKE_PREFIX_PATH} = "x" ]; then\n')
             f.write('  export CMAKE_PREFIX_PATH="'+cfg["devDir"]+'/install"\n')
