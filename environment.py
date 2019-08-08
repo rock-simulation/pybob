@@ -9,7 +9,7 @@ import execute
 
 def source(sourceFile):
     newenv = {}
-    cmd = ["bash", "print_env.sh", sourceFile, "&>", "/dev/null;", "env"]
+    cmd = ["echo", "'source", sourceFile, "&>", "/dev/null", ";", "env'", "|", "bash"]
     cmdString = " ".join(cmd)
     p = subprocess.Popen(cmdString, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     out, err = p.communicate()
@@ -19,6 +19,7 @@ def source(sourceFile):
         except:
             continue  # bad line format, skip it
         newenv[k] = v
+
     os.environ.update(newenv)
 
 def setupEnv(cfg, update=False):
