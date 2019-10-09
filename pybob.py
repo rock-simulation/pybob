@@ -31,6 +31,7 @@ commands = ["buildconf", "list", "bootstrap", "fetch", "install",
 cfg = {}
 cfg["buildOptional"] = True
 cfg["no_os_deps"] = False
+cfg["multiprocessing"] = True
 copyArgs = []
 for a in sys.argv:
     if "=" in a:
@@ -63,7 +64,6 @@ cfg["rebuild"] = False
 cfg["profiling"] = []
 cfg["checkDeps"] = True
 cfg["deps"] = {}
-cfg["multiprocessing"] = True
 cfg["depsInverse"] = {}
 config.getConfiguration(cfg)
 
