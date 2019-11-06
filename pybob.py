@@ -131,6 +131,11 @@ def fetchi(package, returnPackages = False):
         return layout_packages
 
 def fetch_(returnPackages = False):
+    if not os.popen('which cmake').read():
+        fetchi("cmake", False)
+    if not os.popen('which pkg-config').read():
+        fetchi("pkg-config", False)
+
     if len(sys.argv) < 3 or "path=" in sys.argv[2]:
         return fetchi("", returnPackages)
     else:
