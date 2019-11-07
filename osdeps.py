@@ -22,10 +22,14 @@ def pipInstall(cfg, pkg):
             out,err,r = execute.do(["pacman", "--noconfirm", "-S", "mingw-w64-x86_64-python2-pip"])
             if len(out) > 0:
                 return
+        cmd = ["pip", "install", "-U", "--noinput", pkg]
+    else:
+        cmd = ["yes", "|", "pip", "install", "-U", pkg]
 
-        out, err, r = execute.do(["pip", "install", "-U", "--noinput", pkg])
-        if len(out) > 0:
-            return
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd)
+    if len(out) > 0:
+        return
 
 
 def install(cfg, pkg):
@@ -113,6 +117,7 @@ def loadOsdeps(cfg):
                 })
 
         cfg["osdeps"].update({
+            "urdf-parser-py": [pipInstall, "urdf-parser-py"],
             "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
@@ -160,6 +165,7 @@ def loadOsdeps(cfg):
                               "numpy": [install, "python2-numpy"],
                               "python-scipy": [install, "python2-scipy"],
                               "python-sklearn": [pipInstall, "sklearn"],
+                              "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
@@ -186,5 +192,6 @@ def loadOsdeps(cfg):
                               "python-numpy": [install, "py-numpy"],
                               "python-scipy": [install, "py-scipy"],
                               "python-sklearn": [install, "py-scikit-learn"],
+                              "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "py-matplotlib"],
 })
