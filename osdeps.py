@@ -15,7 +15,7 @@ def pipInstall(cfg, pkg):
     if not os.path.isdir(path):
         execute.makeDir(path)
     with open(log, "a") as f:
-        f.write(" "+pkg)
+        f.write("@pip "+pkg+"\n")
 
     if platform == "Windows":
         if not os.popen('which pip').read():
@@ -49,7 +49,7 @@ def install(cfg, pkg):
     if not os.path.isdir(path):
         execute.makeDir(path)
     with open(log, "a") as f:
-        f.write(" "+pkg)
+        f.write(pkg+"\n")
 
     if platform == "Windows":
         out,err,r = execute.do(["pacman", "-Qq", "mingw-w64-x86_64-"+pkg])
