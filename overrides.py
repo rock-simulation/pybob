@@ -22,6 +22,7 @@ def patch_ode(cfg):
     out, err, r = execute.do(cmd + [srcPath + "ode-0.12-lambda.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.12-export_joint_internals.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.12-abort.patch"])
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.12-heightfield.patch"])
 
 
 def check_ode(cfg):

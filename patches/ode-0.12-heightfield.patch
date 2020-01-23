@@ -1,0 +1,12 @@
+--- ode/src/heightfield.cpp	2011-02-15 16:43:31.000000000 +0100
++++ ode/src/heightfield.cpp	2020-01-23 14:26:32.000000000 +0100
+@@ -1477,7 +1477,8 @@
+             {
+                 dContactGeom *planeCurrContact = PlaneContact + i;
+                 // Check if contact point found in plane is inside Triangle.
+-                const dVector3 &pCPos = planeCurrContact->pos;
++                dVector3 pCPos;
++                dAddScaledVectors3(pCPos, planeCurrContact->pos, planeCurrContact->normal, 1.0, planeCurrContact->depth);
+                 for (size_t b = 0; planeTriListSize > b; b++)
+                 {  
+                     if (m_p_data->IsOnHeightfield2 (itPlane->trianglelist[b]->vertices[0], 
