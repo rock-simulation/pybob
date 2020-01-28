@@ -24,6 +24,16 @@ def patch_ode(cfg):
     out, err, r = execute.do(cmd + [srcPath + "ode-0.12-abort.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.12-heightfield.patch"])
 
+def patch_ode_16(cfg):
+    srcPath = cfg["pyScriptDir"] + "/patches/"
+    targetPath = cfg["devDir"] + "/simulation/ode-0.16"
+    cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.16-lambda.patch"])
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.12-export_joint_internals.patch"])
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.16-abort.patch"])
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.16-heightfield.patch"])
+
 
 def check_ode(cfg):
     return os.path.isfile(cfg["devDir"] + "/simulation/ode/ode.pc.in")
@@ -49,6 +59,32 @@ def fetch_ode(cfg):
         execute.do(["tar", "-xzf", "ode-0.12.tar.gz"])
         patch_ode(cfg)
         execute.do(["mv", "ode-0.12", "ode"])
+        if not os.path.isfile("ode/ode.pc.in"):
+            cfg["errors"].append("fetch: simulation/ode")
+    os.chdir(cwd)
+    cfg["installed"].append("simulation/ode")
+    return True
+
+def fetch_ode_16(cfg):
+    path = cfg["devDir"] + "/simulation"
+    print(c.BOLD + "Fetching " + "external/ode ... " + c.END, end="")
+    sys.stdout.flush()
+    cwd = os.getcwd()
+    execute.makeDir(path)
+    os.chdir(path)
+    if not os.path.isfile(path + "/ode-0.16.tar.gz"):
+        if os.path.isdir(path + "/ode"):
+            uninstall_ode(cfg)
+        execute.do(
+            [
+                "wget",
+                "-q",
+                "https://bitbucket.org/odedevs/ode/downloads/ode-0.16.tar.gz",
+            ]
+        )
+        execute.do(["tar", "-xzf", "ode-0.16.tar.gz"])
+        patch_ode_16(cfg)
+        execute.do(["mv", "ode-0.16", "ode"])
         if not os.path.isfile("ode/ode.pc.in"):
             cfg["errors"].append("fetch: simulation/ode")
     os.chdir(cwd)
@@ -215,6 +251,13 @@ def loadOverrides(cfg):
         "simulation/ode": {
             "fetch": fetch_ode,
             "patch": patch_ode,
+            "check": check_ode,
+            "uninstall": uninstall_ode,
+            "install": install_ode,
+        },
+        "simulation/ode-16": {
+            "fetch": fetch_ode_16,
+            "patch": patch_ode_16,
             "check": check_ode,
             "uninstall": uninstall_ode,
             "install": install_ode,
