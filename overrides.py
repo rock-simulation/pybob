@@ -30,7 +30,8 @@ def patch_ode_16(cfg):
     cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
 
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-lambda.patch"])
-    out, err, r = execute.do(cmd + [srcPath + "ode-0.12-export_joint_internals.patch"])
+    # this patch is used to inherit of dJoint wich is normaly not done by MARS
+    #out, err, r = execute.do(cmd + [srcPath + "ode-0.12-export_joint_internals.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-abort.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-heightfield.patch"])
 
