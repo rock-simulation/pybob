@@ -1,12 +1,95 @@
 --- ode/src/heightfield.cpp	2011-02-15 16:43:31.000000000 +0100
 +++ ode/src/heightfield.cpp	2020-01-23 14:26:32.000000000 +0100
-@@ -1500,7 +1500,8 @@
+@@ -262,7 +262,7 @@
+ 
+ // returns whether point is over terrain Cell triangle?
+ bool dxHeightfieldData::IsOnHeightfield2 ( const HeightFieldVertex * const CellCorner, 
+-                                          const dReal * const pos,  const bool isABC) const
++                                           const dReal * const pos,  const bool isABC, dReal &epsilon) const
+ {
+     // WARNING!!!
+     // This function must be written in the way to make sure that every point on
+@@ -280,43 +280,43 @@
+     {
+         // point A
+         MinX = CellCorner->vertex[0];
+-        if (pos[0] < MinX)
++        if (pos[0] + epsilon < MinX)
+             return false;
+ 
+         MaxX = (CellCorner->coords[0] + 1) * m_fSampleWidth;
+-        if (pos[0] >= MaxX)
++        if (pos[0]-epsilon >= MaxX)
+             return false;
+ 
+         MinZ = CellCorner->vertex[2];
+-        if (pos[2] < MinZ)
++        if (pos[2]+epsilon < MinZ)
+             return false;
+ 
+         MaxZ = (CellCorner->coords[1] + 1) * m_fSampleDepth;
+-        if (pos[2] >= MaxZ)
++        if (pos[2]-epsilon >= MaxZ)
+             return false;
+ 
+-        return (MaxZ - pos[2]) > (pos[0] - MinX) * m_fSampleZXAspect;
++        return (MaxZ - pos[2] + epsilon) > (pos[0] - MinX - epsilon) * m_fSampleZXAspect;
+     }
+     else
+     {
+         // point D
+         MaxX = CellCorner->vertex[0];
+-        if (pos[0] >= MaxX)
++        if (pos[0] - epsilon >= MaxX)
+             return false;
+ 
+         MinX = (CellCorner->coords[0] - 1) * m_fSampleWidth;
+-        if (pos[0] < MinX)
++        if (pos[0] + epsilon < MinX)
+             return false;
+ 
+         MaxZ = CellCorner->vertex[2];
+-        if (pos[2] >= MaxZ)
++        if (pos[2] - epsilon >= MaxZ)
+             return false;
+ 
+         MinZ = (CellCorner->coords[1] - 1) * m_fSampleDepth;
+-        if (pos[2] < MinZ)
++        if (pos[2] + epsilon < MinZ)
+             return false;
+ 
+-        return (MaxZ - pos[2]) <= (pos[0] - MinX) * m_fSampleZXAspect;
++        return (MaxZ - pos[2] + epsilon) <= (pos[0] - MinX - epsilon) * m_fSampleZXAspect;
+     }
+ }
+ 
+@@ -1500,12 +1500,15 @@
              {
                  dContactGeom *planeCurrContact = PlaneContact + i;
                  // Check if contact point found in plane is inside Triangle.
 -                const dVector3 &pCPos = planeCurrContact->pos;
 +                dVector3 pCPos;
++
 +                dAddScaledVectors3(pCPos, planeCurrContact->pos, planeCurrContact->normal, 1.0, planeCurrContact->depth);
++                //const dVector3 &pCPos = planeCurrContact->pos;
                  for (sizeint b = 0; planeTriListSize > b; b++)
                  {  
                      if (m_p_data->IsOnHeightfield2 (itPlane->trianglelist[b]->vertices[0], 
+                         pCPos, 
+-                        itPlane->trianglelist[b]->isUp))
++                                                    itPlane->trianglelist[b]->isUp, planeCurrContact->depth))
+                     {
+                         pContact = CONTACT(contact, numTerrainContacts*skip);
+                         dVector3Copy(pCPos, pContact->pos);
+diff -ur ode-0.16/ode/src/heightfield.h ode/ode/src/heightfield.h
+--- ode/src/heightfield.h	2018-12-09 21:04:03.000000000 +0100
++++ ode/src/heightfield.h	2020-01-29 13:11:37.000000000 +0100
+@@ -88,7 +88,7 @@
+     void ComputeHeightBounds();
+ 
+     bool IsOnHeightfield2  ( const HeightFieldVertex * const CellCorner, 
+-        const dReal * const pos,  const bool isABC) const;
++                             const dReal * const pos,  const bool isABC, dReal &epsilon) const;
+ 
+     dReal GetHeight(int x, int z);
+     dReal GetHeight(dReal x, dReal z);
