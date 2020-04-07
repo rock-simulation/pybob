@@ -246,6 +246,27 @@ def uninstall_protobuf(cfg):
     execute.do(["make", "clean"])
     os.chdir(cwd)
 
+def fetch_rtt(cfg):
+    path = cfg["devDir"] + "/tools"
+    print(c.BOLD + "Fetching " + "tools/rtt ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    execute.makeDir(path)
+    os.chdir(path)
+
+    if not os.path.isfile(path + "/rtt/CMakeLists.txt"):
+        if os.path.isdir(path + "/rtt"):
+            execute.do(["rm", "-rf", "rtt"])
+        execute.do(["git", "clone", "https://github.com/orocos-toolchain/rtt.git"])
+        execute.do(["git", "checkout", "baaea5022b"])
+
+        if not os.path.isfile("rtt/CMakeLists.txt"):
+            cfg["errors"].append("fetch: tools/rtt")
+    os.chdir(cwd)
+    return True
+
+def install_rtt(cfg):
+    bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -284,17 +305,18 @@ def loadOverrides(cfg):
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
         "external/rbdl": {"fetch": fetch_rbdl},
+        "rtt": {"fetch": fetch_rtt, "install": install_rtt},
     }
     cfg["ignorePackages"] = [
         "autotools",
-        "gui/vizkit3d",
+        #"gui/vizkit3d",
         "rice",
         "dummy-dependency-n",
         "dummy-dependency-n-1",
         "dummy-dependency-0",
         "external/yaml-cpp",
-        "rtt",
-        "typelib",
+        #"rtt",
+        #"typelib",
         "simulation/configmaps",
         "qt4-opengl",
     ]

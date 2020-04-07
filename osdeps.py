@@ -138,6 +138,7 @@ def loadOsdeps(cfg):
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
+            "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
@@ -194,4 +195,5 @@ def loadOsdeps(cfg):
                               "python-sklearn": [install, "py-scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "py-matplotlib"],
+                              "omniorb": [install, "omniorb"],
 })

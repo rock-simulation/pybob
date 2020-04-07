@@ -35,7 +35,7 @@ def getDeps(cfg, pkg, deps, checked):
                     if len(arrLine) < 3:
                         continue
                     d = arrLine[1]
-                    if d not in cfg["ignorePackages"] and "orogen" not in d:
+                    if d not in cfg["ignorePackages"]:
                     #d not in cfg["osdeps"] and
                         deps.append(d)
                         if not d in cfg["depsInverse"]:
@@ -54,7 +54,7 @@ def getDeps(cfg, pkg, deps, checked):
             deps.append(dep)
 
 def installPackage(cfg, p, cmake_options=[]):
-    if p in cfg["ignorePackages"] or "orogen" in p:
+    if p in cfg["ignorePackages"]:
         return
     path = cfg["devDir"]+"/"+p
     if not os.path.isdir(cfg["devDir"]+"/"+p):
@@ -67,6 +67,27 @@ def installPackage(cfg, p, cmake_options=[]):
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
     start = datetime.datetime.now()
+    orogenFilename = None
+    for f in os.listdir(path):
+        if os.path.isfile(os.path.join(path, f)):
+            arrF = f.split(".")
+            if len(arrF) == 2 and arrF[1] == "orogen":
+                orogenFilename = f
+    if orogenFilename:
+        # build orogen package
+        orogenPath = os.path.join(path, ".orogen")
+        if os.path.exists(orogenPath) and cfg["rebuild"]:
+            execute.do(["rm", "-rf", orogenPath])
+        if not os.path.exists(orogenPath):
+            cmd = ["orogen", "--transport=corba,typelib", orogenFilename]
+            #print(" ".join(cmd))
+            out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
+            if r != 0:
+                print(p + c.ERROR + " orogen error" + c.END)
+                stdout.flush()
+                cfg["errors"].append("orogen: "+p)
+                return
+
     if os.path.isdir(path+"/build"):
         cmd = ["cmake", path]
     else:
