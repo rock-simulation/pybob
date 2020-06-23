@@ -107,6 +107,7 @@ def loadOsdeps(cfg):
                 "python-matplotlib": [install, "python3-matplotlib"],
                 "matplotlib": [install, "python3-matplotlib"],
                 "numpy": [install, "python3-numpy"],
+                "python3-pkgconfig": [install],
                 })
         else:
             cfg["osdeps"].update({
@@ -129,9 +130,9 @@ def loadOsdeps(cfg):
             "torch": [pipInstall],
             "torch-vision": [pipInstall],
             "torchdiffeq": [pipInstall, "git+https://github.com/rtqichen/torchdiffeq"],
-            "torchsummary": [pipInstall]
-            "tensorboard": [pipInstall]
-            "pyswarms": [pipInstall]
+            "torchsummary": [pipInstall],
+            "tensorboard": [pipInstall],
+            "pyswarms": [pipInstall],
             "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
