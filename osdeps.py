@@ -98,10 +98,14 @@ def loadOsdeps(cfg):
                 "python": [install, "python3-dev"],
                 "python-dev": [install, "python3-dev"],
                 "python-yaml": [install, "python3-yaml"],
+                "pyyaml": [install, "python3-yaml"],
                 "python-numpy": [install, "python3-numpy"],
                 "python-scipy": [install, "python3-scipy"],
+                "scipy": [install, "python3-scipy"],
                 "python-sklearn": [install, "python3-sklearn"],
+                "scikit-learn": [install, "python3-sklearn"],
                 "python-matplotlib": [install, "python3-matplotlib"],
+                "matplotlib": [install, "python3-matplotlib"],
                 "numpy": [install, "python3-numpy"],
                 })
         else:
@@ -109,15 +113,25 @@ def loadOsdeps(cfg):
                 "python": [install, "python-dev"],
                 "python-dev": [install],
                 "python-yaml": [install],
+                "pyyaml": [install, "python-yaml"],
                 "python-numpy": [install],
                 "python-scipy": [install],
+                "scipy": [install],
                 "python-sklearn": [install],
+                "scikit-learn": [install, "python-sklearn"],
                 "python-matplotlib": [install],
+                "matplotlib": [install, "python-matplotlib"],
                 "numpy": [install, "python-numpy"],
                 })
 
         cfg["osdeps"].update({
             "urdf-parser-py": [pipInstall, "urdf-parser-py"],
+            "torch": [pipInstall],
+            "torch-vision": [pipInstall],
+            "torchdiffeq": [pipInstall, "git+https://github.com/rtqichen/torchdiffeq"],
+            "torchsummary": [pipInstall]
+            "tensorboard": [pipInstall]
+            "pyswarms": [pipInstall]
             "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
@@ -193,5 +207,6 @@ def loadOsdeps(cfg):
                               "python-scipy": [install, "py-scipy"],
                               "python-sklearn": [install, "py-scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
+                              "lemon": [install, "lemon"],
                               "python-matplotlib": [install, "py-matplotlib"],
 })
