@@ -84,7 +84,8 @@ def checkBaseName(package, info):
         if "$" in info["gitPackage"] and "*" not in package:
             info["basename"] = info["gitPackage"]
             info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
-                                                            package.split("/")[-1])
+                                                            '-'.join((package.split("/")[1:])))                                                           
+
 
 def clonePackage(cfg, package, server, gitPackage, branch):
     clonePath = package
@@ -121,7 +122,9 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
             if branch:
                 cmd += ["-b", branch]
-            execute.do(cmd, cfg)
+            out, err, r = execute.do(cmd, cfg)
+            print out
+            print err
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
             print("check for patches", end="")
