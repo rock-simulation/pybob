@@ -28,13 +28,13 @@ def getConfiguration(cfg):
         except:
             cfg["numCores"] = 1
         with open(path+"/pybob/pybob.yml") as f:
-            cfg.update(yaml.load(f))
+            cfg.update(yaml.safe_load(f))
     else:
         # check if we have an autoproj environment
         if os.path.isfile(path+"/autoproj/config.yml"):
             acfg = {}
             with open(path+"/autoproj/config.yml") as f:
-                acfg = yaml.load(f)
+                acfg = yaml.safe_load(f)
             cfg["pyScriptDir"] = path+"/pybob"
             cfg["devDir"] = path
             cfg["numCores"] = multiprocessing.cpu_count()

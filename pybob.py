@@ -153,7 +153,7 @@ def diff_remotes():
                 c.printWarning("has diff")
                 print("    check: less " + logFile)
                 with open(logFile, "w") as f:
-                    f.write(out)
+                    f.write(excute.decode(out))
             else:
                 print(d + ": ", end="")
                 c.printBold("no diff")
@@ -210,7 +210,7 @@ def diff_():
                 print("    check: less " + logFile)
                 sys.stdout.flush()
                 with open(logFile, "w") as f:
-                    f.write(out)
+                    f.write(excute.decode(out))
             else:
                 print(p2+": ", end="")
                 c.printBold("no diff")
@@ -352,7 +352,7 @@ def bootstrap_():
 def info_():
     info = {}
     with open(cfg["devDir"]+"/autoproj/bob/depsInverse.yml") as f:
-        info = yaml.load(f)
+        info = yaml.safe_load(f)
     package = sys.argv[2]
     if package in info:
         print("packages that depend on " + package + ":")

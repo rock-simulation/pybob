@@ -125,8 +125,8 @@ def install_ode(cfg):
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode_install.txt")
-    print(out)
-    print(err)
+    print(excute.decode(out))
+    print(excute.decode(err))
     print(r)
     print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()
@@ -312,7 +312,7 @@ def loadOverrides(cfg):
     filename = cfg["path"] + "/autoproj/overrides.yml"
     if os.path.isfile(filename):
         with open(filename) as f:
-            ov = yaml.load(f)
+            ov = yaml.safe_load(f)
         if ov is not None and "overrides" in ov and ov["overrides"] is not None:
             for it in ov["overrides"]:
                 for key, value in it.items():
