@@ -27,15 +27,15 @@
   
   1. Install MacPorts (https://www.macports.org), which is used by pybob to install system dependencies.
      **Note**: follow the install instructions on the macports website carefully.
-  2. Install git:
+  2. Install git and wget:
   
-          sudo port install git
+          sudo port install git wget
     
-  3. Install python36 and python yaml package via MacPorts:
+  3. Install python38 and python yaml package via MacPorts:
   
           sudo port install py38-yaml
   
-  4. It is recommended to select python3.6 as default for the terminal:
+  4. It is recommended to select python3.8 as default for the terminal:
   
           sudo port select --set python python3.8
   
