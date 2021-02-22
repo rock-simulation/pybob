@@ -125,8 +125,8 @@ def install_ode(cfg):
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode_install.txt")
-    print(excute.decode(out))
-    print(excute.decode(err))
+    print(execute.decode(out))
+    print(execute.decode(err))
     print(r)
     print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()

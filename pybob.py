@@ -153,7 +153,7 @@ def diff_remotes():
                 c.printWarning("has diff")
                 print("    check: less " + logFile)
                 with open(logFile, "w") as f:
-                    f.write(excute.decode(out))
+                    f.write(execute.decode(out))
             else:
                 print(d + ": ", end="")
                 c.printBold("no diff")
@@ -210,7 +210,7 @@ def diff_():
                 print("    check: less " + logFile)
                 sys.stdout.flush()
                 with open(logFile, "w") as f:
-                    f.write(excute.decode(out))
+                    f.write(execute.decode(out))
             else:
                 print(p2+": ", end="")
                 c.printBold("no diff")
