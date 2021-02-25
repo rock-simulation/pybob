@@ -301,9 +301,12 @@ def loadOverrides(cfg):
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
+        cfg["ignorePackages"].append("python3")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
         cfg["ignorePackages"].append("zlib")
+        cfg["ignorePackages"].append("dataclasses")
+        cfg["ignorePackages"].append("blender")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")

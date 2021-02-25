@@ -24,7 +24,8 @@ def pipInstall(cfg, pkg):
                 return
         cmd = ["pip", "install", "-U", "--noinput", pkg]
     else:
-        cmd = ["yes", "|", "pip", "install", "-U", pkg]
+        pipCmd = "pip" + str(sys.version_info.major)
+        cmd = ["yes", "|", pipCmd, "install", "-U", pkg]
 
     print(" ".join(cmd))
     out, err, r = execute.do(cmd)
@@ -179,13 +180,17 @@ def loadOsdeps(cfg):
                               "python-numpy": [install, "python2-numpy"],
                               "numpy": [install, "python2-numpy"],
                               "python-scipy": [install, "python2-scipy"],
+                              "scipy": [install, "python2-scipy"],
                               "python-sklearn": [pipInstall, "sklearn"],
+                              "scikit-learn": [pipInstall, "sklearn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "python2-matplotlib"],
+                              "matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
                               "zlib": [install]})
     else:
+        pyprefix = "py"+str(sys.version_info.major)+str(sys.version_info.minor)+"-"
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
                               "yaml-cpp": [install],
@@ -201,13 +206,45 @@ def loadOsdeps(cfg):
                               "pkg-config": [install],
                               "boost": [install],
                               "osg": [install, "OpenSceneGraph"],
-                              "numpy": [install, "py-numpy"],
-                              "cython": [install, "py-cython"],
+                              "numpy": [install, pyprefix+"numpy"],
+                              "cython": [install, pyprefix+"cython"],
+                              "cython3": [install, pyprefix+"cython"],
                               "yaml": [install, "libyaml"],
-                              "python-numpy": [install, "py-numpy"],
-                              "python-scipy": [install, "py-scipy"],
-                              "python-sklearn": [install, "py-scikit-learn"],
+                              "curl": [install],
+                              "python-numpy": [install, pyprefix+"numpy"],
+                              "python-scipy": [install, pyprefix+"scipy"],
+                              "pyyaml": [install, pyprefix+"yaml"],
+                              "python3-yaml": [install, pyprefix+"yaml"],
+                              "scipy": [install, pyprefix+"scipy"],
+                              "python-sklearn": [install, pyprefix+"scikit-learn"],
+                              "scikit-learn": [install, pyprefix+"scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "lemon": [install, "lemon"],
-                              "python-matplotlib": [install, "py-matplotlib"],
+                              "fftw3": [install, "fftw-3"],
+                              "uriparser": [install],
+                              "python-matplotlib": [install, pyprefix+"matplotlib"],
+                              "matplotlib": [install, pyprefix+"matplotlib"],
+                              "python3-pip": [install, pyprefix+"pip"],
+                              "python3-setuptools": [install, pyprefix+"setuptools"],
+                              "python3-setuptools_48": [install, pyprefix+"setuptools=4.8"],
+                              "python3-pkgconfig": [install, pyprefix+"pkgconfig"],
+                              "python3-nose": [install, pyprefix+"nose"],
+                              "python3-git": [install, pyprefix+"git"],
+                              "python3-path": [install, pyprefix+"path"],
+                              "pandas": [install, pyprefix+"pandas"],
+                              "tensorflow": [install, pyprefix+"tensorflow"],
+                              "keras": [install, pyprefix+"keras"],
+                              "torch": [install, pyprefix+"pytorch"],
+                              "python3-requests": [install, pyprefix+"requests"],
+                              "python3-flask_restful": [install, pyprefix+"flask"],
+                              "pyswarms": [pipInstall, "pyswarms"],
+                              "torchdiffeq": [pipInstall, "torchdiffeq"],
+                              "torch-optimizer": [pipInstall, "torch-optimizer"],
+                              "ai": [pipInstall, "ai"],
+                              "pymock": [pipInstall, "pymock"],
+                              "pylxml": [pipInstall, "pylxml"],
+                              "torchsummary": [pipInstall, "torchsummary"],
+                              "colorlog": [pipInstall, "colorlog"],
+                              "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
+                              "owlready2": [pipInstall, "Owlready2"],
 })
