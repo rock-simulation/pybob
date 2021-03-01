@@ -6,7 +6,7 @@ import os
 import buildconf
 import execute
 from platform import system
-from sys import stdout
+import sys
 
 # todo: important we need to detect loops
 def getDeps(cfg, pkg, deps, checked):
@@ -53,6 +53,30 @@ def getDeps(cfg, pkg, deps, checked):
         for dep in cfg["overrides"][pkg]:
             deps.append(dep)
 
+def installPythonPackage(cfg, p):
+    if p in cfg["ignorePackages"] or "orogen" in p:
+        return
+    path = cfg["devDir"]+"/"+p
+    if not os.path.isdir(cfg["devDir"]+"/"+p):
+        cfg["errors"].append("install: "+p+" path not found")
+        return
+    if cfg["rebuild"]:
+        execute.do(["rm", "-rf", path+"/build"])
+    start = datetime.datetime.now()
+    if not os.path.isdir(path+"/build"):
+        execute.makeDir(path+"/build")
+    pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
+    out, err, r = execute.do([pythonExecutable, "setup.py", "install", "--prefix", cfg["devDir"]+"/install"], cfg , None, path, p.replace("/", "_")+"_build.txt")
+    if r != 0:
+        print(p + c.ERROR + " build error" + c.END)
+        cfg["errors"].append("build: "+p)
+        return
+    end = datetime.datetime.now()
+    diff = end - start
+    print(p + c.WARNING + " installed" + c.END)
+    cfg["profiling"].append([p, {"configure time": "0"}, {"compile time": str(diff)}])
+    cfg["installed"].append(p)
+
 def installPackage(cfg, p, cmake_options=[]):
     if p in cfg["ignorePackages"] or "orogen" in p:
         return
@@ -61,8 +85,11 @@ def installPackage(cfg, p, cmake_options=[]):
         cfg["errors"].append("install: "+p+" path not found")
         return
     if not os.path.isfile(cfg["devDir"]+"/"+p+"/CMakeLists.txt"):
+        if os.path.isfile(cfg["devDir"]+"/"+p+"/setup.py"):
+            installPythonPackage(cfg, p)
+            return
         print(p + c.WARNING + " skip \"no cmake package\"" + c.END)
-        stdout.flush()
+        sys.stdout.flush()
         return
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
@@ -79,11 +106,11 @@ def installPackage(cfg, p, cmake_options=[]):
     out, err, r = execute.do(cmd, cfg, None, path+"/build", p.replace("/", "_")+"_configure.txt")
     if r != 0:
         print(p + c.ERROR + " configure error" + c.END)
-        stdout.flush()
+        sys.stdout.flush()
         cfg["errors"].append("configure: "+p)
         return
     print(p + c.WARNING + " configured" + c.END)
-    stdout.flush()
+    sys.stdout.flush()
     end = datetime.datetime.now()
     diff1 = end - start
     start = end
