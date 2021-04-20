@@ -102,7 +102,7 @@ def setupEnv(cfg, update=False):
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
-            f.write('export USE_QT5=1')
+            f.write('export USE_QT5=1\n')
             _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")
