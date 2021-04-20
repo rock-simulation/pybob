@@ -109,6 +109,7 @@ def loadOsdeps(cfg):
                 "matplotlib": [install, "python3-matplotlib"],
                 "numpy": [install, "python3-numpy"],
                 "python3-pkgconfig": [install],
+                "cython": [install, "cython3"],
                 })
         else:
             cfg["osdeps"].update({
@@ -124,6 +125,7 @@ def loadOsdeps(cfg):
                 "python-matplotlib": [install],
                 "matplotlib": [install, "python-matplotlib"],
                 "numpy": [install, "python-numpy"],
+                "cython": [install],
                 })
 
         cfg["osdeps"].update({
@@ -149,7 +151,6 @@ def loadOsdeps(cfg):
             "qt4-webkit": [install, "libqtwebkit-dev"],
             "osg": [install, "libopenscenegraph-dev"],
             "boost": [install, "libboost-all-dev"],
-            "cython": [install],
             "zlib": [install, "zlib1g-dev"],
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
