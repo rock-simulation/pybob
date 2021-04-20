@@ -309,7 +309,7 @@ def fetchPackage(cfg, package, layout_packages):
                 cfg["osdeps"][package][0](cfg, package)
             c.printWarning("done")
         return True
-    #print(package)
+
     if package in cfg["overrides"] and cfg["overrides"][package] == None:
         print(cfg["overrides"])
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:

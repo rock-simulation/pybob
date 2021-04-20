@@ -4,8 +4,8 @@ import os
 import colorconsole as c
 import execute
 from platform import system
+from platform import version
 import sys
-
 
 def pipInstall(cfg, pkg):
     """PIP installation command."""
@@ -71,8 +71,8 @@ def install(cfg, pkg):
         print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
         execute.do(["sudo", "port", "install", pkg])
     else:
-        out, err, r = execute.do(['dpkg', '-l', pkg])
-        if len(err) >  5:
+        out, err, r = execute.do(['dpkg', '-s', pkg])
+        if r != 0:
             print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
             arrPkg = pkg.split()
             for p in arrPkg:
@@ -136,7 +136,6 @@ def loadOsdeps(cfg):
             "torchsummary": [pipInstall],
             "tensorboard": [pipInstall],
             "pyswarms": [pipInstall],
-            "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
             "yaml": [install, "libyaml-dev"],
@@ -145,10 +144,6 @@ def loadOsdeps(cfg):
             "qwt": [install, "libqwt-qt4-dev"],
             "qwt5-qt4": [install, "libqwt-qt4-dev"],
             "pkg-config": [install], "cmake": [install],
-            "qt4": [install, "qt4-default"],
-            "qt": [install, "qt4-default"],
-            "qtwebkit": [install, "libqtwebkit-dev"],
-            "qt4-webkit": [install, "libqtwebkit-dev"],
             "osg": [install, "libopenscenegraph-dev"],
             "boost": [install, "libboost-all-dev"],
             "zlib": [install, "zlib1g-dev"],
@@ -156,6 +151,21 @@ def loadOsdeps(cfg):
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
             })
+        if int(version().split("~")[1].split(".")[0]) >= 20:
+            cfg["osdeps"]["qt"] = [install, "qt5-default"]
+            cfg["osdeps"]["qtwebkit"] = [install, "libqt5webkit5-dev"]
+            cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]
+            # also override qt4 deps
+            cfg["osdeps"]["qt4"] = [install, "qt5-default"]
+            cfg["osdeps"]["qt4-webkit"] = [install, "libqt5webkit5-dev"]
+
+        else:
+            cfg["osdeps"]["qt"] = [install, "qt4-default"]
+            cfg["osdeps"]["qtwebkit"] = [install, "libqtwebkit-dev"]
+            cfg["osdeps"]["opencv"] = [install, "libcvaux-dev libhighgui-dev libopencv-dev"]
+            cfg["osdeps"]["qt4"] = [install, "qt4-default"]
+            cfg["osdeps"]["qt4-webkit"] = [install, "libqtwebkit-dev"]
+
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
             cfg["osdeps"]["qt"] = [install, "libqt4-dev"]

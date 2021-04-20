@@ -101,6 +101,7 @@ def setupEnv(cfg, update=False):
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+'"\n')
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
+            f.write('export USE_QT5=1')
             f.write('fi\n')
             _make_pybob_aliases(f)
 
