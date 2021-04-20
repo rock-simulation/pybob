@@ -2,7 +2,7 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 70a9edc..24c6cef 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -13,6 +13,13 @@ INCLUDE_DIRECTORIES(
+@@ -11,6 +11,13 @@
    ${sisl_SOURCE_DIR}/include
    )
  
@@ -16,7 +16,22 @@ index 70a9edc..24c6cef 100644
  
  # Make the sisl library
  
-@@ -56,18 +63,18 @@ ENDFOREACH(app)
+@@ -33,10 +40,10 @@
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-but-set-variable -fPIC")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-but-set-variable -fPIC")
+ ENDIF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+-IF(WIN32)
+-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS")
+-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS")
+-ENDIF(WIN32)
++# IF(WIN32)
++#   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP8 -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS")
++#   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP8 -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS")
++# ENDIF(WIN32)
+ 
+ 
+ # Apps, examples, tests, ...?
+@@ -129,18 +136,18 @@
  
  # 'install' target
  
@@ -47,7 +62,7 @@ index 70a9edc..24c6cef 100644
    # Linux
    # lib
    INSTALL(TARGETS sisl DESTINATION lib COMPONENT sisl)
-@@ -78,8 +85,7 @@ ELSE(WIN32)
+@@ -151,8 +158,7 @@
      FILES_MATCHING PATTERN "*.h"
      PATTERN ".svn" EXCLUDE
      )
