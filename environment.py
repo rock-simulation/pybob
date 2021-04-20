@@ -90,11 +90,15 @@ def setupEnv(cfg, update=False):
             if platform == "Darwin":
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
                 f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
+                f.write('export USE_QT5=1\n')
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$LD_LIBRARY_PATH"\n')
                 f.write('export CXXFLAGS="-std=c++11"\n')
+                if int(version().split("~")[1].split(".")[0]) >= 20:
+                    f.write('export USE_QT5=1\n')
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
+                f.write('export USE_QT5=1\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
             f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
 
@@ -103,8 +107,6 @@ def setupEnv(cfg, update=False):
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
-            if int(version().split("~")[1].split(".")[0]) >= 20:
-                f.write('export USE_QT5=1\n')
             _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")
