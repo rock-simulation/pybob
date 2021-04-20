@@ -3,6 +3,7 @@
 import os
 import sys
 from platform import system
+from platform import version
 import colorconsole as c
 import subprocess
 import execute
@@ -102,7 +103,8 @@ def setupEnv(cfg, update=False):
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
-            f.write('export USE_QT5=1\n')
+            if int(version().split("~")[1].split(".")[0]) >= 20:
+                f.write('export USE_QT5=1\n')
             _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")

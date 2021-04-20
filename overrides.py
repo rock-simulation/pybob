@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 from __future__ import print_function
 from platform import system
+from platform import version
 import sys
 import os
 import colorconsole as c
@@ -311,6 +312,9 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
+    elif int(version().split("~")[1].split(".")[0]) < 20:
+        cfg["ignorePackages"].append("external/osgQt")
+
 
     filename = cfg["path"] + "/autoproj/overrides.yml"
     if os.path.isfile(filename):
