@@ -1,0 +1,78 @@
+--- CMakeLists.txt	2018-12-09 21:04:03.000000000 +0100
++++ CMakeLists.txt	2021-05-05 19:15:40.043465600 +0200
+@@ -17,12 +17,12 @@
+ option(ODE_NO_BUILTIN_THREADING_IMPL "Disable built-in multithreaded threading implementation." OFF)
+ option(ODE_NO_THREADING_INTF "Disable threading interface support (external implementations cannot be assigned." OFF)
+ option(ODE_OLD_TRIMESH "Use old OPCODE trimesh-trimesh collider." OFF)
+-option(ODE_WITH_DEMOS "Builds the demo applications and DrawStuff library." ON)
++option(ODE_WITH_DEMOS "Builds the demo applications and DrawStuff library." OFF)
+ option(ODE_WITH_GIMPACT "Use GIMPACT for trimesh collisions (experimental)." OFF)
+-option(ODE_WITH_LIBCCD "Use libccd for handling some collision tests absent in ODE." OFF)
++option(ODE_WITH_LIBCCD "Use libccd for handling some collision tests absent in ODE." ON)
+ option(ODE_WITH_OPCODE "Use old OPCODE trimesh-trimesh collider." ON)
+ option(ODE_WITH_OU "Use TLS for global caches (allows threaded collision checks for separated spaces)." OFF)
+-option(ODE_WITH_TESTS "Builds the unit test application." ON)
++option(ODE_WITH_TESTS "Builds the unit test application." OFF)
+ 
+ cmake_dependent_option(ODE_WITH_LIBCCD_BOX_CYL "Use libccd for box-cylinder." ON "ODE_WITH_LIBCCD" OFF)
+ cmake_dependent_option(ODE_WITH_LIBCCD_CAP_CYL "Use libccd for capsule-cylinder." ON "ODE_WITH_LIBCCD" OFF)
+@@ -485,26 +485,26 @@
+ 	VERSION ${VERSION}
+ )
+ 
+-if(WIN32)
+-	if(BUILD_SHARED_LIBS)
+-		set_target_properties(ODE PROPERTIES DEBUG_POSTFIX d)
+-	else()
+-		set_target_properties(
+-			ODE
+-			PROPERTIES
+-			DEBUG_POSTFIX sd
+-			MINSIZEREL_POSTFIX s
+-			RELEASE_POSTFIX s
+-			RELWITHDEBINFO_POSTFIX s
+-		)
+-	endif()
+-	
+-	if(ODE_DOUBLE_PRECISION)
+-		set_target_properties(ODE PROPERTIES OUTPUT_NAME ode_double)
+-	else()
+-		set_target_properties(ODE PROPERTIES OUTPUT_NAME ode_single)
+-	endif()
+-endif()
++# if(WIN32)
++# 	if(BUILD_SHARED_LIBS)
++# 		set_target_properties(ODE PROPERTIES DEBUG_POSTFIX d)
++# 	else()
++# 		set_target_properties(
++# 			ODE
++# 			PROPERTIES
++# 			DEBUG_POSTFIX sd
++# 			MINSIZEREL_POSTFIX s
++# 			RELEASE_POSTFIX s
++# 			RELWITHDEBINFO_POSTFIX s
++# 		)
++# 	endif()
++	
++# 	if(ODE_DOUBLE_PRECISION)
++# 		set_target_properties(ODE PROPERTIES OUTPUT_NAME ode_double)
++# 	else()
++# 		set_target_properties(ODE PROPERTIES OUTPUT_NAME ode_single)
++# 	endif()
++# endif()
+ 
+ target_compile_definitions(
+ 	ODE
+@@ -654,9 +654,9 @@
+ 	)
+ endif()
+ 
+-if(MSVC AND BUILD_SHARED_LIBS AND NOT CMAKE_VERSION VERSION_LESS 3.1)
+-	install(FILES $<TARGET_PDB_FILE:ODE> DESTINATION ${CMAKE_INSTALL_BINDIR} CONFIGURATIONS Debug RelWithDebInfo COMPONENT debug)
+-endif()
++#if(MSVC AND BUILD_SHARED_LIBS AND NOT CMAKE_VERSION VERSION_LESS 3.1)
++#	install(FILES $<TARGET_PDB_FILE:ODE> DESTINATION ${CMAKE_INSTALL_BINDIR} CONFIGURATIONS Debug RelWithDebInfo COMPONENT debug)
++#endif()
+ 
+ install(FILES ${HDRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ode COMPONENT development)
+ 
