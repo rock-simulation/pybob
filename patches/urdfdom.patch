@@ -1,6 +1,8 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f0d115d..8d49765 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -29,7 +29,7 @@ endif()
+@@ -27,7 +27,7 @@ endif()
  # This shouldn't be necessary, but there has been trouble
  # with MSVC being set off, but MSVCXX ON.
  if(MSVC OR MSVC90 OR MSVC10)
@@ -9,7 +11,7 @@
  endif (MSVC OR MSVC90 OR MSVC10)
  
  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-@@ -58,11 +58,11 @@ enable_testing()
+@@ -60,11 +60,11 @@ enable_testing()
  
  add_subdirectory(urdf_parser)
  
@@ -19,21 +21,30 @@
 +#if(WIN32 AND NOT CYGWIN)
 +#  set(CMAKE_CONFIG_INSTALL_DIR CMake)
 +#else()
-   set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake/)
+     set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_FULL_LIBDIR}/${PROJECT_NAME}/cmake/)
 -endif()
 +#endif()
  
  set(PKG_NAME ${PROJECT_NAME})
  set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
+diff --git a/urdf_parser/CMakeLists.txt b/urdf_parser/CMakeLists.txt
+index 65669c6..209dfdd 100644
 --- urdf_parser/CMakeLists.txt
 +++ urdf_parser/CMakeLists.txt
-@@ -33,10 +33,23 @@ add_executable(urdf_unit_test test/urdf_unit_test.cpp)
- target_link_libraries(urdf_unit_test urdfdom_model ${Boost_LIBRARIES})
- add_test(urdf_unit_test urdf_unit_test)
+@@ -33,14 +33,31 @@ add_executable(urdf_mem_test test/memtest.cpp)
+ target_link_libraries(urdf_mem_test urdfdom_model)
  
--INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
--INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
-+
+ include(CTest)
+-if(BUILD_TESTING)
+-  add_subdirectory(test)
++if(NOT WIN32)
++  if(BUILD_TESTING)
++    add_subdirectory(test)
++  endif()
+ endif()
+ 
+ INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
 +if(WIN32)
 +  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
 +else(WIN32)
@@ -48,15 +59,17 @@
 +
 +INSTALL(TARGETS urdfdom_model ${_INSTALL_DESTINATIONS})
 +INSTALL(TARGETS urdfdom_world ${_INSTALL_DESTINATIONS})
- INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_mem_test
++
+ INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_to_graphviz urdf_mem_test
 -  DESTINATION ${CMAKE_INSTALL_BINDIR})
 -INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
 -INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
--INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 +   ${_INSTALL_DESTINATIONS})
 +INSTALL(TARGETS urdfdom_sensor ${_INSTALL_DESTINATIONS})
 +INSTALL(TARGETS urdfdom_model_state ${_INSTALL_DESTINATIONS})
-+INSTALL(DIRECTORY include/urdf_parser  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+diff --git a/urdf_parser/include/urdf_parser/exportdecl.h b/urdf_parser/include/urdf_parser/exportdecl.h
+index e01e783..654dcad 100644
 --- urdf_parser/include/urdf_parser/exportdecl.h
 +++ urdf_parser/include/urdf_parser/exportdecl.h
 @@ -47,7 +47,7 @@
