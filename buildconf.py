@@ -10,13 +10,14 @@ import re
 
 rockBranches = ["$ROCK_BRANCH", "$ROCK_FLAVOR"]
 
+
 def setupCfg(cfg):
     # todo: handle this files differently
     path = cfg["pyScriptDir"]
     # load server information if not already done
     if not "server" in cfg:
         with open(path+"/server.yml") as f:
-            cfg["server"] = yaml.load(f)
+            cfg["server"] = yaml.safe_load(f)
 
     # load the package information if not already done
     path = cfg["devDir"]+"/autoproj/bob"
@@ -24,7 +25,7 @@ def setupCfg(cfg):
         execute.makeDir(path)
     if not "packages" in cfg and os.path.isfile(path+"/packages.yml"):
         with open(path+"/packages.yml") as f:
-            cfg["packages"] = yaml.load(f)
+            cfg["packages"] = yaml.safe_load(f)
 
 def listPackages(cfg):
     path = cfg["devDir"]+"/autoproj/";
@@ -34,7 +35,7 @@ def listPackages(cfg):
         if os.path.isdir(path+"remotes/"+d):
             packages.append([d, ""])
             with open(path+"remotes/"+d+"/source.yml") as f:
-                source = yaml.load(f)
+                source = yaml.safe_load(f)
             if "version_control" in source:
                 for p in source["version_control"]:
                     # some rock configuration files are not well formated
@@ -108,7 +109,7 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
                 cfg["errors"].append("update: "+package)
-                c.printError("\ncan't update \""+clonePath+"\":\n" + err)
+                c.printError("\ncan't update \""+clonePath+"\":\n" + execute.decode(err))
             c.printWarning("done")
             return True
     else:
@@ -123,7 +124,9 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
             if branch:
                 cmd += ["-b", branch]
+            #print(" ".join(cmd))
             execute.do(cmd, cfg)
+
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
             print("check for patches", end="")
@@ -131,8 +134,8 @@ def clonePackage(cfg, package, server, gitPackage, branch):
                 cmd = ["patch", "-N", "-p0", "-d", clonePath, "-i", patch]
                 print(" ".join(cmd))
                 out, err, r = execute.do(cmd)
-                print(out)
-                print(err)
+                print(execute.decode(out))
+                print(execute.decode(err))
                 print(r)
             c.printWarning("done")
             return True
@@ -201,7 +204,7 @@ def getServerInfo(cfg, pDict, info):
 def getPackageInfoHelper(cfg, package, base, info):
     matches = {}
     with open(cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]+"/source.yml") as f:
-        source = yaml.load(f)
+        source = yaml.safe_load(f)
         if "version_control" in source:
             for pDict in source["version_control"]:
                 info2 = {}
@@ -253,7 +256,7 @@ def getPackageInfo(cfg, package, info):
 
 def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     with open(folder+"/source.yml") as f:
-        source = yaml.load(f)
+        source = yaml.safe_load(f)
     if "version_control" in source:
         for pDict in source["version_control"]:
             info2 = {}
@@ -308,6 +311,9 @@ def fetchPackage(cfg, package, layout_packages):
                 cfg["osdeps"][package][0](cfg, package)
             c.printWarning("done")
         return True
+
+    if package in cfg["overrides"] and cfg["overrides"][package] == None:
+        print(cfg["overrides"])
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
         if cfg["fetch"]:
@@ -409,7 +415,7 @@ def fetchPackages(cfg, layout_packages):
     setupCfg(cfg)
     updated = []
     with open(cfg["devDir"]+"/autoproj/manifest") as f:
-        manifest = yaml.load(f)
+        manifest = yaml.safe_load(f)
     for layout in manifest["layout"]:
         fetchPackage(cfg, layout, layout_packages)
 
@@ -419,13 +425,13 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     c.printNormal("  Fetching: "+git)
     out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
     if not os.path.isdir(realPath+"/.git"):
-        c.printNormal(str(out));
-        c.printError(str(err));
+        c.printNormal(execute.decode(out));
+        c.printError(execute.decode(err));
         cfg["errors"].append("clone: "+git)
         return
     # get the name of the remote
     with open(realPath+"/source.yml") as f:
-        info = yaml.load(f)
+        info = yaml.safe_load(f)
     #os.system("rm -rf "+path+"remotes/"+info["name"])
     os.system("ln -s "+ realPath + " " + path+"remotes/"+info["name"]);
     if "imports" in info and info["imports"]:
@@ -446,9 +452,16 @@ def updatePackageSets(cfg):
     cloned = []
     deps = []
     with open(path+"manifest") as f:
-        manifest = yaml.load(f)
+        manifest = yaml.safe_load(f)
     for packageSet in manifest["package_sets"]:
         key, value = list(packageSet.items())[0]
+        if isinstance(value, dict):
+            if value["type"] != "git":
+                continue
+            url = value["url"]
+            key = "url"
+            value = url
+            #todo: handle branch
         realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
             if key == "url":
@@ -465,14 +478,15 @@ def updatePackageSets(cfg):
                     out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
                     if r !=  0:
                         cfg["errors"].append("update: "+d)
-                        c.printError("\ncan't update package set \""+d+"\":\n"+err)
+                        c.printError("\ncan't update package set \""+d+"\":\n"+execute.decode(err))
                 if d not in cloned:
                     with open(path+"remotes/"+d+"/source.yml") as f:
-                        info = yaml.load(f)
+                        info = yaml.safe_load(f)
                     if "imports" in info and info["imports"]:
                         for i in info["imports"]:
                             key, value = list(i.items())[0]
                             realPath = cfg["devDir"] + "/.autoproj/remotes/" + key + "__" + value.strip().replace("/", "_").replace("-", "_") + "_git"
+                            # todo: handle the update differently, maybe in clone
                             if i not in deps and not os.path.isdir(realPath):
                                 deps.append(i)
     # now handle deps
@@ -515,7 +529,7 @@ def fetchBuildconf(cfg):
             out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
             if r != 0:
                 cfg["errors"].append("update: buildconf")
-                c.printError("\ncan't update buildconf:\n" + str(err))
+                c.printError("\ncan't update buildconf:\n" + execute.decode(err))
     else:
         address = cfg["buildconfAddress"]
         if len(address) == 0:

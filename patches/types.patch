@@ -1,3 +1,18 @@
+diff --git a/manifest.xml b/manifest.xml
+index bbcaea4..c1fa01b 100644
+--- manifest.xml
++++ manifest.xml
+@@ -17,7 +17,7 @@
+     <depend package="base/logging" />
+ 
+     <depend package="rice" optional="1" />
+-    <depend package="external/sisl" optional="1" />
++    <depend package="external/sisl" />
+     <depend package="gui/vizkit3d" optional="1" />
+     <tags>stable</tags>
+ </package>
+diff --git a/src/JointLimitRange.hpp b/src/JointLimitRange.hpp
+index 63ce05a..0f98b16 100644
 --- src/JointLimitRange.hpp
 +++ src/JointLimitRange.hpp
 @@ -2,6 +2,7 @@
@@ -8,9 +23,11 @@
  
  namespace base
  {
+diff --git a/src/Time.cpp b/src/Time.cpp
+index 95ff379..ae84b85 100644
 --- src/Time.cpp
 +++ src/Time.cpp
-@@ -226,10 +226,16 @@ Time Time::fromString(const std::string& stringTime, Time::Resolution resolution
+@@ -284,7 +284,13 @@ Time Time::fromString(const std::string& stringTime, Time::Resolution resolution
      }
  
      struct tm tm;
@@ -19,19 +36,18 @@
 +#ifdef WIN32
 +	    throw std::runtime_error("base::Time::fromString failed- not implemented for windows");
 +#else
-     if(NULL == strptime(mainTime.c_str(), mainFormat.c_str(), &tm))
-     {
-         throw std::runtime_error("Time::fromString failed- Time-String '" + mainTime + "' did not match the given format '" + mainFormat +"'");
-     }
+     if (NULL == strptime(mainTime.c_str(), mainFormat.c_str(), &tm))
 +#endif
-     // " ... not set by strptime(); tells mktime() to determine 
-     // whether daylight saving time is in effect ..."
-     // (http://pubs.opengroup.org/onlinepubs/007904975/functions/strptime.html)
+     {
+         throw std::runtime_error(
+             "Time::fromString failed: " + mainTime + "' did not match the given "
+diff --git a/src/Time.hpp b/src/Time.hpp
+index 3baffb5..a0ca1ff 100644
 --- src/Time.hpp
 +++ src/Time.hpp
-@@ -5,6 +5,11 @@
- #include <ostream>
+@@ -6,6 +6,11 @@
  #include <stdint.h>
+ #include <vector>
  
 +#ifdef WIN32
 +#include <Time.h>
@@ -41,14 +57,3 @@
  namespace base
  {
      struct Time
---- manifest.xml
-+++ manifest.xml
-@@ -17,7 +17,7 @@
-     <depend package="base/logging" />
-
-     <depend package="rice" optional="1" />
--    <depend package="external/sisl" optional="1" />
-+    <depend package="external/sisl" />
-     <depend package="gui/vizkit3d" optional="1" />
-     <tags>stable</tags>
- </package>

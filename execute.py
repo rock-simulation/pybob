@@ -11,6 +11,10 @@ def makeDir(path):
     except OSError as exc:
         pass
 
+def decode(s):
+    if isinstance(s, bytes):
+        return s.decode("utf-8")
+    return s
 
 def simpleExecute(cmd):
     p = subprocess.Popen(" ".join(cmd), stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)

@@ -3,6 +3,7 @@
 import os
 import sys
 from platform import system
+from platform import version
 import colorconsole as c
 import subprocess
 import execute
@@ -31,11 +32,12 @@ def setupEnv(cfg, update=False):
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
+    pythonver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
     pythonpath = prefix_lib + "/python%d.%d/site-packages" % (sys.version_info.major, sys.version_info.minor)
     platform = system()
     if platform == "Windows":
         # todo: make this more generic
-        pythonpath = "/mingw64/lib/python2.7:/mingw64/lib/python2.7/plat-win32:/mingw64/lib/python2.7/lib-tk:/mingw64/lib/python2.7/lib-dynload:/mingw64/lib/python2.7/site-packages:"+pythonpath
+        pythonpath = "/mingw64/lib/python"+pythonver+":/mingw64/lib/python"+pythonver+"/plat-win32:/mingw64/lib/python"+pythonver+"/lib-tk:/mingw64/lib/python"+pythonver+"/lib-dynload:/mingw64/lib/python"+pythonver+"/site-packages:"+pythonpath
     elif platform == "Linux":
         prefix_lib += ":" + prefix + "/lib/x86_64-linux-gnu"
         prefix_pkg += ":" + prefix + "/lib/x86_64-linux-gnu/pkgconfig"
@@ -89,11 +91,15 @@ def setupEnv(cfg, update=False):
             if platform == "Darwin":
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
                 f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
+                f.write('export USE_QT5=1\n')
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$LD_LIBRARY_PATH"\n')
                 f.write('export CXXFLAGS="-std=c++11"\n')
+                if int(version().split("~")[1].split(".")[0]) >= 20:
+                    f.write('export USE_QT5=1\n')
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
+                f.write('export USE_QT5=1\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
             f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
 
@@ -118,15 +124,15 @@ def setupEnv(cfg, update=False):
         if not "autoprojEnv" in cfg or not cfg["autoprojEnv"]:
             options += " -DBINDINGS_RUBY=OFF "
         if platform == "Windows":
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=DEBUG  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Debug  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=DEBUG $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Debug $@\n")
     with open(cfg["devDir"]+"/install/bin/cmake_release", "w") as f:
         f.write("#!/bin/bash\n")
         if platform == "Windows":
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=RELEASE  -G \"MSYS Makefiles\" $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Release  -G \"MSYS Makefiles\" $@\n")
         else:
-            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=RELEASE $@\n")
+            f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Release $@\n")
 
     cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_debug"]
     execute.simpleExecute(cmd)

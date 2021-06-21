@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 from __future__ import print_function
 from platform import system
+from platform import version
 import sys
 import os
 import colorconsole as c
@@ -12,6 +13,9 @@ from platform import system
 
 def uninstall_ode(cfg):
     execute.do(["make", "-C", cfg["devDir"] + "/simulation/ode", "clean"])
+
+def uninstall_ode_16(cfg):
+    execute.do(["make", "-C", cfg["devDir"] + "/simulation/ode-16", "clean"])
 
 
 def patch_ode(cfg):
@@ -26,7 +30,7 @@ def patch_ode(cfg):
 
 def patch_ode_16(cfg):
     srcPath = cfg["pyScriptDir"] + "/patches/"
-    targetPath = cfg["devDir"] + "/simulation/ode-0.16"
+    targetPath = cfg["devDir"] + "/simulation/ode-16"
     cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
 
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-lambda.patch"])
@@ -34,11 +38,14 @@ def patch_ode_16(cfg):
     #out, err, r = execute.do(cmd + [srcPath + "ode-0.12-export_joint_internals.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-abort.patch"])
     out, err, r = execute.do(cmd + [srcPath + "ode-0.16-heightfield.patch"])
+    out, err, r = execute.do(cmd + [srcPath + "ode-0.16-cmakelists.patch"])
 
 
 def check_ode(cfg):
     return os.path.isfile(cfg["devDir"] + "/simulation/ode/ode.pc.in")
 
+def check_ode_16(cfg):
+    return os.path.isfile(cfg["devDir"] + "/simulation/ode-16/ode.pc.in")
 
 def fetch_ode(cfg):
     path = cfg["devDir"] + "/simulation"
@@ -68,13 +75,13 @@ def fetch_ode(cfg):
 
 def fetch_ode_16(cfg):
     path = cfg["devDir"] + "/simulation"
-    print(c.BOLD + "Fetching " + "external/ode ... " + c.END, end="")
+    print(c.BOLD + "Fetching " + "external/ode-16 ... " + c.END, end="")
     sys.stdout.flush()
     cwd = os.getcwd()
     execute.makeDir(path)
     os.chdir(path)
     if not os.path.isfile(path + "/ode-0.16.tar.gz"):
-        if os.path.isdir(path + "/ode"):
+        if os.path.isdir(path + "/ode-16"):
             uninstall_ode(cfg)
         execute.do(
             [
@@ -84,12 +91,12 @@ def fetch_ode_16(cfg):
             ]
         )
         execute.do(["tar", "-xzf", "ode-0.16.tar.gz"])
+        execute.do(["mv", "ode-0.16", "ode-16"])
         patch_ode_16(cfg)
-        execute.do(["mv", "ode-0.16", "ode"])
-        if not os.path.isfile("ode/ode.pc.in"):
+        if not os.path.isfile("ode-16/ode.pc.in"):
             cfg["errors"].append("fetch: simulation/ode")
     os.chdir(cwd)
-    cfg["installed"].append("simulation/ode")
+    cfg["installed"].append("simulation/ode-16")
     return True
 
 
@@ -125,10 +132,49 @@ def install_ode(cfg):
     cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode_install.txt")
-    print(out)
-    print(err)
+    print(execute.decode(out))
+    print(execute.decode(err))
     print(r)
     print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
+    sys.stdout.flush()
+
+# temporary used until all systems build with cmake
+def install_ode_16(cfg):
+    if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/ode.pc"):
+        print(c.BOLD + "simulation/ode-16" + c.WARNING + " installed" + c.END)
+        sys.stdout.flush
+        return
+    path = cfg["devDir"] + "/simulation/ode-16"
+    cmd = [
+        'CXXFLAGS="-O2 -ffast-math -fPIC"',
+        'CFLAGS="-O2 -ffast-math -fPIC"',
+        "--enable-double-precision",
+        "--prefix=" + cfg["devDir"] + "/install",
+        "--with-drawstuff=none",
+        "--disable-demos",
+    ]
+    # cmd = ['CPPFLAGS="-DdNODEBUG"', 'CXXFLAGS="-O2 -ffast-math -fPIC"', 'CFLAGS="-O2 -ffast-math -fPIC"', "--enable-double-precision", "--prefix="+cfg["devDir"]+"/install", "--with-drawstuff=none", "--disable-demos"]
+    if system() == "Windows":
+        cmd = ["bash", "configure"] + cmd
+    else:
+        cmd = ["./configure"] + cmd
+
+    out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode-16_configure.txt")
+
+    print(c.BOLD + "simulation/ode-16" + c.WARNING + " configured" + c.END)
+    sys.stdout.flush()
+    if system() == "Linux":
+        libtool = os.popen("which libtool").read()
+        if len(libtool) > 0:
+            execute.do(["mv", "libtool", "libtool_old"], None, None, path)
+            execute.do(["ln", "-s", libtool, "libtool"], None, None, path)
+    cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, None, "simulation_ode-16_install.txt")
+    print(execute.decode(out))
+    print(execute.decode(err))
+    print(r)
+    print(c.BOLD + "simulation/ode-16" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()
 
 
@@ -334,13 +380,6 @@ def loadOverrides(cfg):
             "uninstall": uninstall_ode,
             "install": install_ode,
         },
-        "simulation/ode-16": {
-            "fetch": fetch_ode_16,
-            "patch": patch_ode_16,
-            "check": check_ode,
-            "uninstall": uninstall_ode,
-            "install": install_ode,
-        },
         "external/minizip": {
             "fetch": fetch_minizip,
             "patch": patch_minizip,
@@ -373,6 +412,21 @@ def loadOverrides(cfg):
         "orocos.rb": {"install": install_orocos},
         "tools/orocos.rb": {"install": install_orocos},
     }
+    if system() == "Windows":
+        cfg["overrides"]["simulation/ode-16"] = {
+            "fetch": fetch_ode_16,
+            "patch": patch_ode_16,
+            "check": check_ode_16,
+        }
+    else:
+        cfg["overrides"]["simulation/ode-16"] = {
+            "fetch": fetch_ode_16,
+            "patch": patch_ode_16,
+            "check": check_ode_16,
+            "uninstall": uninstall_ode_16,
+            "install": install_ode_16,
+        }
+
     cfg["ignorePackages"] = [
         "autotools",
         #"gui/vizkit3d",
@@ -389,18 +443,24 @@ def loadOverrides(cfg):
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
+        cfg["ignorePackages"].append("python3")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
         cfg["ignorePackages"].append("zlib")
+        cfg["ignorePackages"].append("dataclasses")
+        cfg["ignorePackages"].append("blender")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
+    elif int(version().split("~")[1].split(".")[0]) < 20:
+        cfg["ignorePackages"].append("external/osgQt")
+
 
     filename = cfg["path"] + "/autoproj/overrides.yml"
     if os.path.isfile(filename):
         with open(filename) as f:
-            ov = yaml.load(f)
+            ov = yaml.safe_load(f)
         if ov is not None and "overrides" in ov and ov["overrides"] is not None:
             for it in ov["overrides"]:
                 for key, value in it.items():

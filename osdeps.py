@@ -4,6 +4,7 @@ import os
 import colorconsole as c
 import execute
 from platform import system
+from platform import version
 import sys
 
 def gemInstall(cfg, pkg):
@@ -32,7 +33,8 @@ def pipInstall(cfg, pkg):
                 return
         cmd = ["pip", "install", "-U", "--noinput", pkg]
     else:
-        cmd = ["yes", "|", "pip", "install", "-U", pkg]
+        pipCmd = "pip" + str(sys.version_info.major)
+        cmd = ["yes", "|", pipCmd, "install", "-U", pkg]
 
     print(" ".join(cmd))
     out, err, r = execute.do(cmd)
@@ -78,8 +80,8 @@ def install(cfg, pkg):
         print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
         execute.do(["sudo", "port", "install", pkg])
     else:
-        out, err, r = execute.do(['dpkg', '-l', pkg])
-        if len(err) >  5:
+        out, err, r = execute.do(['dpkg', '-s', pkg])
+        if r != 0:
             print(c.BOLD + "Installing os dependency: "+pkg + c.END, end="")
             arrPkg = pkg.split()
             for p in arrPkg:
@@ -106,27 +108,43 @@ def loadOsdeps(cfg):
                 "python": [install, "python3-dev"],
                 "python-dev": [install, "python3-dev"],
                 "python-yaml": [install, "python3-yaml"],
+                "pyyaml": [install, "python3-yaml"],
                 "python-numpy": [install, "python3-numpy"],
                 "python-scipy": [install, "python3-scipy"],
+                "scipy": [install, "python3-scipy"],
                 "python-sklearn": [install, "python3-sklearn"],
+                "scikit-learn": [install, "python3-sklearn"],
                 "python-matplotlib": [install, "python3-matplotlib"],
+                "matplotlib": [install, "python3-matplotlib"],
                 "numpy": [install, "python3-numpy"],
+                "python3-pkgconfig": [install],
+                "cython": [install, "cython3"],
                 })
         else:
             cfg["osdeps"].update({
                 "python": [install, "python-dev"],
                 "python-dev": [install],
                 "python-yaml": [install],
+                "pyyaml": [install, "python-yaml"],
                 "python-numpy": [install],
                 "python-scipy": [install],
+                "scipy": [install],
                 "python-sklearn": [install],
+                "scikit-learn": [install, "python-sklearn"],
                 "python-matplotlib": [install],
+                "matplotlib": [install, "python-matplotlib"],
                 "numpy": [install, "python-numpy"],
+                "cython": [install],
                 })
 
         cfg["osdeps"].update({
             "urdf-parser-py": [pipInstall, "urdf-parser-py"],
-            "opencv": [install, "libcvaux-dev libhighgui-dev libopencv-dev"],
+            "torch": [pipInstall],
+            "torch-vision": [pipInstall],
+            "torchdiffeq": [pipInstall, "git+https://github.com/rtqichen/torchdiffeq"],
+            "torchsummary": [pipInstall],
+            "tensorboard": [pipInstall],
+            "pyswarms": [pipInstall],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
             "yaml": [install, "libyaml-dev"],
@@ -135,13 +153,8 @@ def loadOsdeps(cfg):
             "qwt": [install, "libqwt-qt4-dev"],
             "qwt5-qt4": [install, "libqwt-qt4-dev"],
             "pkg-config": [install], "cmake": [install],
-            "qt4": [install, "qt4-default"],
-            "qt": [install, "qt4-default"],
-            "qtwebkit": [install, "libqtwebkit-dev"],
-            "qt4-webkit": [install, "libqtwebkit-dev"],
             "osg": [install, "libopenscenegraph-dev"],
             "boost": [install, "libboost-all-dev"],
-            "cython": [install],
             "zlib": [install, "zlib1g-dev"],
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
@@ -153,6 +166,21 @@ def loadOsdeps(cfg):
             "rake-compiler": [gemInstall],
             "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
+        if int(version().split("~")[1].split(".")[0]) >= 20:
+            cfg["osdeps"]["qt"] = [install, "qt5-default"]
+            cfg["osdeps"]["qtwebkit"] = [install, "libqt5webkit5-dev"]
+            cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]
+            # also override qt4 deps
+            cfg["osdeps"]["qt4"] = [install, "qt5-default"]
+            cfg["osdeps"]["qt4-webkit"] = [install, "libqt5webkit5-dev"]
+
+        else:
+            cfg["osdeps"]["qt"] = [install, "qt4-default"]
+            cfg["osdeps"]["qtwebkit"] = [install, "libqtwebkit-dev"]
+            cfg["osdeps"]["opencv"] = [install, "libcvaux-dev libhighgui-dev libopencv-dev"]
+            cfg["osdeps"]["qt4"] = [install, "qt4-default"]
+            cfg["osdeps"]["qt4-webkit"] = [install, "libqtwebkit-dev"]
+
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
             cfg["osdeps"]["qt"] = [install, "libqt4-dev"]
@@ -178,14 +206,18 @@ def loadOsdeps(cfg):
                               "python-numpy": [install, "python2-numpy"],
                               "numpy": [install, "python2-numpy"],
                               "python-scipy": [install, "python2-scipy"],
+                              "scipy": [install, "python2-scipy"],
                               "python-sklearn": [pipInstall, "sklearn"],
+                              "scikit-learn": [pipInstall, "sklearn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "python2-matplotlib"],
+                              "matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
                               "utilrb": [gemInstall, "utilrb"],
                               "zlib": [install]})
     else:
+        pyprefix = "py"+str(sys.version_info.major)+str(sys.version_info.minor)+"-"
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
                               "yaml-cpp": [install],
@@ -194,21 +226,54 @@ def loadOsdeps(cfg):
                               "qwt": [install],
                               "qwt5-qt4": [install, "qwt"],
                               "pkg-config": [install],
-                              "qt4": [install, ""], "cmake": [install],
-                              #"qtwebkit": [install, "qt5-webkit"],
-                              #"qt4-webkit": [install, "qt5-webkit"],
-                              #"qt": [install, "qt5"],
+                              "qt4": [install, "qt5"], "cmake": [install],
+                              "qtwebkit": [install, "qt5-qtwebkit"],
+                              "qt4-webkit": [install, "qt5-qtwebkit"],
+                              "qt": [install, "qt5"],
                               "pkg-config": [install],
                               "boost": [install],
-                              "osg": [install, ""],
-                              "numpy": [install, "py-numpy"],
-                              "cython": [install, "py-cython"],
+                              "osg": [install, "OpenSceneGraph"],
+                              "numpy": [install, pyprefix+"numpy"],
+                              "cython": [install, pyprefix+"cython"],
+                              "cython3": [install, pyprefix+"cython"],
                               "yaml": [install, "libyaml"],
-                              "python-numpy": [install, "py-numpy"],
-                              "python-scipy": [install, "py-scipy"],
-                              "python-sklearn": [install, "py-scikit-learn"],
+                              "curl": [install],
+                              "python-numpy": [install, pyprefix+"numpy"],
+                              "python-scipy": [install, pyprefix+"scipy"],
+                              "pyyaml": [install, pyprefix+"yaml"],
+                              "python3-yaml": [install, pyprefix+"yaml"],
+                              "scipy": [install, pyprefix+"scipy"],
+                              "python-sklearn": [install, pyprefix+"scikit-learn"],
+                              "scikit-learn": [install, pyprefix+"scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
-                              "python-matplotlib": [install, "py-matplotlib"],
                               "omniorb": [install, "omniorb"],
                               "utilrb": [gemInstall, "utilrb"],
+                              "lemon": [install, "lemon"],
+                              "fftw3": [install, "fftw-3"],
+                              "uriparser": [install],
+                              "python-matplotlib": [install, pyprefix+"matplotlib"],
+                              "matplotlib": [install, pyprefix+"matplotlib"],
+                              "python3-pip": [install, pyprefix+"pip"],
+                              "python3-setuptools": [install, pyprefix+"setuptools"],
+                              "python3-setuptools_48": [install, pyprefix+"setuptools=4.8"],
+                              "python3-pkgconfig": [install, pyprefix+"pkgconfig"],
+                              "python3-nose": [install, pyprefix+"nose"],
+                              "python3-git": [install, pyprefix+"git"],
+                              "python3-path": [install, pyprefix+"path"],
+                              "pandas": [pipInstall, "pandas"],
+                              "tensorflow": [pipInstall, "tensorflow"],
+                              "keras": [install, pyprefix+"keras"],
+                              "torch": [install, pyprefix+"pytorch"],
+                              "python3-requests": [install, pyprefix+"requests"],
+                              "python3-flask_restful": [install, pyprefix+"flask"],
+                              "pyswarms": [pipInstall, "pyswarms"],
+                              "torchdiffeq": [pipInstall, "torchdiffeq"],
+                              "torch-optimizer": [pipInstall, "torch-optimizer"],
+                              "ai": [pipInstall, "ai ai.cs"],
+                              "pymock": [pipInstall, "pymock"],
+                              "pylxml": [install, pyprefix+"lxml"],
+                              "torchsummary": [pipInstall, "torchsummary"],
+                              "colorlog": [pipInstall, "colorlog"],
+                              "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
+                              "owlready2": [pipInstall, "Owlready2"],
 })
