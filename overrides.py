@@ -246,7 +246,29 @@ def uninstall_protobuf(cfg):
     execute.do(["make", "clean"])
     os.chdir(cwd)
 
+def fetch_general_git(cfg, path, package, url, hashId=None):
+    path = os.path.join(cfg["devDir"], path)
+    path2 = os.path.join(cfg["devDir"], package)
+    print(c.BOLD + "Fetching " + package +" ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    if not os.path.exists(path2):
+        execute.makeDir(path)
+        os.chdir(path)
+        execute.do(["git", "clone", url])
+        if hashId:
+            os.chdir(path2)
+            execute.do(["git", "checkout", hashId])
+    else:
+        os.chdir(path2)
+        execute.do(["git", "update"])
+        if hashId:
+            execute.do(["git", "checkout", hashId])
+    os.chdir(cwd)
+    return True
+
 def fetch_rtt(cfg):
+    return fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
     path = cfg["devDir"] + "/tools"
     print(c.BOLD + "Fetching " + "tools/rtt ... " + c.END, end="")
     sys.stdout.flush
@@ -267,6 +289,41 @@ def fetch_rtt(cfg):
 
 def install_rtt(cfg):
     bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
+
+def fetch_typelib(cfg):
+    return fetch_general_git(cfg, "tools", "tools/typelib",
+    "git@github.com:orocos-toolchain/typelib.git")
+
+def install_typelib(cfg):
+    bob_package.installPackage(cfg,
+    "tools/typelib")
+
+def fetch_rtt_typelib(cfg):
+    return fetch_general_git(cfg, "tools", "tools/rtt_typelib",
+    "git@github.com:orocos-toolchain/rtt_typelib.git")
+
+def install_rtt_typelib(cfg):
+    bob_package.installPackage(cfg,
+    "tools/rtt_typelib")
+
+
+def fetch_orogen(cfg):
+    return fetch_general_git(cfg, "tools", "tools/orogen",
+    "git@github.com:orocos-toolchain/orogen.git")
+
+def install_orogen(cfg):
+    bob_package.installPackage(cfg, "tools/orogen")
+
+def install_orocos(cfg):
+    path = cfg["devDir"] + "/tools/orocos.rb"
+    print(c.BOLD + "Installing " + "tools/orocos.rb ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    os.chdir(path)
+    execute.do(["rake"])
+    # todo: put ruby pat to cfg
+    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby/2.5.0"])
+    execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -306,6 +363,15 @@ def loadOverrides(cfg):
         "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
         "external/rbdl": {"fetch": fetch_rbdl},
         "rtt": {"fetch": fetch_rtt, "install": install_rtt},
+        "tools/rtt": {"fetch": fetch_rtt, "install": install_rtt},
+        "typelib": {"fetch": fetch_typelib, "install": install_typelib},
+        "tools/typelib": {"fetch": fetch_typelib, "install": install_typelib},
+        "rtt_typelib": {"fetch": fetch_rtt_typelib, "install": install_rtt_typelib},
+        "tools/rtt_typelib": {"fetch": fetch_rtt_typelib, "install": install_rtt_typelib},
+        "tools/orogen": {"fetch": fetch_orogen, "install": install_orogen},
+        "orogen": {"fetch": fetch_orogen, "install": install_orogen},
+        "orocos.rb": {"install": install_orocos},
+        "tools/orocos.rb": {"install": install_orocos},
     }
     cfg["ignorePackages"] = [
         "autotools",

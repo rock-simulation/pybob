@@ -79,8 +79,8 @@ def installPackage(cfg, p, cmake_options=[]):
         if os.path.exists(orogenPath) and cfg["rebuild"]:
             execute.do(["rm", "-rf", orogenPath])
         if not os.path.exists(orogenPath):
-            cmd = ["orogen", "--transport=corba,typelib", orogenFilename]
-            #print(" ".join(cmd))
+            cmd = ["orogen", "--transport=corba,typelib", "--import=std", orogenFilename]
+            print(" ".join(cmd))
             out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
             if r != 0:
                 print(p + c.ERROR + " orogen error" + c.END)

@@ -330,10 +330,10 @@ def list_():
     packages, w = buildconf.listPackages(cfg)
     for p in packages:
         if len(p[1]) > 0:
-            print(p[0], end="")
+            print(p[0], end=" - ")
             c.printBold(p[1])
         else:
-            print(p[0], end="")
+            print(p[0], end=" - ")
             c.printWarning(p[0])
 
 def rebuild_():

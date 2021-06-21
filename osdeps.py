@@ -6,6 +6,14 @@ import execute
 from platform import system
 import sys
 
+def gemInstall(cfg, pkg):
+    cmd = ["sudo", "gem", "install", pkg]
+
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd)
+    if len(out) > 0:
+        return
+
 
 def pipInstall(cfg, pkg):
     """PIP installation command."""
@@ -138,6 +146,11 @@ def loadOsdeps(cfg):
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
+            "utilrb": [gemInstall],
+            "hoe": [gemInstall],
+            "hoe-yard": [gemInstall],
+            "yard": [gemInstall],
+            "rake-compiler": [gemInstall],
             "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
         if not cfg["buildOptional"]:
@@ -170,6 +183,7 @@ def loadOsdeps(cfg):
                               "python-matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
+                              "utilrb": [gemInstall, "utilrb"],
                               "zlib": [install]})
     else:
         cfg["osdeps"].update({"opencv": [install],
@@ -196,4 +210,5 @@ def loadOsdeps(cfg):
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "python-matplotlib": [install, "py-matplotlib"],
                               "omniorb": [install, "omniorb"],
+                              "utilrb": [gemInstall, "utilrb"],
 })
