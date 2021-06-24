@@ -108,6 +108,21 @@ def setupEnv(cfg, update=False):
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
+            if platform == "Darwin":
+                f.write('export RUBYLIB="'+prefix_lib+'/ruby2.6/2.6.0:'+prefix_lib+'/ruby2.6/2.6.0/x86_64-darwin17"\n')
+                f.write('export USE_QT5=1\n')
+                f.write('export OROCOS_TARGET="macosx"\n')
+                f.write('export TYPELIB_RUBY_PLUGIN_PATH="'+prefix+'/share/typelib/ruby"\n')
+                f.write('export TYPELIB_CXX_LOADER="castxml"\n')
+
+                f.write('export CXXFLAGS="-fPIC -std=c++11"\n')
+                f.write('export TYPELIB_CASTXML_DEFAULT_OPTIONS="-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/opt/local/include"\n')
+                f.write('export OROGEN_PLUGIN_PATH="'+prefix+'/share/orogen/plugins"\n')
+                f.write('export ROCK_BUNDLE_PATH="'+prefix+'/../bundles"\n')
+                f.write('export ORBInitRef="NameService=corbaname::localhost"\n')
+                f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/types"\n')
+                f.write('export QT_PLUGIN_DIR="'+prefix+'/lib/qt"\n')
+
             _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")
