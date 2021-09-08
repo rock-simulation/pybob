@@ -4,8 +4,8 @@ import os
 import colorconsole as c
 import execute
 from platform import system
-from platform import version
 import sys
+from environment import QT5_UBUNTU
 
 def gemInstall(cfg, pkg):
     cmd = ["sudo", "gem", "install", pkg]
@@ -166,7 +166,7 @@ def loadOsdeps(cfg):
             "rake-compiler": [gemInstall],
             "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
-        if int(version().split("~")[1].split(".")[0]) >= 20:
+        if QT5_UBUNTU:
             cfg["osdeps"]["qt"] = [install, "qt5-default"]
             cfg["osdeps"]["qtwebkit"] = [install, "libqt5webkit5-dev"]
             cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]

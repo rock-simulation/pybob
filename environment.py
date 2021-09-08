@@ -3,10 +3,22 @@
 import os
 import sys
 from platform import system
-from platform import version
 import colorconsole as c
 import subprocess
 import execute
+QT5_UBUNTU = False
+if system() == "Linux":
+    qt5_ubuntu_env_var = os.environ.get("QT5_UBUNTU")
+    if qt5_ubuntu_env_var is None:
+        try:
+            import distro
+        except ImportError:
+            raise ImportError("please install the distro package: pip install distro\n"
+                              "(or set QT5_UBUNTU to True or False prior to using pybob)")
+        QT5_UBUNTU = distro.id() == "ubuntu" and int(distro.major_version(best=True)) >= 20
+    else:
+        QT5_UBUNTU = bool(qt5_ubuntu_env_var)
+
 
 def source(sourceFile):
     newenv = {}
@@ -95,7 +107,7 @@ def setupEnv(cfg, update=False):
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$LD_LIBRARY_PATH"\n')
                 f.write('export CXXFLAGS="-std=c++11"\n')
-                if int(version().split("~")[1].split(".")[0]) >= 20:
+                if QT5_UBUNTU:
                     f.write('export USE_QT5=1\n')
             else:
                 f.write('export PATH="'+prefix_lib+':$PATH"\n')
