@@ -19,7 +19,15 @@
 
 # Prepare Ubuntu for pybob:
 
-       sudo apt-get install git python-yaml
+       sudo apt-get install git python-yaml python-distro
+  or (using python3)
+
+       sudo apt install git python3-yaml python3-distro
+
+You can exclude the distro module by
+
+       export QT5_UBUNTU=True
+or `False` if you have a older system which is incompatible with QT5.
 
 # Prepare Mac OS X for pybob:
 

@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 from __future__ import print_function
 from platform import system
-from platform import version
 import sys
 import os
 import colorconsole as c
 import execute
 import yaml
 import bob_package
-from platform import system
+from environment import QT5_UBUNTU
 
 
 def uninstall_ode(cfg):
@@ -365,7 +364,7 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
-    elif int(version().split("~")[1].split(".")[0]) < 20:
+    elif not QT5_UBUNTU:
         cfg["ignorePackages"].append("external/osgQt")
 
 

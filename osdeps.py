@@ -4,8 +4,8 @@ import os
 import colorconsole as c
 import execute
 from platform import system
-from platform import version
 import sys
+from environment import QT5_UBUNTU
 
 def pipInstall(cfg, pkg):
     """PIP installation command."""
@@ -151,7 +151,7 @@ def loadOsdeps(cfg):
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
             })
-        if int(version().split("~")[1].split(".")[0]) >= 20:
+        if QT5_UBUNTU:
             cfg["osdeps"]["qt"] = [install, "qt5-default"]
             cfg["osdeps"]["qtwebkit"] = [install, "libqt5webkit5-dev"]
             cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]
