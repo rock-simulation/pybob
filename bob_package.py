@@ -111,7 +111,7 @@ def installPackage(cfg, p, cmake_options=[]):
             out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
             if r != 0:
                 print(p + c.ERROR + " orogen error" + c.END)
-                stdout.flush()
+                sys.stdout.flush()
                 cfg["errors"].append("orogen: "+p)
                 return
 
