@@ -7,6 +7,7 @@ import colorconsole as c
 import execute
 import yaml
 import bob_package
+import utils
 from environment import QT5_UBUNTU
 
 
@@ -336,28 +337,29 @@ def install_rtt(cfg):
     bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
 
 def fetch_typelib(cfg):
-    return fetch_general_git(cfg, "tools", "tools/typelib",
-    "git@github.com:orocos-toolchain/typelib.git")
-
-def install_typelib(cfg):
-    bob_package.installPackage(cfg,
-    "tools/typelib")
-
-def fetch_rtt_typelib(cfg):
-    return fetch_general_git(cfg, "tools", "tools/rtt_typelib",
-    "git@github.com:orocos-toolchain/rtt_typelib.git")
-
-def install_rtt_typelib(cfg):
-    bob_package.installPackage(cfg,
-    "tools/rtt_typelib")
-
+    if fetch_general_git(cfg, "tools", "tools/typelib",
+                         "git@github.com:orocos-toolchain/typelib.git"):
+        source = os.path.join(cfg["devDir"], "pybob/cmake/FindRuby.cmake")
+        target = os.path.join(cfg["devDir"], "tools/typelib/cmake")
+        execute.do(["cp", source, target])
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/typelib"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "typelib.patch"])
+        return True
+    return False
 
 def fetch_orogen(cfg):
+    folder = "orocos-toolchain"
+    if system() == "Darwin":
+        folder = "malter"
     return fetch_general_git(cfg, "tools", "tools/orogen",
-    "git@github.com:orocos-toolchain/orogen.git")
+                             "git@github.com:"+folder+"/orogen.git")
 
-def install_orogen(cfg):
-    bob_package.installPackage(cfg, "tools/orogen")
+def fetch_rtt_typelib(cfg):
+    folder = "orocos-toolchain"
+    return fetch_general_git(cfg, "tools", "tools/rtt_typelib",
+                             "git@github.com:"+folder+"/rtt_typelib.git")
 
 def install_orocos(cfg):
     path = cfg["devDir"] + "/tools/orocos.rb"
@@ -366,8 +368,9 @@ def install_orocos(cfg):
     cwd = os.getcwd()
     os.chdir(path)
     execute.do(["rake"])
-    # todo: put ruby pat to cfg
-    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby/2.5.0"])
+    # todo: put ruby pat to cfg; get correct ruby version and add it to path
+    major,minor = utils.get_ruby_verison()
+    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def loadOverrides(cfg):
@@ -400,17 +403,21 @@ def loadOverrides(cfg):
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
         "external/rbdl": {"fetch": fetch_rbdl},
-        "rtt": {"fetch": fetch_rtt, "install": install_rtt},
-        "tools/rtt": {"fetch": fetch_rtt, "install": install_rtt},
-        "typelib": {"fetch": fetch_typelib, "install": install_typelib},
-        "tools/typelib": {"fetch": fetch_typelib, "install": install_typelib},
-        "rtt_typelib": {"fetch": fetch_rtt_typelib, "install": install_rtt_typelib},
-        "tools/rtt_typelib": {"fetch": fetch_rtt_typelib, "install": install_rtt_typelib},
-        "tools/orogen": {"fetch": fetch_orogen, "install": install_orogen},
-        "orogen": {"fetch": fetch_orogen, "install": install_orogen},
-        "orocos.rb": {"install": install_orocos},
-        "tools/orocos.rb": {"install": install_orocos},
+        "rtt": {"fetch": fetch_rtt, "install_path": "tools/rtt"},
+        "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
+        "rtt_typelib": {"fetch": fetch_rtt_typelib, "install_path": "tools/rtt_typelib"},
+        "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen", "additinal_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]},
+        "orocos.rb": {"install": install_orocos, "install_path": "tools/orocos"},
     }
+    if system() == "Darwin":
+        cfg["overrides"]["tools/orogen_cpp_proxies"] =  {"url": "git@github.com:malter/orogen_cpp_proxies.git"}
+
+    cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
+    cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
+    cfg["overrides"]["tools/rtt"] = cfg["overrides"]["rtt"]
+    cfg["overrides"]["tools/typelib"] = cfg["overrides"]["typelib"]
+    cfg["overrides"]["tools/orocos.rb"] = cfg["overrides"]["orocos.rb"]
+
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
             "fetch": fetch_ode_16,

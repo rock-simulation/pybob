@@ -1,0 +1,168 @@
+diff --git ext/rorocos/CMakeLists.txt ext/rorocos/CMakeLists.txt
+index 8d46956b..9a13a5b8 100644
+--- ext/rorocos/CMakeLists.txt
++++ ext/rorocos/CMakeLists.txt
+@@ -9,14 +9,15 @@ IF(APPLE)
+   set(CMAKE_MACOSX_RPATH 1)
+ ENDIF(APPLE)
+ 
+-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
++#if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+     message(STATUS "running on Linux, implementing the __orogen_getTID() operation on all tasks")
+     add_definitions(-DHAS_GETTID)
+-else()
+-    message(STATUS "NOT running on Linux (cmake reports ${CMAKE_SYSTEM_NAME}). The __orogen_getTID() operation will be a dummy")
+-endif()
++#else()
++#    message(STATUS "NOT running on Linux (cmake reports ${CMAKE_SYSTEM_NAME}). The __orogen_getTID() operation will be a dummy")
++#endif()
+ 
+ ADD_DEFINITIONS(-D_REENTRANT)
++ADD_LINK_OPTIONS(-undefined dynamic_lookup)
+ MACRO(CMAKE_USE_FULL_RPATH install_rpath)
+     # use, i.e. don't skip the full RPATH for the build tree
+     SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+diff --git ext/rorocos/FindRuby.cmake ext/rorocos/FindRuby.cmake
+index 0faf0df9..d22aaa7a 100644
+--- ext/rorocos/FindRuby.cmake
++++ ext/rorocos/FindRuby.cmake
+@@ -34,7 +34,7 @@
+ #   RUBY_LIBRUBYARG=`$RUBY -r rbconfig -e 'printf("%s",RbConfig::CONFIG@<:@"LIBRUBYARG_SHARED"@:>@)'`
+ 
+ # uncomment the following line to get debug output for this file
+-# SET(_RUBY_DEBUG_OUTPUT TRUE)
++#SET(_RUBY_DEBUG_OUTPUT TRUE)
+ 
+ # Determine the list of possible names of the ruby executable depending
+ # on which version of ruby is required
+@@ -59,47 +59,43 @@ FIND_PROGRAM(RUBY_EXECUTABLE NAMES ${_RUBY_POSSIBLE_EXECUTABLE_NAMES})
+ 
+ IF(RUBY_EXECUTABLE  AND NOT  RUBY_MAJOR_VERSION)
+   # query the ruby version
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MAJOR']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MAJOR']"
+       OUTPUT_VARIABLE RUBY_VERSION_MAJOR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MINOR']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['MINOR']"
+       OUTPUT_VARIABLE RUBY_VERSION_MINOR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['TEENY']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['TEENY']"
+       OUTPUT_VARIABLE RUBY_VERSION_PATCH)
+ 
+    # query the different directories
+    EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['archdir']"
+       OUTPUT_VARIABLE RUBY_ARCH_DIR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['arch']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['arch']"
+       OUTPUT_VARIABLE RUBY_ARCH)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['rubyhdrdir']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['rubyhdrdir']"
+       OUTPUT_VARIABLE RUBY_HDR_DIR)
+   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['rubyarchhdrdir']"
+       OUTPUT_VARIABLE RUBY_ARCH_HDR_DIR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['libdir']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['libdir']"
+       OUTPUT_VARIABLE RUBY_POSSIBLE_LIB_DIR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['rubylibdir']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['rubylibdir']"
+       OUTPUT_VARIABLE RUBY_RUBY_LIB_DIR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['LIBRUBY_SO']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['LIBRUBY_SO']"
+       OUTPUT_VARIABLE RUBY_RUBY_LIBRARY)
+    STRING(REGEX REPLACE "^lib" "" RUBY_RUBY_LIBRARY "${RUBY_RUBY_LIBRARY}")
+-   IF(APPLE)
+-     STRING(REGEX REPLACE "\\.dylib.*" "" RUBY_RUBY_LIBRARY "${RUBY_RUBY_LIBRARY}")
+-   ELSE(APPLE)
+-     STRING(REGEX REPLACE "\\.so.*" "" RUBY_RUBY_LIBRARY "${RUBY_RUBY_LIBRARY}")
+-   ENDIF(APPLE)
++   STRING(REGEX REPLACE "\\.so.*" "" RUBY_RUBY_LIBRARY "${RUBY_RUBY_LIBRARY}")
+ 
+    # site_ruby
+    EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitearchdir']"
+       OUTPUT_VARIABLE RUBY_SITEARCH_DIR)
+ 
+-   EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitelibdir']"
++  EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['sitelibdir']"
+       OUTPUT_VARIABLE RUBY_SITELIB_DIR)
+ 
+    # vendor_ruby available ?
+@@ -107,10 +103,10 @@ IF(RUBY_EXECUTABLE  AND NOT  RUBY_MAJOR_VERSION)
+       OUTPUT_VARIABLE RUBY_HAS_VENDOR_RUBY  ERROR_QUIET)
+ 
+    IF(RUBY_HAS_VENDOR_RUBY)
+-      EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['vendorlibdir']"
++       EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['vendorlibdir']"
+          OUTPUT_VARIABLE RUBY_VENDORLIB_DIR)
+ 
+-      EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['vendorarchdir']"
++     EXECUTE_PROCESS(COMMAND ${RUBY_EXECUTABLE} -r rbconfig -e "print RbConfig::CONFIG['vendorarchdir']"
+          OUTPUT_VARIABLE RUBY_VENDORARCH_DIR)
+    ENDIF(RUBY_HAS_VENDOR_RUBY)
+ 
+@@ -181,25 +177,36 @@ IF(Ruby_FIND_VERSION)
+    ENDIF(${RUBY_VERSION}  VERSION_LESS  ${Ruby_FIND_VERSION})
+ ENDIF(Ruby_FIND_VERSION)
+ 
+-FIND_PATH(RUBY_INCLUDE_DIR
+-   NAMES ruby.h
+-   HINTS
+-   ${RUBY_HDR_DIR}
+-   ${RUBY_ARCH_DIR})
++IF(APPLE)
++  set(RUBY_INCLUDE_DIR ${RUBY_HDR_DIR})
++  set(RUBY_FOUND 1)
++ELSE(APPLE)
++  FIND_PATH(RUBY_INCLUDE_DIR
++     NAMES ruby.h
++     PATHS
++     ${RUBY_HDR_DIR}
++     ${RUBY_ARCH_DIR}
++     NO_DEFAULT_PATH
++     NO_PACKAGE_ROOT_PATH)
++ENDIF(APPLE)
+ set(RUBY_INCLUDE_DIRS ${RUBY_INCLUDE_DIR})
++MESSAGE(${RUBY_INCLUDE_DIRS})
+ 
+ # if ruby > 1.8 is required or if ruby > 1.8 was found, search for the config.h dir
+ IF( ${Ruby_FIND_VERSION_SHORT_NODOT} GREATER 18  OR  ${_RUBY_VERSION_SHORT_NODOT} GREATER 18  OR  RUBY_HDR_DIR)
+    message(STATUS "FindRuby: looking for config.h")
+-   FIND_PATH(RUBY_CONFIG_INCLUDE_DIR
+-     NAMES ruby/config.h  config.h
+-     HINTS 
+-     ${RUBY_HDR_DIR}/${RUBY_ARCH}
+-     ${RUBY_ARCH_HDR_DIR}
+-     ${RUBY_ARCH_DIR} 
+-     )
+-
+-   list(APPEND RUBY_INCLUDE_DIRS ${RUBY_INCLUDE_DIRS} ${RUBY_CONFIG_INCLUDE_DIR})
++   IF(APPLE)
++      set(RUBY_CONFIG_INCLUDE_DIR ${RUBY_HDR_DIR}/${RUBY_ARCH})
++   ELSE(APPLE)
++      FIND_PATH(RUBY_CONFIG_INCLUDE_DIR
++        NAMES ruby/config.h  config.h
++        HINTS 
++        ${RUBY_HDR_DIR}/${RUBY_ARCH}
++        ${RUBY_ARCH_HDR_DIR}
++        ${RUBY_ARCH_DIR}
++      )
++    ENDIF(APPLE)
++   list(APPEND RUBY_INCLUDE_DIRS ${RUBY_CONFIG_INCLUDE_DIR})
+ ENDIF( ${Ruby_FIND_VERSION_SHORT_NODOT} GREATER 18  OR  ${_RUBY_VERSION_SHORT_NODOT} GREATER 18  OR  RUBY_HDR_DIR)
+ 
+ 
+@@ -256,7 +263,7 @@ IF(_RUBY_DEBUG_OUTPUT)
+    MESSAGE(STATUS "--------------------")
+ ENDIF(_RUBY_DEBUG_OUTPUT)
+ 
+-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Ruby  DEFAULT_MSG  ${_RUBY_REQUIRED_VARS})
++#FIND_PACKAGE_HANDLE_STANDARD_ARGS(Ruby  DEFAULT_MSG  ${_RUBY_REQUIRED_VARS})
+ 
+ MARK_AS_ADVANCED(
+   RUBY_EXECUTABLE

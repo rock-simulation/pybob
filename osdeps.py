@@ -216,7 +216,7 @@ def loadOsdeps(cfg):
                               "yaml": [install, "libyaml"],
                               "utilrb": [gemInstall, "utilrb"],
                               "zlib": [install]})
-    else:
+    else: # Darwin
         pyprefix = "py"+str(sys.version_info.major)+str(sys.version_info.minor)+"-"
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
@@ -248,6 +248,8 @@ def loadOsdeps(cfg):
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
                               "omniorb": [install, "omniorb"],
                               "utilrb": [gemInstall, "utilrb"],
+                              "ruby-backports": [gemInstall, "backports"],
+                              "metaruby": [gemInstall, "metaruby"],
                               "lemon": [install, "lemon"],
                               "fftw3": [install, "fftw-3"],
                               "uriparser": [install],
@@ -276,4 +278,18 @@ def loadOsdeps(cfg):
                               "colorlog": [pipInstall, "colorlog"],
                               "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
                               "owlready2": [pipInstall, "Owlready2"],
+                              "sigc": [install, "libsigcxx2"],
+                              "hoe": [gemInstall],
+                              "hoe-yard": [gemInstall],
+                              "yard": [gemInstall],
+                              "rake-compiler": [gemInstall],
+                              "concurrent-ruby": [gemInstall],
+                              "pastel": [gemInstall],
+                              "hooks": [gemInstall],
+                              "rgl": [gemInstall],
+                              "websocket-gem": [gemInstall, "websocket"],
+                              "binding_of_caller": [gemInstall],
+                              "state_machine": [gemInstall],
+                              "avahi": [install],
+                              "poco": [install],
 })

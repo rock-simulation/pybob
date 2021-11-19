@@ -6,6 +6,8 @@ from platform import system
 import colorconsole as c
 import subprocess
 import execute
+import utils
+
 QT5_UBUNTU = False
 if system() == "Linux":
     qt5_ubuntu_env_var = os.environ.get("QT5_UBUNTU")
@@ -38,15 +40,17 @@ def source(sourceFile):
 def setupEnv(cfg, update=False):
     global os
     prefix = cfg["devDir"] + "/install"
-    if system() == "Windows":
+    platform = system()
+    if platform == "Windows":
         if prefix[1] == ':':
             prefix = prefix.replace(prefix[:2], "/"+prefix[0])
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
+    if platform == "Darwin":
+        prefix_pkg = "/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:"+prefix_pkg
     pythonver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
     pythonpath = prefix_lib + "/python%d.%d/site-packages" % (sys.version_info.major, sys.version_info.minor)
-    platform = system()
     if platform == "Windows":
         # todo: make this more generic
         pythonpath = "/mingw64/lib/python"+pythonver+":/mingw64/lib/python"+pythonver+"/plat-win32:/mingw64/lib/python"+pythonver+"/lib-tk:/mingw64/lib/python"+pythonver+"/lib-dynload:/mingw64/lib/python"+pythonver+"/site-packages:"+pythonpath
@@ -100,17 +104,18 @@ def setupEnv(cfg, update=False):
             f.write('export MARS_SCRIPT_DIR="'+cfg["pyScriptDir"]+'"\n')
 
             f.write('export PATH="$PATH:'+prefix_bin+'"\n')
+            prefix_lib_orocos = os.path.join(prefix_lib, "orocos") + ":" + os.path.join(prefix_lib, "orocos/types")
             if platform == "Darwin":
-                f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':$DYLD_LIBRARY_PATH"\n')
+                f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$DYLD_LIBRARY_PATH"\n')
                 f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
                 f.write('export USE_QT5=1\n')
             elif platform == "Linux":
-                f.write('export LD_LIBRARY_PATH="'+prefix_lib+':$LD_LIBRARY_PATH"\n')
+                f.write('export LD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$LD_LIBRARY_PATH"\n')
                 f.write('export CXXFLAGS="-std=c++11"\n')
                 if QT5_UBUNTU:
                     f.write('export USE_QT5=1\n')
             else:
-                f.write('export PATH="'+prefix_lib+':$PATH"\n')
+                f.write('export PATH="'+prefix_lib+':'+prefix_lib_orocos+':$PATH"\n')
                 f.write('export USE_QT5=1\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
             f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
@@ -121,19 +126,24 @@ def setupEnv(cfg, update=False):
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
             if platform == "Darwin":
-                f.write('export RUBYLIB="'+prefix_lib+'/ruby2.6/2.6.0:'+prefix_lib+'/ruby2.6/2.6.0/x86_64-darwin17"\n')
+                major,minor = utils.get_ruby_verison()
+                ruby_subpath = "/ruby"+major+"."+minor+"/"+major+"."+minor+".0"
+                ruby_archdir = utils.get_ruby_archdir()
+                f.write('export RUBYLIB="'+prefix_lib+ruby_subpath+':'+prefix_lib+ruby_subpath+'/'+ruby_archdir+':'+prefix_lib+'/ruby/vendor_ruby"\n')
                 f.write('export USE_QT5=1\n')
                 f.write('export OROCOS_TARGET="macosx"\n')
                 f.write('export TYPELIB_RUBY_PLUGIN_PATH="'+prefix+'/share/typelib/ruby"\n')
                 f.write('export TYPELIB_CXX_LOADER="castxml"\n')
 
                 f.write('export CXXFLAGS="-fPIC -std=c++11"\n')
-                f.write('export TYPELIB_CASTXML_DEFAULT_OPTIONS="-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/opt/local/include"\n')
+                f.write('export TYPELIB_CASTXML_DEFAULT_OPTIONS="-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -I/opt/local/include"\n')
                 f.write('export OROGEN_PLUGIN_PATH="'+prefix+'/share/orogen/plugins"\n')
+                f.write('export OROGEN_MODEL_PATH="'+prefix+'/share/orogen/models"\n')
                 f.write('export ROCK_BUNDLE_PATH="'+prefix+'/../bundles"\n')
                 f.write('export ORBInitRef="NameService=corbaname::localhost"\n')
                 f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/types"\n')
                 f.write('export QT_PLUGIN_DIR="'+prefix+'/lib/qt"\n')
+                f.write('source base/scripts/shell/zsh\n')
 
             _make_pybob_aliases(f)
 
@@ -143,6 +153,11 @@ def setupEnv(cfg, update=False):
             f.write("#!/bin/bash\n")
             f.write("${AUTOPROJ_CURRENT_ROOT}/pybob/pybob.py install $@\n")
         cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/amake"]
+        execute.simpleExecute(cmd)
+        with open(cfg["devDir"]+"/install/bin/aup", "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write("${AUTOPROJ_CURRENT_ROOT}/pybob/pybob.py fetch $@\n")
+        cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/aup"]
         execute.simpleExecute(cmd)
 
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
@@ -160,6 +175,9 @@ def setupEnv(cfg, update=False):
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Release  -G \"MSYS Makefiles\" $@\n")
         else:
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Release $@\n")
+
+    with open(cfg["devDir"]+"/.bundle_env.sh", "w") as f:
+        f.write("unset ROCK_BUNDLE\n")
 
     cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_debug"]
     execute.simpleExecute(cmd)

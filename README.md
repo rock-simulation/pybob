@@ -29,7 +29,7 @@ You can exclude the distro module by
        export QT5_UBUNTU=True
 or `False` if you have a older system which is incompatible with QT5.
 
-# Prepare Mac OS X for pybob:
+# Prepare macOS for pybob:
 
   For OS X it is recommended to use python3.6 and Qt5, although the tools generally are compatible to python2.7 and Qt4.
   
@@ -74,6 +74,12 @@ or `False` if you have a older system which is incompatible with QT5.
 
   You can start MARS in the terminal via `mars_app`.
   Once you open a new terminal you have to `source env.sh` again.
-  
+
+# Rock/orogen support
+
+## macOS Notes:
+
+To be able to build Rock core libs on macOS one have to install ruby2.7 via macports, since the system ruby library is not compatible. Also the macports ruby version have to be selected: `sudo port select ruby ruby27` – and restart the terminal.
+
 # Todo:
   - check if "git pull" fails

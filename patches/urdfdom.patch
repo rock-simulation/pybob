@@ -1,8 +1,8 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f0d115d..8d49765 100644
+diff --git CMakeLists.txt CMakeLists.txt
+index e554f7c..9377b99 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -27,7 +27,7 @@ endif()
+@@ -31,7 +31,7 @@ endif()
  # This shouldn't be necessary, but there has been trouble
  # with MSVC being set off, but MSVCXX ON.
  if(MSVC OR MSVC90 OR MSVC10)
@@ -11,40 +11,41 @@ index f0d115d..8d49765 100644
  endif (MSVC OR MSVC90 OR MSVC10)
  
  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-@@ -60,11 +60,11 @@ enable_testing()
+@@ -62,11 +62,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
  
- add_subdirectory(urdf_parser)
+ enable_testing()
  
 -if(WIN32 AND NOT CYGWIN)
 -  set(CMAKE_CONFIG_INSTALL_DIR CMake)
 -else()
+-  set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
+-endif()
 +#if(WIN32 AND NOT CYGWIN)
 +#  set(CMAKE_CONFIG_INSTALL_DIR CMake)
 +#else()
-     set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_FULL_LIBDIR}/${PROJECT_NAME}/cmake/)
--endif()
++set(CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}/cmake)
 +#endif()
+ string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_CMAKE_DIR_TO_PREFIX "${CMAKE_CONFIG_INSTALL_DIR}")
+ string(REGEX REPLACE "[^/]+" ".." RELATIVE_PATH_LIBDIR_TO_PREFIX "${CMAKE_INSTALL_LIBDIR}")
  
- set(PKG_NAME ${PROJECT_NAME})
- set(PKG_LIBRARIES urdfdom_sensor urdfdom_model_state urdfdom_model urdfdom_world)
-diff --git a/urdf_parser/CMakeLists.txt b/urdf_parser/CMakeLists.txt
-index 65669c6..209dfdd 100644
+diff --git urdf_parser/CMakeLists.txt urdf_parser/CMakeLists.txt
+index 6efc955..3ccc7cd 100644
 --- urdf_parser/CMakeLists.txt
 +++ urdf_parser/CMakeLists.txt
-@@ -33,14 +33,31 @@ add_executable(urdf_mem_test test/memtest.cpp)
+@@ -89,20 +89,32 @@ target_include_directories(urdf_mem_test PUBLIC include)
  target_link_libraries(urdf_mem_test urdfdom_model)
  
  include(CTest)
 -if(BUILD_TESTING)
+-  # TODO: check Shane's comment https://github.com/ros/urdfdom/pull/157/files#r664960227
 -  add_subdirectory(test)
 +if(NOT WIN32)
 +  if(BUILD_TESTING)
++    # TODO: check Shane's comment https://github.com/ros/urdfdom/pull/157/files#r664960227
 +    add_subdirectory(test)
 +  endif()
  endif()
  
- INSTALL(TARGETS urdfdom_model DESTINATION ${CMAKE_INSTALL_LIBDIR})
- INSTALL(TARGETS urdfdom_world DESTINATION ${CMAKE_INSTALL_LIBDIR})
 +if(WIN32)
 +  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
 +else(WIN32)
@@ -57,18 +58,31 @@ index 65669c6..209dfdd 100644
 +	ARCHIVE DESTINATION lib
 +)
 +
-+INSTALL(TARGETS urdfdom_model ${_INSTALL_DESTINATIONS})
-+INSTALL(TARGETS urdfdom_world ${_INSTALL_DESTINATIONS})
-+
- INSTALL(TARGETS check_urdf urdf_to_graphiz urdf_to_graphviz urdf_mem_test
--  DESTINATION ${CMAKE_INSTALL_BINDIR})
--INSTALL(TARGETS urdfdom_sensor DESTINATION ${CMAKE_INSTALL_LIBDIR})
--INSTALL(TARGETS urdfdom_model_state DESTINATION ${CMAKE_INSTALL_LIBDIR})
-+   ${_INSTALL_DESTINATIONS})
-+INSTALL(TARGETS urdfdom_sensor ${_INSTALL_DESTINATIONS})
-+INSTALL(TARGETS urdfdom_model_state ${_INSTALL_DESTINATIONS})
- INSTALL(DIRECTORY include/urdf_parser DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-diff --git a/urdf_parser/include/urdf_parser/exportdecl.h b/urdf_parser/include/urdf_parser/exportdecl.h
+ INSTALL(
+   TARGETS
+   check_urdf
+   urdf_to_graphiz
+   urdf_to_graphviz
+   urdf_mem_test
+-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++  ${_INSTALL_DESTINATIONS}
+ )
+ INSTALL(
+   TARGETS
+@@ -112,9 +124,7 @@ INSTALL(
+   urdfdom_model_state
+   EXPORT
+   urdfdom
+-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++  ${_INSTALL_DESTINATIONS}
+ )
+ install(
+   EXPORT urdfdom
+diff --git urdf_parser/include/urdf_parser/exportdecl.h urdf_parser/include/urdf_parser/exportdecl.h
 index e01e783..654dcad 100644
 --- urdf_parser/include/urdf_parser/exportdecl.h
 +++ urdf_parser/include/urdf_parser/exportdecl.h
