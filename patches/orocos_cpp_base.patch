@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 91bbf75..e22a72e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,4 +4,13 @@ cmake_minimum_required(VERSION 2.6)
+ find_package(Rock)
+ rock_init(orocos_cpp_base 0.1)
+ set(OROCOS_TARGET "gnulinux")
++
++if(DEFINED ENV{OROCOS_TARGET})
++  set(OROCOS_TARGET $ENV{OROCOS_TARGET})
++endif()
++
++if(APPLE)
++  add_link_options(-Wl,-undefined,dynamic_lookup)
++endif(APPLE)
++
+ rock_standard_layout()
