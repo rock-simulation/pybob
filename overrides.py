@@ -330,6 +330,11 @@ def fetch_rtt(cfg):
 
         if not os.path.isfile("rtt/CMakeLists.txt"):
             cfg["errors"].append("fetch: tools/rtt")
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/rtt"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
+
     os.chdir(cwd)
     return True
 
