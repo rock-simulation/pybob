@@ -19,3 +19,27 @@ index 2ddcecb..6335476 100644
  
  ADD_SUBDIRECTORY(lang/csupport)
  ADD_SUBDIRECTORY(lang/tlb)
+diff --git bindings/ruby/lib/typelib/gccxml.rb bindings/ruby/lib/typelib/gccxml.rb
+index bc721a5..5d26cf8 100644
+--- bindings/ruby/lib/typelib/gccxml.rb
++++ bindings/ruby/lib/typelib/gccxml.rb
+@@ -95,7 +95,6 @@ def tag_start(name, attributes)
+             if (child_node_name = child_node['name'])
+                 name_to_nodes[GCCXMLLoader.cxx_to_typelib(child_node_name)] << child_node
+             end
+-
+             if name == "Typedef"
+                 typedefs_per_file[attributes['file']] << child_node
+             elsif %w{Struct Class Enumeration}.include?(name)
+@@ -1150,9 +1149,10 @@ def self.preprocess(
+                 end
+                 io.flush
+ 
++                @castxml_default_options = Shellwords.split(ENV['TYPELIB_CASTXML_DEFAULT_OPTIONS'] || '')
+                 call =
+                     if castxml
+-                        [castxml_binary_name, "--castxml-gccxml", "-E",
++                        [castxml_binary_name, *castxml_default_options, "--castxml-gccxml", "-E",
+                          *includes, *defines, *rawflags,
+                          *castxml_default_options, io.path]
+                     else
