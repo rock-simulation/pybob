@@ -258,4 +258,6 @@ def loadOsdeps(cfg):
                               "colorlog": [pipInstall, "colorlog"],
                               "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
                               "owlready2": [pipInstall, "Owlready2"],
+                              "nlohmann-json": [install],
+                              "libgit2": [install],
 })

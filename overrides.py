@@ -350,6 +350,7 @@ def loadOverrides(cfg):
         "typelib",
         "simulation/configmaps",
         "qt4-opengl",
+        "tools/graph_analysis",
     ]
 
     if system() == "Darwin":
