@@ -87,7 +87,7 @@ def checkBaseName(package, info):
             info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
                                                             package.split("/")[-1])
 
-def clonePackage(cfg, package, server, gitPackage, branch):
+def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
     clonePath = package
     if package[-2:] == ".*":
         arrPackage = package.split("/")[:-1]
@@ -122,6 +122,8 @@ def clonePackage(cfg, package, server, gitPackage, branch):
             cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
             if branch:
                 cmd += ["-b", branch]
+            if recursive:
+                cmd += ["--recursive"]
             #print(" ".join(cmd))
             execute.do(cmd, cfg)
 
@@ -167,6 +169,8 @@ def getServerInfo(cfg, pDict, info):
                 info["branch"] = pInfo["branch"]
         if "tag" in pInfo:
             info["branch"] = pInfo["tag"]
+        if "with_submodules" in pInfo:
+            info["with_submodules"] = pInfo["with_submodules"]
         return True
     haveKey = False
     haveServer = False
@@ -177,6 +181,8 @@ def getServerInfo(cfg, pDict, info):
             info["branch"] = pDict["branch"]
     if "tag" in pDict:
         info["branch"] = pDict["tag"]
+    if "with_submodules" in pDict:
+        info["with_submodules"] = pDict["with_submodules"]
 
     for key, value in pDict.items():
         if not value:
@@ -390,12 +396,21 @@ def fetchPackage(cfg, package, layout_packages):
                             server2 = ""
 
             if "basename" in info:
-                if clonePackage(cfg, package, server, server2, branch):
-                    endM = False
+                if "with_submodules" in info and info["with_submodules"]:
+                    if clonePackage(cfg, package, server, server2, branch, True):
+                        endM = False
+                else:
+                    if clonePackage(cfg, package, server, server2, branch):
+                        endM = False
+
             else:
                 if "server" in info:
-                    if clonePackage(cfg, info["package"], server, server2, branch):
-                        endM = False
+                    if "with_submodules" in info and info["with_submodules"]:
+                        if clonePackage(cfg, info["package"], server, server2, branch, True):
+                            endM = False
+                    else:
+                        if clonePackage(cfg, info["package"], server, server2, branch):
+                            endM = False
             layout_packages.append(package)
             if len(cfg["errors"]) > le:
                 if endM:
