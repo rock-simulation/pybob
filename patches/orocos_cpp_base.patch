@@ -1,7 +1,7 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
+diff --git CMakeLists.txt CMakeLists.txt
 index 91bbf75..e22a72e 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
+--- CMakeLists.txt
++++ CMakeLists.txt
 @@ -4,4 +4,13 @@ cmake_minimum_required(VERSION 2.6)
  find_package(Rock)
  rock_init(orocos_cpp_base 0.1)

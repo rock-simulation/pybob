@@ -15,7 +15,6 @@ def gemInstall(cfg, pkg):
     if len(out) > 0:
         return
 
-
 def pipInstall(cfg, pkg):
     """PIP installation command."""
     platform = system()
@@ -262,6 +261,8 @@ def loadOsdeps(cfg):
                               "python3-nose": [install, pyprefix+"nose"],
                               "python3-git": [install, pyprefix+"git"],
                               "python3-path": [install, pyprefix+"path"],
+                              "python3-jinja2": [install, pyprefix+"jinja2"],
+                              "python-markdown": [install, "py-markdown2"],
                               "pandas": [pipInstall, "pandas"],
                               "tensorflow": [pipInstall, "tensorflow"],
                               "keras": [install, pyprefix+"keras"],
@@ -292,4 +293,8 @@ def loadOsdeps(cfg):
                               "state_machine": [gemInstall],
                               "avahi": [install],
                               "poco": [install],
+                              "nlohmann-json": [install],
+                              "libgit2": [install],
+                              "xdot": [install, "graphviz"],
+                              "libxml2": [install],
 })

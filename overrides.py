@@ -314,7 +314,13 @@ def fetch_general_git(cfg, path, package, url, hashId=None):
     return True
 
 def fetch_rtt(cfg):
-    return fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
+    r = fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
+    if r:
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/rtt"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
+    return r
     path = cfg["devDir"] + "/tools"
     print(c.BOLD + "Fetching " + "tools/rtt ... " + c.END, end="")
     sys.stdout.flush
@@ -375,6 +381,7 @@ def install_orocos(cfg):
     execute.do(["rake"])
     # todo: put ruby pat to cfg; get correct ruby version and add it to path
     major,minor = utils.get_ruby_verison()
+    execute.do(["cp", "-r", "lib/orocos/orocos/*", "lib/orocos/"])
     execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
@@ -408,7 +415,7 @@ def loadOverrides(cfg):
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
         "external/rbdl": {"fetch": fetch_rbdl},
-        "rtt": {"fetch": fetch_rtt, "install_path": "tools/rtt"},
+        "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
         "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
         "rtt_typelib": {"fetch": fetch_rtt_typelib, "install_path": "tools/rtt_typelib"},
         "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen", "additinal_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]},
@@ -450,6 +457,7 @@ def loadOverrides(cfg):
         #"typelib",
         "simulation/configmaps",
         "qt4-opengl",
+        "tools/graph_analysis",
     ]
 
     if system() == "Darwin":
@@ -460,12 +468,47 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("zlib")
         cfg["ignorePackages"].append("dataclasses")
         cfg["ignorePackages"].append("blender")
+        cfg["ignorePackages"].append("gui/vizkit3d")
+        cfg["ignorePackages"].append("automake")
+        cfg["ignorePackages"].append("libtool")
+        cfg["ignorePackages"].append("libdw")
+        cfg["ignorePackages"].append("xpath-perl")
+        cfg["ignorePackages"].append("boost-python") # maybe map to boost
+
+        # for ruby tools -> should move to gemInstall in osdeps
+        cfg["ignorePackages"].append("minitest")
+        cfg["ignorePackages"].append("tty-table")
+        cfg["ignorePackages"].append("tty-cursor")
+        cfg["ignorePackages"].append("tty-prompt")
+        cfg["ignorePackages"].append("thor")
+        cfg["ignorePackages"].append("ruby") # system ruby is used instead
+        cfg["ignorePackages"].append("ruby-dev") # system ruby is used instead
+        cfg["ignorePackages"].append("rake") # system ruby is used instead
+        cfg["ignorePackages"].append("kramdown")
+        cfg["ignorePackages"].append("facets")
+        cfg["ignorePackages"].append("flexmock")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
         cfg["ignorePackages"].append("python-yaml")
     elif not QT5_UBUNTU:
         cfg["ignorePackages"].append("external/osgQt")
+
+
+    path = cfg["path"] + "/autoproj/overrides.d"
+    for d in os.listdir(path):
+        if os.path.isfile(path+"/"+d):
+            try:
+                filename = os.path.join(path, d)
+                #print("load: " + filename)
+                with open(filename) as f:
+                    ov = yaml.safe_load(f)
+                #print(ov)
+                for it in ov:
+                    for key, value in it.items():
+                        cfg["overrides"][key] = value
+            except:
+                pass
 
 
     filename = cfg["path"] + "/autoproj/overrides.yml"

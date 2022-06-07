@@ -1,3 +1,16 @@
+diff --git Rakefile Rakefile
+index 22e1f951..3a7401fc 100644
+--- Rakefile
++++ Rakefile
+@@ -74,7 +74,7 @@ Rake::ExtensionTask.new('rorocos') do |ext|
+     # is used to generate the Makefile
+     ext.name = "rorocos"
+     ext.ext_dir = "ext/rorocos"
+-    ext.lib_dir = "lib/orocos"
++    ext.lib_dir = "lib"
+     ext.source_pattern = "*.{c,cpp,cc}"
+ 
+     if not Dir.exists?(ext.tmp_dir)
 diff --git ext/rorocos/CMakeLists.txt ext/rorocos/CMakeLists.txt
 index 8d46956b..9a13a5b8 100644
 --- ext/rorocos/CMakeLists.txt
@@ -166,3 +179,16 @@ index 0faf0df9..d22aaa7a 100644
  
  MARK_AS_ADVANCED(
    RUBY_EXECUTABLE
+diff --git lib/orocos/task_context.rb lib/orocos/task_context.rb
+index 49a704f2..4c5fc1be 100644
+--- lib/orocos/task_context.rb
++++ lib/orocos/task_context.rb
+@@ -374,7 +374,7 @@ def has_operation?(name)
+             CORBA.refine_exceptions(self) do
+                 begin
+                     do_has_operation?(name)
+-                rescue Orocos::NotFound
++                rescue Orocos::NotFound, Orocos::CORBAError
+                     false
+                 end
+             end

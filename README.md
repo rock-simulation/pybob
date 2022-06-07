@@ -29,6 +29,13 @@ You can exclude the distro module by
        export QT5_UBUNTU=True
 or `False` if you have a older system which is incompatible with QT5.
 
+       sudo apt install git python3-yaml python3-distro
+
+You can exclude the distro module by
+
+       export QT5_UBUNTU=True
+or `False` if you have a older system which is incompatible with QT5.
+
 # Prepare macOS for pybob:
 
   For OS X it is recommended to use python3.6 and Qt5, although the tools generally are compatible to python2.7 and Qt4.
