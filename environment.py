@@ -129,6 +129,11 @@ def setupEnv(cfg, update=False):
             f.write("${AUTOPROJ_CURRENT_ROOT}/pybob/pybob.py install $@\n")
         cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/amake"]
         execute.simpleExecute(cmd)
+        with open(cfg["devDir"]+"/install/bin/aup", "w") as f:
+            f.write("#!/bin/bash\n")
+            f.write("${AUTOPROJ_CURRENT_ROOT}/pybob/pybob.py fetch $@\n")
+        cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/aup"]
+        execute.simpleExecute(cmd)
 
     with open(cfg["devDir"]+"/install/bin/cmake_debug", "w") as f:
         f.write("#!/bin/bash\n")
