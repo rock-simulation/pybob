@@ -297,4 +297,5 @@ def loadOsdeps(cfg):
                               "libgit2": [install],
                               "xdot": [install, "graphviz"],
                               "libxml2": [install],
+                              "libspdlog": [install, "spdlog"],
 })

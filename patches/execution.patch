@@ -46,6 +46,18 @@ index 13e84ec..2f86895 100644
      return "";
  }
  
+diff --git src/cnd-execution.pc.in src/cnd-execution.pc.in
+index 7ad77ec..d738069 100644
+--- src/cnd-execution.pc.in
++++ src/cnd-execution.pc.in
+@@ -7,6 +7,6 @@ Name: @TARGET_NAME@
+ Description: @PROJECT_DESCRIPTION@
+ Version: @PROJECT_VERSION@
+ Requires: @PKGCONFIG_REQUIRES@
+-Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ -lboost_program_options -lboost_filesystem -ldl
++Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ @BOOST_LIBRARIES@ -ldl
+ Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+ 
 diff --git src/task_context_cache.hpp src/task_context_cache.hpp
 index 81f1f6c..a6bc866 100644
 --- src/task_context_cache.hpp

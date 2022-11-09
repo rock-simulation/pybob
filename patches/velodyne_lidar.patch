@@ -1,0 +1,43 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index a2a5f0b..4275119 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -13,7 +13,8 @@ rock_library(velodyne_lidar
+             velodyneProtocolTypes.hpp
+             MultilevelLaserScan.h
+             gps_rmc_type.h
+-    DEPS_PKGCONFIG base-lib iodrivers_base aggregator)
++    DEPS_PKGCONFIG base-lib iodrivers_base aggregator
++    DEPS_CMAKE Boost)
+ 
+ rock_executable(velodyne_lidar_bin test_velodyneDriver.cpp
+     DEPS velodyne_lidar)
+diff --git src/velodyneDataDriver.cpp src/velodyneDataDriver.cpp
+index a8be3ad..1edc7d8 100644
+--- src/velodyneDataDriver.cpp
++++ src/velodyneDataDriver.cpp
+@@ -2,7 +2,9 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <assert.h>
++#ifndef __APPLE__
+ #include <linux/sockios.h>
++#endif
+ #include <sys/ioctl.h>
+ #include <sys/errno.h>
+ #include <sys/socket.h>
+@@ -42,7 +44,14 @@ bool VelodyneDataDriver::readNewPacket()
+         if(readPacket((uint8_t*)&data_packet.packet, VELODYNE_DATA_MSG_BUFFER_SIZE) == VELODYNE_DATA_MSG_BUFFER_SIZE)
+         {
+             timeval tv;
++#ifdef __APPLE__
++            // deactivates driver for Apple
++            // could be solved by:  result = setsockopt(mSocket, SOL_SOCKET, SO_TIMESTAMP, &value, sizeof(int));
++            // but so far, there is no use-case for this driver on Apple machines
++            if(false)
++#else
+             if(ioctl(getFileDescriptor(), SIOCGSTAMP, &tv) >= 0)
++#endif
+             {
+                 base::Time receive_time = base::Time::fromSeconds(tv.tv_sec, tv.tv_usec);
+ 
