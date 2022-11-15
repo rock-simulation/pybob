@@ -336,9 +336,14 @@ def fetchPackage(cfg, package, layout_packages):
     path = cfg["devDir"]+"/autoproj/remotes/"
 
     matches = []
-    for key, value in cfg["packages"].items():
-        if package in key and key not in layout_packages:
-            matches.append(key)
+    if cfg["name_matching"] :
+        for key, value in cfg["packages"].items():
+            if package in key and key not in layout_packages:
+                matches.append(key)
+    else:
+        for key, value in cfg["packages"].items():
+            if package == key and key not in layout_packages:
+                matches.append(key)
 
     if package not in cfg["packages"]:
         result = True
