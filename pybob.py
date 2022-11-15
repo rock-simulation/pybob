@@ -32,6 +32,7 @@ cfg = {}
 cfg["buildOptional"] = True
 cfg["no_os_deps"] = False
 cfg["multiprocessing"] = True
+cfg["name_matching"] = True
 copyArgs = []
 for a in sys.argv:
     if "=" in a:
@@ -90,6 +91,7 @@ def envsh_():
 def fetchi(package, returnPackages = False):
     layout_packages = []
     if len(package) == 0:
+        cfg["name_matching"] = False
         buildconf.fetchPackages(cfg, layout_packages)
     else:
         buildconf.fetchPackage(cfg, package, layout_packages)
@@ -98,6 +100,11 @@ def fetchi(package, returnPackages = False):
         printErrors()
         return
 
+    # name matching allows to load all packages were the given name is part
+    # of the whole package name: ode -> simulation/ode, models/*
+    # this behavior is only desired for the package name gives as parameter
+    # not for the dependencies parsed from the packages
+    cfg["name_matching"] = False
     # track dependencies and do the same for build and rebuild
     deps = []
     mans = []
