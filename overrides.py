@@ -369,6 +369,22 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("external/osgQt")
 
 
+    path = cfg["path"] + "/autoproj/overrides.d"
+    if os.path.exists(path):
+        for d in os.listdir(path):
+            if os.path.isfile(path+"/"+d):
+                try:
+                    filename = os.path.join(path, d)
+                    #print("load: " + filename)
+                    with open(filename) as f:
+                        ov = yaml.safe_load(f)
+                    #print(ov)
+                    for it in ov:
+                        for key, value in it.items():
+                            cfg["overrides"][key] = value
+                except:
+                    pass
+
     filename = cfg["path"] + "/autoproj/overrides.yml"
     if os.path.isfile(filename):
         with open(filename) as f:
