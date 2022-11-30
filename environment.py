@@ -109,6 +109,7 @@ def setupEnv(cfg, update=False):
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$DYLD_LIBRARY_PATH"\n')
                 f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
                 f.write('export USE_QT5=1\n')
+                f.write('export CXXFLAGS="-std=c++11"\n')
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$LD_LIBRARY_PATH"\n')
                 f.write('export CXXFLAGS="-std=c++11"\n')
