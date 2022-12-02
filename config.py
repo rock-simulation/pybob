@@ -106,6 +106,16 @@ def getConfiguration(cfg):
             if len(in_) > 0:
                 cfg["buildconfBranch"] = in_
 
+            cfg["orogen"] = "no"
+            pattern = ["yes", "no"]
+            print()
+            orogen = raw_input_("Enable orogen support? (yes|no) [no]: ")
+            if orogen in pattern:
+                if orogen == "yes" or orogen == "y" or orogen == "1":
+                    cfg["orogen"] = True
+                else:
+                    cfg["orogen"] = False
+
             c.printBold("The configuration is written to \""+path+"/pybob/pybob.yml\".\n")
 
             with open(path+"/pybob/pybob.yml", "w") as f:

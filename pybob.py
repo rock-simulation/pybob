@@ -33,6 +33,7 @@ cfg["buildOptional"] = True
 cfg["no_os_deps"] = False
 cfg["multiprocessing"] = True
 cfg["name_matching"] = True
+cfg["orogen"] = False
 copyArgs = []
 for a in sys.argv:
     if "=" in a:
@@ -362,9 +363,25 @@ def info_():
         info = yaml.safe_load(f)
     package = sys.argv[2]
     if package in info:
-        print("packages that depend on " + package + ":")
+        print("\n  packages that depend on " + package + ":")
         print(info[package])
 
+    mans = []
+    handled = []
+
+    bob_package.getDeps(cfg, package, mans, None)
+    while len(mans) > 0:
+        p = mans.pop()
+        handled.append(p)
+        deps = []
+        bob_package.getDeps(cfg, p, deps, None)
+        while len(deps) > 0:
+            d = deps.pop()
+            if d not in handled and d not in mans:
+                mans.append(d)
+    print("\n  packages dependencies " + package + ":")
+    print(handled)
+    
 def show_log_():
     packageList = []
     package = sys.argv[2].replace("/", "_")

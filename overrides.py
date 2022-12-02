@@ -10,6 +10,8 @@ import bob_package
 import utils
 from environment import QT5_UBUNTU
 
+def dummy(cfg):
+    pass
 
 def uninstall_ode(cfg):
     execute.do(["make", "-C", cfg["devDir"] + "/simulation/ode", "clean"])
@@ -423,6 +425,9 @@ def loadOverrides(cfg):
     }
     if system() == "Darwin":
         cfg["overrides"]["tools/orogen_cpp_proxies"] =  {"url": "git@github.com:malter/orogen_cpp_proxies.git"}
+        cfg["overrides"]["pybind11"] = {"additional_deps": ["external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
+        cfg["overrides"]["pybind11_json"] = {"additional_deps": ["external/pybind11_json", "external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
 
     cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
     cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]

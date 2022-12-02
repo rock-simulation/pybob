@@ -54,12 +54,22 @@ def getDeps(cfg, pkg, deps, checked):
                                 checked.append(d)
                                 getDeps(cfg, d, deps, checked)
         f.close()
-    if pkg in cfg["overrides"] and "additinal_deps" in cfg["overrides"][pkg]:
-        for dep in cfg["overrides"][pkg]["additinal_deps"]:
+    if pkg in cfg["overrides"] and "additional_deps" in cfg["overrides"][pkg]:
+        for dep in cfg["overrides"][pkg]["additional_deps"]:
             deps.append(dep)
+            if not dep in cfg["deps"][pkg]:
+                cfg["deps"][pkg].append(dep)
+            if not dep in cfg["depsInverse"]:
+                cfg["depsInverse"][dep] = []
+            if not pkg in cfg["depsInverse"][dep]:
+                cfg["depsInverse"][dep].append(pkg)
+            if checked != None:
+                if dep not in checked:
+                    checked.append(dep)
+                    getDeps(cfg, dep, deps, checked)
 
 def installPythonPackage(cfg, p):
-    if p in cfg["ignorePackages"] or "orogen" in p:
+    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
     if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
@@ -85,7 +95,7 @@ def installPythonPackage(cfg, p):
     cfg["installed"].append(p)
 
 def installRubyPackage(cfg, p):
-    if p in cfg["ignorePackages"] or "orogen" in p:
+    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
     if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:

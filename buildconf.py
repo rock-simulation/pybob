@@ -241,7 +241,7 @@ def getPackageInfoHelper(cfg, package, base, info):
     return False
 
 def getPackageInfo(cfg, package, info):
-    if package in cfg["ignorePackages"] :#or "orogen" in package:
+    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
         return
     if package in cfg["osdeps"]:
         return
@@ -306,7 +306,7 @@ def fetchPackage(cfg, package, layout_packages):
     print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
-    if package in cfg["ignorePackages"]:# or "orogen" in package:
+    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
