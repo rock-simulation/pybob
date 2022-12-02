@@ -152,10 +152,10 @@ def setupEnv(cfg, update=False):
         else:
             f.write("cmake .. "+options+"-DCMAKE_INSTALL_PREFIX=$AUTOPROJ_CURRENT_ROOT/install -DCMAKE_BUILD_TYPE=Release $@\n")
 
-    cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_debug"]
+    cmd = ["chmod", "+x", '"'+cfg["devDir"]+"/install/bin/cmake_debug"+'"']
     execute.simpleExecute(cmd)
 
-    cmd = ["chmod", "+x", cfg["devDir"]+"/install/bin/cmake_release"]
+    cmd = ["chmod", "+x", '"'+cfg["devDir"]+"/install/bin/cmake_release"+'"']
     execute.simpleExecute(cmd)
     source(cfg["devDir"]+"/env.sh")
 

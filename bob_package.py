@@ -95,7 +95,7 @@ def installPackage(cfg, p, cmake_options=[]):
         execute.do(["rm", "-rf", path+"/build"])
     start = datetime.datetime.now()
     if os.path.isdir(path+"/build"):
-        cmd = ["cmake", path]
+        cmd = ["cmake", '"'+path+'"']
     else:
         execute.makeDir(path+"/build")
         #cmd = ["cmake", "..", "-DCMAKE_INSTALL_PREFIX="+cfg["devDir"]+"/install", "-DCMAKE_BUILD_TYPE=DEBUG", "-Wno-dev"]
@@ -114,7 +114,7 @@ def installPackage(cfg, p, cmake_options=[]):
     end = datetime.datetime.now()
     diff1 = end - start
     start = end
-    out, err, r = execute.do(["make", "install", "-j", str(cfg["numCores"]), "-C", path+"/build"], cfg , None, None, p.replace("/", "_")+"_build.txt")
+    out, err, r = execute.do(["make", "install", "-j", str(cfg["numCores"]), "-C", '"'+path+"/build"+'"'], cfg , None, None, p.replace("/", "_")+"_build.txt")
     if r != 0:
         print(p + c.ERROR + " build error" + c.END)
         cfg["errors"].append("build: "+p)

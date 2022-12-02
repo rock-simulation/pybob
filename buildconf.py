@@ -102,9 +102,9 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
     clonePath = cfg["devDir"]+"/"+clonePath
     if os.path.isdir(clonePath):
         if cfg["update"]:
-            print("Updating " + clonePath + " ... " + c.END, end="")
+            print("Updating '" + clonePath + "' ... " + c.END, end="")
             # todo: check branch
-            out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
+            out, err, r = execute.do(["git", "-C", "'"+clonePath+"'", "pull"], cfg)
             if r != 0:
                 cfg["errors"].append("update: "+package)
                 c.printError("\ncan't update \""+clonePath+"\":\n" + execute.decode(err))
@@ -117,9 +117,9 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
             c.printError("error")
             return True
         else:
-            print("Fetching " + clonePath + " ... " + c.END, end="")
+            print("Fetching '" + clonePath + "' ... " + c.END, end="")
             sys.stdout.flush()
-            cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
+            cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, "'"+clonePath+"'"]
             if branch:
                 cmd += ["-b", branch]
             if recursive:
@@ -131,7 +131,7 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
             print("check for patches", end="")
             if os.path.exists(patch):
-                cmd = ["patch", "-N", "-p0", "-d", clonePath, "-i", patch]
+                cmd = ["patch", "-N", "-p0", "-d", "'"+clonePath+"'", "-i", "'"+patch+"'"]
                 print(" ".join(cmd))
                 out, err, r = execute.do(cmd)
                 print(execute.decode(out))
@@ -441,7 +441,7 @@ def fetchPackages(cfg, layout_packages):
 def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     # clone in tmp folder
     c.printNormal("  Fetching: "+git)
-    out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
+    out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, "'"+realPath+"'"])
     if not os.path.isdir(realPath+"/.git"):
         c.printNormal(execute.decode(out));
         c.printError(execute.decode(err));
@@ -451,7 +451,7 @@ def clonePackageSet(cfg, git, realPath, path, cloned, deps):
     with open(realPath+"/source.yml") as f:
         info = yaml.safe_load(f)
     #os.system("rm -rf "+path+"remotes/"+info["name"])
-    os.system("ln -s "+ realPath + " " + path+"remotes/"+info["name"]);
+    os.system("ln -s '"+ realPath + "' '" + path+"remotes/"+info["name"]+"'");
     if "imports" in info and info["imports"]:
         for i in info["imports"]:
             key, value = list(i.items())[0]
@@ -493,7 +493,7 @@ def updatePackageSets(cfg):
             if d not in cloned:
                 if cfg["update"]:
                     c.printNormal("  Updating: "+d)
-                    out, err, r = execute.do(["git", "-C", path+"remotes/"+d, "pull"])
+                    out, err, r = execute.do(["git", "-C", "'"+path+"remotes/"+d+"'", "pull"])
                     if r !=  0:
                         cfg["errors"].append("update: "+d)
                         c.printError("\ncan't update package set \""+d+"\":\n"+execute.decode(err))
@@ -544,7 +544,7 @@ def fetchBuildconf(cfg):
     if os.path.isdir(cfg["devDir"]+"/autoproj"):
         if cfg["update"]:
             c.printNormal("  Update buildconf.")
-            out, err, r = execute.do(["git", "-C", cfg["devDir"]+"/autoproj", "pull"])
+            out, err, r = execute.do(["git", "-C", "'"+cfg["devDir"]+"/autoproj'", "pull"])
             if r != 0:
                 cfg["errors"].append("update: buildconf")
                 c.printError("\ncan't update buildconf:\n" + execute.decode(err))
@@ -556,7 +556,7 @@ def fetchBuildconf(cfg):
         branch = cfg["buildconfBranch"]
 
         c.printNormal("   Fetching \""+address+branch+"\" into "+cfg["devDir"]+"/autoproj")
-        command = ["git", "clone", "-o", "autobuild", address, cfg["devDir"]+"/autoproj"]
+        command = ["git", "clone", "-o", "autobuild", address, "'"+cfg["devDir"]+"/autoproj'"]
         if len(branch) > 0:
             command.append("-b")
             command.append(branch)
