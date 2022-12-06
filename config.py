@@ -43,6 +43,7 @@ def getConfiguration(cfg):
             else:
                 cfg["defBuildType"] = "debug"
             cfg["rockFlavor"] = acfg["ROCK_FLAVOR"]
+            cfg["orogen"] = acfg["orogen"]
             cfg["autoprojEnv"] = True
         else:
             cfg["autoprojEnv"] = False
@@ -106,7 +107,7 @@ def getConfiguration(cfg):
             if len(in_) > 0:
                 cfg["buildconfBranch"] = in_
 
-            cfg["orogen"] = "no"
+            cfg["orogen"] = False
             pattern = ["yes", "no"]
             print()
             orogen = raw_input_("Enable orogen support? (yes|no) [no]: ")

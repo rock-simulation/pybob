@@ -194,7 +194,7 @@ def diff_():
     for p in toInstall:
         if p in cfg["osdeps"]:
             continue
-        if p in cfg["ignorePackages"]:# or "orogen" in p:
+        if p in cfg["ignorePackages"] or ("orogen" in p and not cfg["orogen"]):
             continue
         if p in cfg["overrides"] and "fetch" in cfg["overrides"][p]:
             continue
