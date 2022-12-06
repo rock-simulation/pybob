@@ -466,6 +466,9 @@ def loadOverrides(cfg):
         "tools/graph_analysis",
     ]
 
+    if not cfg["orogen"]:
+        cfg["ignorePackages"].append("tools/roby")
+
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python3")
