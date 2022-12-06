@@ -129,8 +129,9 @@ def setupEnv(cfg, update=False):
             if platform == "Darwin":
                 major,minor = utils.get_ruby_verison()
                 ruby_subpath = "/ruby"+major+"."+minor+"/"+major+"."+minor+".0"
+                ruby_subpath2 = "/ruby/"+major+"."+minor+".0"
                 ruby_archdir = utils.get_ruby_archdir()
-                f.write('export RUBYLIB="'+prefix_lib+ruby_subpath+':'+prefix_lib+ruby_subpath+'/'+ruby_archdir+':'+prefix_lib+'/ruby/vendor_ruby"\n')
+                f.write('export RUBYLIB="'+prefix_lib+ruby_subpath+':'+prefix_lib+ruby_subpath2+':'+prefix_lib+ruby_subpath+'/'+ruby_archdir+':'+prefix_lib+ruby_subpath2+'/'+ruby_archdir+':'+prefix_lib+'/ruby/vendor_ruby"\n')
                 f.write('export USE_QT5=1\n')
                 f.write('export OROCOS_TARGET="macosx"\n')
                 f.write('export TYPELIB_RUBY_PLUGIN_PATH="'+prefix+'/share/typelib/ruby"\n')

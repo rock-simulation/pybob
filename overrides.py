@@ -420,7 +420,7 @@ def loadOverrides(cfg):
         "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
         "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
         "rtt_typelib": {"fetch": fetch_rtt_typelib, "install_path": "tools/rtt_typelib"},
-        "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen", "additinal_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]},
+        "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen"},
         "orocos.rb": {"install": install_orocos, "install_path": "tools/orocos"},
     }
     if system() == "Darwin":
@@ -434,6 +434,7 @@ def loadOverrides(cfg):
     cfg["overrides"]["tools/rtt"] = cfg["overrides"]["rtt"]
     cfg["overrides"]["tools/typelib"] = cfg["overrides"]["typelib"]
     cfg["overrides"]["tools/orocos.rb"] = cfg["overrides"]["orocos.rb"]
+    cfg["overrides"]["base/orogen/std"] = {"additional_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]}
 
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
