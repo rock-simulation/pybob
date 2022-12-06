@@ -298,4 +298,6 @@ def loadOsdeps(cfg):
                               "xdot": [install, "graphviz"],
                               "libxml2": [install],
                               "libspdlog": [install, "spdlog"],
+                              "node16": [install, "nodejs16"],
+                              "npm9": [install],
 })

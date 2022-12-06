@@ -428,6 +428,7 @@ def loadOverrides(cfg):
         cfg["overrides"]["pybind11"] = {"additional_deps": ["external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
         cfg["overrides"]["pybind11_json"] = {"additional_deps": ["external/pybind11_json", "external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
         cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
+        cfg["overrides"]["node16"] = {"additional_deps": ["npm9"]}
 
     cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
     cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
