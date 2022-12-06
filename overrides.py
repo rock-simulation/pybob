@@ -468,6 +468,7 @@ def loadOverrides(cfg):
 
     if not cfg["orogen"]:
         cfg["ignorePackages"].append("tools/roby")
+        cfg["ignorePackages"].append("tools/cnd/service/trenhancer")
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
