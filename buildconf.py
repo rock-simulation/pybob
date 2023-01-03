@@ -440,10 +440,14 @@ def fetchPackages(cfg, layout_packages):
         fetchPackage(cfg, layout, layout_packages)
 
 # todo: add error handling
-def clonePackageSet(cfg, git, realPath, path, cloned, deps):
+def clonePackageSet(cfg, git, realPath, path, cloned, deps, branch=None):
     # clone in tmp folder
     c.printNormal("  Fetching: "+git)
-    out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
+    cmd = ["git", "clone", "-o", "autobuild", git, realPath]
+    if branch != None:
+        cmd.append("-b")
+        cmd.append(branch)
+    out, err, r = execute.do(cmd)
     if not os.path.isdir(realPath+"/.git"):
         c.printNormal(execute.decode(out));
         c.printError(execute.decode(err));
@@ -475,19 +479,24 @@ def updatePackageSets(cfg):
         manifest = yaml.safe_load(f)
     for packageSet in manifest["package_sets"]:
         key, value = list(packageSet.items())[0]
+        branch = None
         if isinstance(value, dict):
             if value["type"] != "git":
                 continue
             url = value["url"]
             key = "url"
             value = url
-            #todo: handle branch
+            if "branch" in value:
+                branch = value["branch"]
+        if "branch" in packageSet:
+            branch = packageSet["branch"]
+
         realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
         if not os.path.isdir(realPath):
             if key == "url":
-                clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps)
+                clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps, branch)
             else:
-                clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
+                clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps, branch)
 
     # update remotes that are not actually cloned
     for d in os.listdir(path+"remotes"):
