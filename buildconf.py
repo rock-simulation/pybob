@@ -31,43 +31,55 @@ def listPackages(cfg):
     path = cfg["devDir"]+"/autoproj/";
     packages = []
     wildcard_packages = []
+    folders = []
+    with open(path+"manifest") as f:
+        manifest = yaml.safe_load(f)
+    for packageSet in manifest["package_sets"]:
+        if not isinstance(packageSet, dict):
+            p = os.path.join(path, packageSet)
+            if os.path.exists(p):
+                folders.append(p)
+
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            packages.append([d, ""])
-            with open(path+"remotes/"+d+"/source.yml") as f:
-                source = yaml.safe_load(f)
-            if "version_control" in source:
-                for p in source["version_control"]:
-                    # some rock configuration files are not well formated
-                    # which results in a list with one key having no value
-                    # instead of a dict
-                    key = ""
-                    items = p.items()
-                    if len(items) == 1:
-                        key, value = list(items)[0]
-                    else:
-                        for k, v in items:
-                            if not v:
-                                key = k
-                                break
-                    if "*" not in key:
-                        packages.append([d, key])
-                    else:
-                        wildcard_packages.append([d, key])
-            files = getAutobuildFiles(path+"remotes/"+d)
-            for i in files:
-                with open(i) as f:
-                    for line in f:
-                        if "_package" in line:
-                            l = line.split("_package")[1]
-                            arrLine = None
-                            if '"' in l:
-                                arrLine = line.split('"')
-                            elif "'" in l:
-                                arrLine = line.split("'")
-                            if arrLine:
-                                if "#" not in arrLine[0]:
-                                    packages.append([d, arrLine[1]])
+            folders.append(path+"remotes/"+d)
+
+    for d in folders:
+        packages.append([d, ""])
+        with open(os.path.join(d, "source.yml")) as f:
+            source = yaml.safe_load(f)
+        if "version_control" in source:
+            for p in source["version_control"]:
+                # some rock configuration files are not well formated
+                # which results in a list with one key having no value
+                # instead of a dict
+                key = ""
+                items = p.items()
+                if len(items) == 1:
+                    key, value = list(items)[0]
+                else:
+                    for k, v in items:
+                        if not v:
+                            key = k
+                            break
+                if "*" not in key:
+                    packages.append([d, key])
+                else:
+                    wildcard_packages.append([d, key])
+        files = getAutobuildFiles(path+"remotes/"+d)
+        for i in files:
+            with open(i) as f:
+                for line in f:
+                    if "_package" in line:
+                        l = line.split("_package")[1]
+                        arrLine = None
+                        if '"' in l:
+                            arrLine = line.split('"')
+                        elif "'" in l:
+                            arrLine = line.split("'")
+                        if arrLine:
+                            if "#" not in arrLine[0]:
+                                packages.append([d, arrLine[1]])
 
     return (packages, wildcard_packages)
 
@@ -478,25 +490,26 @@ def updatePackageSets(cfg):
     with open(path+"manifest") as f:
         manifest = yaml.safe_load(f)
     for packageSet in manifest["package_sets"]:
-        key, value = list(packageSet.items())[0]
-        branch = None
-        if isinstance(value, dict):
-            if value["type"] != "git":
-                continue
-            url = value["url"]
-            key = "url"
-            value = url
-            if "branch" in value:
-                branch = value["branch"]
-        if "branch" in packageSet:
-            branch = packageSet["branch"]
+        if isinstance(packageSet, dict):
+            key, value = list(packageSet.items())[0]
+            branch = None
+            if isinstance(value, dict):
+                if value["type"] != "git":
+                    continue
+                url = value["url"]
+                key = "url"
+                value = url
+                if "branch" in value:
+                    branch = value["branch"]
+            if "branch" in packageSet:
+                branch = packageSet["branch"]
 
-        realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
-        if not os.path.isdir(realPath):
-            if key == "url":
-                clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps, branch)
-            else:
-                clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps, branch)
+            realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
+            if not os.path.isdir(realPath):
+                if key == "url":
+                    clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps, branch)
+                else:
+                    clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps, branch)
 
     # update remotes that are not actually cloned
     for d in os.listdir(path+"remotes"):
@@ -518,6 +531,22 @@ def updatePackageSets(cfg):
                             # todo: handle the update differently, maybe in clone
                             if i not in deps and not os.path.isdir(realPath):
                                 deps.append(i)
+
+    # handle local_package sets if avialable
+    for packageSet in manifest["package_sets"]:
+        if not isinstance(packageSet, dict):
+            p = os.path.join(path, packageSet, "source.yml")
+            if os.path.exists(p):
+                with open(p) as f:
+                    info = yaml.safe_load(f)
+                    if "imports" in info and info["imports"]:
+                        for i in info["imports"]:
+                            key, value = list(i.items())[0]
+                            realPath = cfg["devDir"] + "/.autoproj/remotes/" + key + "__" + value.strip().replace("/", "_").replace("-", "_") + "_git"
+                            # todo: handle the update differently, maybe in clone
+                            if i not in deps and not os.path.isdir(realPath):
+                                deps.append(i)
+
     # now handle deps
     while len(deps) > 0:
         packageSet = deps.pop(0)
