@@ -38,15 +38,15 @@ def listPackages(cfg):
         if not isinstance(packageSet, dict):
             p = os.path.join(path, packageSet)
             if os.path.exists(p):
-                folders.append(p)
+                folders.append([p, packageSet])
 
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            folders.append(path+"remotes/"+d)
+            folders.append([path+"remotes/"+d, d])
 
     for d in folders:
-        packages.append([d, ""])
-        with open(os.path.join(d, "source.yml")) as f:
+        packages.append([d[1], ""])
+        with open(os.path.join(d[0], "source.yml")) as f:
             source = yaml.safe_load(f)
         if "version_control" in source:
             for p in source["version_control"]:
@@ -63,10 +63,10 @@ def listPackages(cfg):
                             key = k
                             break
                 if "*" not in key:
-                    packages.append([d, key])
+                    packages.append([d[1], key])
                 else:
-                    wildcard_packages.append([d, key])
-        files = getAutobuildFiles(path+"remotes/"+d)
+                    wildcard_packages.append([d[1], key])
+        files = getAutobuildFiles(d[0])
         for i in files:
             with open(i) as f:
                 for line in f:
@@ -79,7 +79,7 @@ def listPackages(cfg):
                             arrLine = line.split("'")
                         if arrLine:
                             if "#" not in arrLine[0]:
-                                packages.append([d, arrLine[1]])
+                                packages.append([d[1], arrLine[1]])
 
     return (packages, wildcard_packages)
 
