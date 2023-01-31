@@ -221,7 +221,14 @@ def getServerInfo(cfg, pDict, info):
 
 def getPackageInfoHelper(cfg, package, base, info):
     matches = {}
-    with open(cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]+"/source.yml") as f:
+    path = cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]
+    if not os.path.exists(path):
+        path = cfg["devDir"]+"/autoproj/"+cfg["packages"][base]
+    if not os.path.exists(path):
+        cfg["errors"].append("Cannot find path for: "+cfg["packages"][base])
+        c.printError("ERROR: Cannot find path for: "+cfg["packages"][base])
+        return False
+    with open(os.path.join(path, "source.yml")) as f:
         source = yaml.safe_load(f)
         if "version_control" in source:
             for pDict in source["version_control"]:
