@@ -214,6 +214,8 @@ def _make_pybob_aliases(f):
             % PYTHON_ALIAS_PREFIX)
     f.write("alias bob-show-log='%s${MARS_SCRIPT_DIR}/pybob.py show-log'\n"
             % PYTHON_ALIAS_PREFIX)
+    f.write("alias bob-info='%s${MARS_SCRIPT_DIR}/pybob.py info'\n"
+            % PYTHON_ALIAS_PREFIX)
     f.write("alias bob-envsh='%s${MARS_SCRIPT_DIR}/pybob.py envsh'\n"
             % PYTHON_ALIAS_PREFIX)
     f.write(". ${MARS_SCRIPT_DIR}/auto_complete.sh\n")

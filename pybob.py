@@ -370,6 +370,22 @@ def info_():
     mans = []
     handled = []
 
+    # todo: check if this is right also for local packages
+    path = cfg["devDir"]+"/autoproj/remotes/"
+    buildconf.setupCfg(cfg)
+    if package in cfg["packages"]:
+        print(cfg["packages"][package])
+        info = {}
+        if buildconf.getPackageInfo(cfg, package, info):
+            print("\n  package source:\n")
+            print(yaml.dump(info, default_flow_style=False))
+            if "server" in info and "gitPackage" in info:
+                if info["server"][-1] != "/":
+                    info["server"] += "/"
+                print("  git address: " + info["server"]+info["gitPackage"])
+        else:
+            print("\n could not find package source info for (yet no name matching is done for 'bob info'): " + package)
+
     bob_package.getDeps(cfg, package, mans, None)
     while len(mans) > 0:
         p = mans.pop()
