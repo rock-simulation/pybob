@@ -1,0 +1,20 @@
+diff --git cmake/PocoConfig.cmake cmake/PocoConfig.cmake
+index 727d826..6ea1d13 100644
+--- cmake/PocoConfig.cmake
++++ cmake/PocoConfig.cmake
+@@ -161,9 +161,13 @@ IF(Poco_INCLUDE_DIR)
+     ENDIF(Poco_LIBRARY_DIR AND Poco_FOUNDATION_LIB)
+     IF(Poco_FOUNDATION_LIB)
+       IF ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+-	SET(DBG "d")
++        IF (APPLE)
++          SET(DBG "")
++        ELSE (APPLE)
++          SET(DBG "d")
++        ENDIF (APPLE)
+       ELSE ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+-	SET(DBG "")
++	      SET(DBG "")
+       ENDIF ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+       SET(Comp_List "Foundation${DBG}")
+       FOREACH(COMPONENT ${Poco_FIND_COMPONENTS})

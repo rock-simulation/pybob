@@ -43,6 +43,7 @@ def getConfiguration(cfg):
             else:
                 cfg["defBuildType"] = "debug"
             cfg["rockFlavor"] = acfg["ROCK_FLAVOR"]
+            cfg["orogen"] = acfg["orogen"]
             cfg["autoprojEnv"] = True
         else:
             cfg["autoprojEnv"] = False
@@ -105,6 +106,16 @@ def getConfiguration(cfg):
             in_ = raw_input_("Enter branch of buildconf [default]: ")
             if len(in_) > 0:
                 cfg["buildconfBranch"] = in_
+
+            cfg["orogen"] = False
+            pattern = ["yes", "no"]
+            print()
+            orogen = raw_input_("Enable orogen support? (yes|no) [no]: ")
+            if orogen in pattern:
+                if orogen == "yes" or orogen == "y" or orogen == "1":
+                    cfg["orogen"] = True
+                else:
+                    cfg["orogen"] = False
 
             c.printBold("The configuration is written to \""+path+"/pybob/pybob.yml\".\n")
 

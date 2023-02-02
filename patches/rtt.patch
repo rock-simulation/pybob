@@ -1,0 +1,13 @@
+diff --git rtt/PropertyBag.hpp rtt/PropertyBag.hpp
+index 60f19cc86..8fbb993b9 100644
+--- rtt/PropertyBag.hpp
++++ rtt/PropertyBag.hpp
+@@ -241,7 +241,7 @@ namespace RTT
+         template<class T>
+         Property<T>* getPropertyType(const std::string& name) const
+         {
+-            const_iterator i( std::find_if(mproperties.begin(), mproperties.end(), std::bind2nd(FindPropType<T>(), name ) ) );
++            const_iterator i( std::find_if(mproperties.begin(), mproperties.end(), std::bind(FindPropType<T>(), name ) ) );
+             if ( i != mproperties.end() )
+                 return dynamic_cast<Property<T>* >(*i);
+             return 0;

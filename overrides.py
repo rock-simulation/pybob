@@ -7,8 +7,11 @@ import colorconsole as c
 import execute
 import yaml
 import bob_package
+import utils
 from environment import QT5_UBUNTU
 
+def dummy(cfg):
+    pass
 
 def uninstall_ode(cfg):
     execute.do(["make", "-C", cfg["devDir"] + "/simulation/ode", "clean"])
@@ -291,6 +294,98 @@ def uninstall_protobuf(cfg):
     execute.do(["make", "clean"])
     os.chdir(cwd)
 
+def fetch_general_git(cfg, path, package, url, hashId=None):
+    path = os.path.join(cfg["devDir"], path)
+    path2 = os.path.join(cfg["devDir"], package)
+    print(c.BOLD + "Fetching " + package +" ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    if not os.path.exists(path2):
+        execute.makeDir(path)
+        os.chdir(path)
+        execute.do(["git", "clone", url])
+        if hashId:
+            os.chdir(path2)
+            execute.do(["git", "checkout", hashId])
+    else:
+        os.chdir(path2)
+        execute.do(["git", "update"])
+        if hashId:
+            execute.do(["git", "checkout", hashId])
+    os.chdir(cwd)
+    return True
+
+def fetch_rtt(cfg):
+    r = fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
+    if r:
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/rtt"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
+    return r
+    path = cfg["devDir"] + "/tools"
+    print(c.BOLD + "Fetching " + "tools/rtt ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    execute.makeDir(path)
+    os.chdir(path)
+
+    if not os.path.isfile(path + "/rtt/CMakeLists.txt"):
+        if os.path.isdir(path + "/rtt"):
+            execute.do(["rm", "-rf", "rtt"])
+        execute.do(["git", "clone", "https://github.com/orocos-toolchain/rtt.git"])
+        execute.do(["git", "checkout", "baaea5022b"])
+
+        if not os.path.isfile("rtt/CMakeLists.txt"):
+            cfg["errors"].append("fetch: tools/rtt")
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/rtt"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
+
+    os.chdir(cwd)
+    return True
+
+def install_rtt(cfg):
+    bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
+
+def fetch_typelib(cfg):
+    if fetch_general_git(cfg, "tools", "tools/typelib",
+                         "git@github.com:orocos-toolchain/typelib.git"):
+        source = os.path.join(cfg["devDir"], "pybob/cmake/FindRuby.cmake")
+        target = os.path.join(cfg["devDir"], "tools/typelib/cmake")
+        execute.do(["cp", source, target])
+        srcPath = cfg["pyScriptDir"] + "/patches/"
+        targetPath = cfg["devDir"] + "/tools/typelib"
+        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
+        out, err, r = execute.do(cmd + [srcPath + "typelib.patch"])
+        return True
+    return False
+
+def fetch_orogen(cfg):
+    folder = "orocos-toolchain"
+    if system() == "Darwin":
+        folder = "malter"
+    return fetch_general_git(cfg, "tools", "tools/orogen",
+                             "git@github.com:"+folder+"/orogen.git")
+
+def fetch_rtt_typelib(cfg):
+    folder = "orocos-toolchain"
+    return fetch_general_git(cfg, "tools", "tools/rtt_typelib",
+                             "git@github.com:"+folder+"/rtt_typelib.git")
+
+def install_orocos(cfg):
+    path = cfg["devDir"] + "/tools/orocos.rb"
+    print(c.BOLD + "Installing " + "tools/orocos.rb ... " + c.END, end="")
+    sys.stdout.flush
+    cwd = os.getcwd()
+    os.chdir(path)
+    execute.do(["rake"])
+    # todo: put ruby pat to cfg; get correct ruby version and add it to path
+    major,minor = utils.get_ruby_verison()
+    execute.do(["cp", "-r", "lib/orocos/orocos/*", "lib/orocos/"])
+    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
+    execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -322,7 +417,26 @@ def loadOverrides(cfg):
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
         "external/rbdl": {"fetch": fetch_rbdl},
+        "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
+        "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
+        "rtt_typelib": {"fetch": fetch_rtt_typelib, "install_path": "tools/rtt_typelib"},
+        "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen"},
+        "orocos.rb": {"install": install_orocos, "install_path": "tools/orocos"},
     }
+    if system() == "Darwin":
+        cfg["overrides"]["tools/orogen_cpp_proxies"] =  {"url": "git@github.com:malter/orogen_cpp_proxies.git"}
+        cfg["overrides"]["pybind11"] = {"additional_deps": ["external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
+        cfg["overrides"]["pybind11_json"] = {"additional_deps": ["external/pybind11_json", "external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
+        cfg["overrides"]["node16"] = {"additional_deps": ["npm9"]}
+
+    cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
+    cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
+    cfg["overrides"]["tools/rtt"] = cfg["overrides"]["rtt"]
+    cfg["overrides"]["tools/typelib"] = cfg["overrides"]["typelib"]
+    cfg["overrides"]["tools/orocos.rb"] = cfg["overrides"]["orocos.rb"]
+    cfg["overrides"]["base/orogen/std"] = {"additional_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]}
+
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
             "fetch": fetch_ode_16,
@@ -340,18 +454,22 @@ def loadOverrides(cfg):
 
     cfg["ignorePackages"] = [
         "autotools",
-        "gui/vizkit3d",
+        #"gui/vizkit3d",
         "rice",
         "dummy-dependency-n",
         "dummy-dependency-n-1",
         "dummy-dependency-0",
         "external/yaml-cpp",
-        "rtt",
-        "typelib",
+        #"rtt",
+        #"typelib",
         "simulation/configmaps",
         "qt4-opengl",
         "tools/graph_analysis",
     ]
+
+    if not cfg["orogen"]:
+        cfg["ignorePackages"].append("tools/roby")
+        cfg["ignorePackages"].append("tools/cnd/service/trenhancer")
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
@@ -361,6 +479,25 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("zlib")
         cfg["ignorePackages"].append("dataclasses")
         cfg["ignorePackages"].append("blender")
+        cfg["ignorePackages"].append("gui/vizkit3d")
+        cfg["ignorePackages"].append("automake")
+        cfg["ignorePackages"].append("libtool")
+        cfg["ignorePackages"].append("libdw")
+        cfg["ignorePackages"].append("xpath-perl")
+        cfg["ignorePackages"].append("boost-python") # maybe map to boost
+
+        # for ruby tools -> should move to gemInstall in osdeps
+        cfg["ignorePackages"].append("minitest")
+        cfg["ignorePackages"].append("tty-table")
+        cfg["ignorePackages"].append("tty-cursor")
+        cfg["ignorePackages"].append("tty-prompt")
+        cfg["ignorePackages"].append("thor")
+        cfg["ignorePackages"].append("ruby") # system ruby is used instead
+        cfg["ignorePackages"].append("ruby-dev") # system ruby is used instead
+        cfg["ignorePackages"].append("rake") # system ruby is used instead
+        cfg["ignorePackages"].append("kramdown")
+        cfg["ignorePackages"].append("facets")
+        cfg["ignorePackages"].append("flexmock")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")

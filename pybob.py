@@ -33,6 +33,8 @@ cfg["buildOptional"] = True
 cfg["no_os_deps"] = False
 cfg["multiprocessing"] = True
 cfg["name_matching"] = True
+cfg["orogen"] = False
+
 copyArgs = []
 for a in sys.argv:
     if "=" in a:
@@ -193,7 +195,7 @@ def diff_():
     for p in toInstall:
         if p in cfg["osdeps"]:
             continue
-        if p in cfg["ignorePackages"] or "orogen" in p:
+        if p in cfg["ignorePackages"] or ("orogen" in p and not cfg["orogen"]):
             continue
         if p in cfg["overrides"] and "fetch" in cfg["overrides"][p]:
             continue
@@ -337,10 +339,10 @@ def list_():
     packages, w = buildconf.listPackages(cfg)
     for p in packages:
         if len(p[1]) > 0:
-            print(p[0], end="")
+            print(p[0], end=" - ")
             c.printBold(p[1])
         else:
-            print(p[0], end="")
+            print(p[0], end=" - ")
             c.printWarning(p[0])
 
 def rebuild_():
@@ -362,9 +364,25 @@ def info_():
         info = yaml.safe_load(f)
     package = sys.argv[2]
     if package in info:
-        print("packages that depend on " + package + ":")
+        print("\n  packages that depend on " + package + ":")
         print(info[package])
 
+    mans = []
+    handled = []
+
+    bob_package.getDeps(cfg, package, mans, None)
+    while len(mans) > 0:
+        p = mans.pop()
+        handled.append(p)
+        deps = []
+        bob_package.getDeps(cfg, p, deps, None)
+        while len(deps) > 0:
+            d = deps.pop()
+            if d not in handled and d not in mans:
+                mans.append(d)
+    print("\n  packages dependencies " + package + ":")
+    print(handled)
+    
 def show_log_():
     packageList = []
     package = sys.argv[2].replace("/", "_")

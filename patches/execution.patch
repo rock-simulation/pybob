@@ -1,0 +1,75 @@
+diff --git src/RTTTaskManager.cpp src/RTTTaskManager.cpp
+index 8c23df4..ce0c156 100644
+--- src/RTTTaskManager.cpp
++++ src/RTTTaskManager.cpp
+@@ -624,7 +624,7 @@ TaskContextPtr RTTTaskManager::getTaskContextProxy(const std::string &taskName,
+         LOG_INFO_S << "Failed to create task context for task: " << taskName << " ("<<retrials
+                         <<"/"<<_config.task_retrieval_retrials<<")"<<std::endl;
+         retrials++;
+-        usleep(10000);
++        usleep(100000);
+     }
+ 
+     LOG_ERROR_S << "Could not retrieve Task Proxy for " << taskName;
+diff --git src/TaskLoader.cpp src/TaskLoader.cpp
+index 13e84ec..2f86895 100644
+--- src/TaskLoader.cpp
++++ src/TaskLoader.cpp
+@@ -2,6 +2,8 @@
+ #include "tools.hpp"
+ #include <base-logging/Logging.hpp>
+ #include <dlfcn.h>
++
++#ifndef __APPLE__
+ #include <elf.h>
+ #include <link.h>
+ 
+@@ -52,11 +54,13 @@ std::vector<std::string> extractFnSymbolsFromSoLib(void *libHandle)
+     }
+     return fnSymbols;
+ }
++#endif
+ 
+ inline std::string guessMangledFactoryFnName(const std::string& packageName,
+                                              const std::string& taskName,
+                                              void *libHandle)
+ {
++#ifndef __APPLE__
+     std::vector<std::string> fnSymbols = extractFnSymbolsFromSoLib(libHandle);
+     const std::string searchString = "create_"+packageName+"__"+taskName;
+     for(const std::string& s : fnSymbols){
+@@ -65,6 +69,7 @@ inline std::string guessMangledFactoryFnName(const std::string& packageName,
+         }
+     }
+     //return "_ZN6orogen29create_"+packageName+"__"+taskName+"ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE";
++#endif
+     return "";
+ }
+ 
+diff --git src/cnd-execution.pc.in src/cnd-execution.pc.in
+index 7ad77ec..d738069 100644
+--- src/cnd-execution.pc.in
++++ src/cnd-execution.pc.in
+@@ -7,6 +7,6 @@ Name: @TARGET_NAME@
+ Description: @PROJECT_DESCRIPTION@
+ Version: @PROJECT_VERSION@
+ Requires: @PKGCONFIG_REQUIRES@
+-Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ -lboost_program_options -lboost_filesystem -ldl
++Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ @BOOST_LIBRARIES@ -ldl
+ Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+ 
+diff --git src/task_context_cache.hpp src/task_context_cache.hpp
+index 81f1f6c..a6bc866 100644
+--- src/task_context_cache.hpp
++++ src/task_context_cache.hpp
+@@ -1,8 +1,9 @@
+ #pragma once
+-#include <bits/stdc++.h>
++//#include <bits/stdc++.h>
+ #include <rtt/transports/corba/TaskContextProxy.hpp>
+ #include <base-logging/Logging.hpp>
+ #include <mutex>
++#include <unordered_map>
+ 
+ namespace cnd {
+ namespace execution {

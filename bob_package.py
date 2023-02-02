@@ -5,6 +5,7 @@ import yaml
 import os
 import buildconf
 import execute
+import utils
 from platform import system
 import sys
 
@@ -14,8 +15,12 @@ def getDeps(cfg, pkg, deps, checked):
         cfg["deps"][pkg] = []
     #c.printWarning("get deps for " + pkg)
     f = None
-    if os.path.isfile(os.path.join(cfg["devDir"], pkg+"/manifest.xml")):
-        f = open(cfg["devDir"]+"/"+pkg+"/manifest.xml", "r")
+    path = os.path.join(cfg["devDir"], pkg)
+    if pkg in cfg["overrides"] and "install_path" in cfg["overrides"][pkg]:
+        path = os.path.join(cfg["devDir"], cfg["overrides"][pkg]["install_path"])
+    manifest_path = os.path.join(path, "manifest.xml")
+    if os.path.isfile(manifest_path):
+        f = open(manifest_path, "r")
     if not f:
         # check for a manifest file in the package_set
         info = {}
@@ -35,7 +40,7 @@ def getDeps(cfg, pkg, deps, checked):
                     if len(arrLine) < 3:
                         continue
                     d = arrLine[1]
-                    if d not in cfg["ignorePackages"] and "orogen" not in d:
+                    if d not in cfg["ignorePackages"] or ("orogen" in d and not cfg["orogen"]):
                     #d not in cfg["osdeps"] and
                         deps.append(d)
                         if not d in cfg["depsInverse"]:
@@ -49,16 +54,28 @@ def getDeps(cfg, pkg, deps, checked):
                                 checked.append(d)
                                 getDeps(cfg, d, deps, checked)
         f.close()
-    if pkg in cfg["overrides"] and "additinal_deps" in cfg["overrides"][pkg]:
-        for dep in cfg["overrides"][pkg]:
+    if pkg in cfg["overrides"] and "additional_deps" in cfg["overrides"][pkg]:
+        for dep in cfg["overrides"][pkg]["additional_deps"]:
             deps.append(dep)
+            if not dep in cfg["deps"][pkg]:
+                cfg["deps"][pkg].append(dep)
+            if not dep in cfg["depsInverse"]:
+                cfg["depsInverse"][dep] = []
+            if not pkg in cfg["depsInverse"][dep]:
+                cfg["depsInverse"][dep].append(pkg)
+            if checked != None:
+                if dep not in checked:
+                    checked.append(dep)
+                    getDeps(cfg, dep, deps, checked)
 
 def installPythonPackage(cfg, p):
-    if p in cfg["ignorePackages"] or "orogen" in p:
+    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
-    if not os.path.isdir(cfg["devDir"]+"/"+p):
-        cfg["errors"].append("install: "+p+" path not found")
+    if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
+        path = os.path.join(cfg["devDir"], cfg["overrides"][p]["install_path"])
+    if not os.path.isdir(path):
+        cfg["errors"].append("install: "+path+" path not found")
         return
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
@@ -77,16 +94,53 @@ def installPythonPackage(cfg, p):
     cfg["profiling"].append([p, {"configure time": "0"}, {"compile time": str(diff)}])
     cfg["installed"].append(p)
 
-def installPackage(cfg, p, cmake_options=[]):
-    if p in cfg["ignorePackages"] or "orogen" in p:
+def installRubyPackage(cfg, p):
+    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
-    if not os.path.isdir(cfg["devDir"]+"/"+p):
-        cfg["errors"].append("install: "+p+" path not found")
+    if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
+        path = os.path.join(cfg["devDir"], cfg["overrides"][p]["install_path"])
+    if not os.path.isdir(path):
+        cfg["errors"].append("install: "+path+" path not found")
         return
-    if not os.path.isfile(cfg["devDir"]+"/"+p+"/CMakeLists.txt"):
-        if os.path.isfile(cfg["devDir"]+"/"+p+"/setup.py"):
+    #if cfg["rebuild"]:
+    #    execute.do(["rm", "-rf", path+"/build"])
+    start = datetime.datetime.now()
+    #if not os.path.isdir(path+"/build"):
+    #    execute.makeDir(path+"/build")
+    #pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
+    out, err, r = execute.do(["rake"], cfg , None, path, p.replace("/", "_")+"_build.txt")
+    if r != 0:
+        print(p + c.ERROR + " build error" + c.END)
+        cfg["errors"].append("build: "+p)
+        return
+    major,minor = utils.get_ruby_verison()
+    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
+    execute.do(["cp", "-r", "bin/*", "../../install/bin"])
+    end = datetime.datetime.now()
+    diff = end - start
+    print(p + c.WARNING + " installed" + c.END)
+    cfg["profiling"].append([p, {"configure time": "0"}, {"compile time": str(diff)}])
+    cfg["installed"].append(p)
+
+
+def installPackage(cfg, p, cmake_options=[]):
+    # todo: handle path override
+    if p in cfg["ignorePackages"] or ("orogen" in p and not cfg["orogen"]):
+        return
+
+    path = cfg["devDir"]+"/"+p
+    if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
+        path = os.path.join(cfg["devDir"], cfg["overrides"][p]["install_path"])
+    if not os.path.isdir(path):
+        cfg["errors"].append("install: "+path+" path not found")
+        return
+    if not os.path.isfile(os.path.join(path,"CMakeLists.txt")):
+        if os.path.isfile(os.path.join(path, "setup.py")):
             installPythonPackage(cfg, p)
+            return
+        if os.path.isfile(os.path.join(path, "Rakefile")):
+            installRubyPackage(cfg, p)
             return
         print(p + c.WARNING + " skip \"no cmake package\"" + c.END)
         sys.stdout.flush()
@@ -94,6 +148,29 @@ def installPackage(cfg, p, cmake_options=[]):
     if cfg["rebuild"]:
         execute.do(["rm", "-rf", path+"/build"])
     start = datetime.datetime.now()
+    orogenFilename = None
+    for f in os.listdir(path):
+        if os.path.isfile(os.path.join(path, f)):
+            arrF = f.split(".")
+            if len(arrF) == 2 and arrF[1] == "orogen":
+                orogenFilename = f
+    if orogenFilename:
+        # build orogen package
+        orogenPath = os.path.join(path, ".orogen")
+        if os.path.exists(orogenPath) and cfg["rebuild"]:
+            execute.do(["rm", "-rf", orogenPath])
+        if not os.path.exists(orogenPath):
+            cmd = ["orogen", "--transport=corba,typelib", "--import=std", "--extensions=cpp_proxies,modelExport", orogenFilename]
+            if p == "base/orogen/std":
+                cmd = ["orogen", "--transport=corba,typelib", "--extensions=cpp_proxies,modelExport", orogenFilename]
+            #print(" ".join(cmd))
+            out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
+            if r != 0:
+                print(p + c.ERROR + " orogen error" + c.END)
+                sys.stdout.flush()
+                cfg["errors"].append("orogen: "+p)
+                return
+
     if os.path.isdir(path+"/build"):
         cmd = ["cmake", path]
     else:

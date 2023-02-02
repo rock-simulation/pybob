@@ -38,15 +38,15 @@ def listPackages(cfg):
         if not isinstance(packageSet, dict):
             p = os.path.join(path, packageSet)
             if os.path.exists(p):
-                folders.append(p)
+                folders.append([p, packageSet])
 
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            folders.append(path+"remotes/"+d)
+            folders.append([path+"remotes/"+d, d])
 
     for d in folders:
-        packages.append([d, ""])
-        with open(os.path.join(d, "source.yml")) as f:
+        packages.append([d[1], ""])
+        with open(os.path.join(d[0], "source.yml")) as f:
             source = yaml.safe_load(f)
         if "version_control" in source:
             for p in source["version_control"]:
@@ -63,10 +63,11 @@ def listPackages(cfg):
                             key = k
                             break
                 if "*" not in key:
-                    packages.append([d, key])
+                    packages.append([d[1], key])
                 else:
-                    wildcard_packages.append([d, key])
-        files = getAutobuildFiles(path+"remotes/"+d)
+                    wildcard_packages.append([d[1], key])
+        files = getAutobuildFiles(d[0])
+
         for i in files:
             with open(i) as f:
                 for line in f:
@@ -79,7 +80,7 @@ def listPackages(cfg):
                             arrLine = line.split("'")
                         if arrLine:
                             if "#" not in arrLine[0]:
-                                packages.append([d, arrLine[1]])
+                                packages.append([d[1], arrLine[1]])
 
     return (packages, wildcard_packages)
 
@@ -97,6 +98,8 @@ def checkBaseName(package, info):
         if "$" in info["gitPackage"] and "*" not in package:
             info["basename"] = info["gitPackage"]
             info["gitPackage"] = info["gitPackage"].replace("$PACKAGE_BASENAME",
+                                                            package.split("/")[-1])
+            info["gitPackage"] = info["gitPackage"].replace("$PACKAGE",
                                                             package.split("/")[-1])
 
 def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
@@ -219,7 +222,14 @@ def getServerInfo(cfg, pDict, info):
 
 def getPackageInfoHelper(cfg, package, base, info):
     matches = {}
-    with open(cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]+"/source.yml") as f:
+    path = cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]
+    if not os.path.exists(path):
+        path = cfg["devDir"]+"/autoproj/"+cfg["packages"][base]
+    if not os.path.exists(path):
+        cfg["errors"].append("Cannot find path for: "+cfg["packages"][base])
+        c.printError("ERROR: Cannot find path for: "+cfg["packages"][base])
+        return False
+    with open(os.path.join(path, "source.yml")) as f:
         source = yaml.safe_load(f)
         if "version_control" in source:
             for pDict in source["version_control"]:
@@ -251,7 +261,7 @@ def getPackageInfoHelper(cfg, package, base, info):
     return False
 
 def getPackageInfo(cfg, package, info):
-    if package in cfg["ignorePackages"] :#or "orogen" in package:
+    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
         return
     if package in cfg["osdeps"]:
         return
@@ -316,7 +326,7 @@ def fetchPackage(cfg, package, layout_packages):
     print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
-    if package in cfg["ignorePackages"]:# or "orogen" in package:
+    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
         c.printWarning("done")
         return True
     if package in cfg["osdeps"]:
@@ -450,10 +460,14 @@ def fetchPackages(cfg, layout_packages):
         fetchPackage(cfg, layout, layout_packages)
 
 # todo: add error handling
-def clonePackageSet(cfg, git, realPath, path, cloned, deps):
+def clonePackageSet(cfg, git, realPath, path, cloned, deps, branch=None):
     # clone in tmp folder
     c.printNormal("  Fetching: "+git)
-    out, err, r = execute.do(["git", "clone", "-o", "autobuild", git, realPath])
+    cmd = ["git", "clone", "-o", "autobuild", git, realPath]
+    if branch != None:
+        cmd.append("-b")
+        cmd.append(branch)
+    out, err, r = execute.do(cmd)
     if not os.path.isdir(realPath+"/.git"):
         c.printNormal(execute.decode(out));
         c.printError(execute.decode(err));
@@ -486,19 +500,24 @@ def updatePackageSets(cfg):
     for packageSet in manifest["package_sets"]:
         if isinstance(packageSet, dict):
             key, value = list(packageSet.items())[0]
+            branch = None
             if isinstance(value, dict):
                 if value["type"] != "git":
                     continue
                 url = value["url"]
                 key = "url"
                 value = url
-                #todo: handle branch
+                if "branch" in value:
+                    branch = value["branch"]
+            if "branch" in packageSet:
+                branch = packageSet["branch"]
+
             realPath = cfg["devDir"]+"/.autoproj/remotes/"+key+"__"+ value.strip().replace("/", "_").replace("-", "_") + "_git"
             if not os.path.isdir(realPath):
                 if key == "url":
-                    clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps)
+                    clonePackageSet(cfg, value.strip(), realPath, path, cloned, deps, branch)
                 else:
-                    clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps)
+                    clonePackageSet(cfg, cfg["server"][key]+value.strip()+".git", realPath, path, cloned, deps, branch)
 
     # update remotes that are not actually cloned
     for d in os.listdir(path+"remotes"):

@@ -7,6 +7,14 @@ from platform import system
 import sys
 from environment import QT5_UBUNTU
 
+def gemInstall(cfg, pkg):
+    cmd = ["sudo", "gem", "install", pkg]
+
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd)
+    if len(out) > 0:
+        return
+
 def pipInstall(cfg, pkg):
     """PIP installation command."""
     platform = system()
@@ -150,6 +158,12 @@ def loadOsdeps(cfg):
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
+            "utilrb": [gemInstall],
+            "hoe": [gemInstall],
+            "hoe-yard": [gemInstall],
+            "yard": [gemInstall],
+            "rake-compiler": [gemInstall],
+            "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
         if QT5_UBUNTU:
             cfg["osdeps"]["qt"] = [install, "qt5-default"]
@@ -199,8 +213,9 @@ def loadOsdeps(cfg):
                               "matplotlib": [install, "python2-matplotlib"],
                               "cython": [install],
                               "yaml": [install, "libyaml"],
+                              "utilrb": [gemInstall, "utilrb"],
                               "zlib": [install]})
-    else:
+    else: # Darwin
         pyprefix = "py"+str(sys.version_info.major)+str(sys.version_info.minor)+"-"
         cfg["osdeps"].update({"opencv": [install],
                               "eigen3": [install],
@@ -230,6 +245,10 @@ def loadOsdeps(cfg):
                               "python-sklearn": [install, pyprefix+"scikit-learn"],
                               "scikit-learn": [install, pyprefix+"scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
+                              "omniorb": [install, "omniorb"],
+                              "utilrb": [gemInstall, "utilrb"],
+                              "ruby-backports": [gemInstall, "backports"],
+                              "metaruby": [gemInstall, "metaruby"],
                               "lemon": [install, "lemon"],
                               "fftw3": [install, "fftw-3"],
                               "uriparser": [install],
@@ -242,6 +261,8 @@ def loadOsdeps(cfg):
                               "python3-nose": [install, pyprefix+"nose"],
                               "python3-git": [install, pyprefix+"git"],
                               "python3-path": [install, pyprefix+"path"],
+                              "python3-jinja2": [install, pyprefix+"jinja2"],
+                              "python-markdown": [install, "py-markdown2"],
                               "pandas": [pipInstall, "pandas"],
                               "tensorflow": [pipInstall, "tensorflow"],
                               "keras": [install, pyprefix+"keras"],
@@ -258,6 +279,25 @@ def loadOsdeps(cfg):
                               "colorlog": [pipInstall, "colorlog"],
                               "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
                               "owlready2": [pipInstall, "Owlready2"],
+                              "sigc": [install, "libsigcxx2"],
+                              "hoe": [gemInstall],
+                              "hoe-yard": [gemInstall],
+                              "yard": [gemInstall],
+                              "rake-compiler": [gemInstall],
+                              "concurrent-ruby": [gemInstall],
+                              "pastel": [gemInstall],
+                              "hooks": [gemInstall],
+                              "rgl": [gemInstall],
+                              "websocket-gem": [gemInstall, "websocket"],
+                              "binding_of_caller": [gemInstall],
+                              "state_machine": [gemInstall],
+                              "avahi": [install],
+                              "poco": [install],
                               "nlohmann-json": [install],
                               "libgit2": [install],
+                              "xdot": [install, "graphviz"],
+                              "libxml2": [install],
+                              "libspdlog": [install, "spdlog"],
+                              "node16": [install, "nodejs16"],
+                              "npm9": [install],
 })
