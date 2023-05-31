@@ -313,6 +313,16 @@ def fetch_general_git(cfg, path, package, url, hashId=None):
         if hashId:
             execute.do(["git", "checkout", hashId])
     os.chdir(cwd)
+    patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
+    print("check for patches", end="")
+    if os.path.exists(patch):
+        cmd = ["patch", "-N", "-p0", "-d", path2, "-i", patch]
+        print(" ".join(cmd))
+        out, err, r = execute.do(cmd)
+        print(execute.decode(out))
+        print(execute.decode(err))
+        print(r)
+    c.printWarning("done")
     return True
 
 def fetch_rtt(cfg):
@@ -323,28 +333,6 @@ def fetch_rtt(cfg):
         cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
         out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
     return r
-    path = cfg["devDir"] + "/tools"
-    print(c.BOLD + "Fetching " + "tools/rtt ... " + c.END, end="")
-    sys.stdout.flush
-    cwd = os.getcwd()
-    execute.makeDir(path)
-    os.chdir(path)
-
-    if not os.path.isfile(path + "/rtt/CMakeLists.txt"):
-        if os.path.isdir(path + "/rtt"):
-            execute.do(["rm", "-rf", "rtt"])
-        execute.do(["git", "clone", "https://github.com/orocos-toolchain/rtt.git"])
-        execute.do(["git", "checkout", "baaea5022b"])
-
-        if not os.path.isfile("rtt/CMakeLists.txt"):
-            cfg["errors"].append("fetch: tools/rtt")
-        srcPath = cfg["pyScriptDir"] + "/patches/"
-        targetPath = cfg["devDir"] + "/tools/rtt"
-        cmd = ["patch", "-N", "-p0", "-d", targetPath, "-i"]
-        out, err, r = execute.do(cmd + [srcPath + "rtt.patch"])
-
-    os.chdir(cwd)
-    return True
 
 def install_rtt(cfg):
     bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
@@ -366,6 +354,7 @@ def fetch_orogen(cfg):
     folder = "orocos-toolchain"
     if system() == "Darwin":
         folder = "malter"
+    print("fetch orogen: " + folder)
     return fetch_general_git(cfg, "tools", "tools/orogen",
                              "git@github.com:"+folder+"/orogen.git")
 
@@ -386,6 +375,93 @@ def install_orocos(cfg):
     execute.do(["cp", "-r", "lib/orocos/orocos/*", "lib/orocos/"])
     execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
+
+def install_omniorb(cfg):
+    #if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/ode.pc"):
+    #    print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
+    #    sys.stdout.flush
+    #    return
+    p = "external/omniORB"
+    path = os.path.join(cfg["devDir"], p)
+
+    pythonExecutable = sys.executable
+    cmd = [
+        'CXXFLAGS="-O2 -ffast-math -fPIC"',
+        'CFLAGS="-O2 -ffast-math -fPIC"',
+        "--prefix=" + cfg["devDir"] + "/install",
+        "PYTHON="+pythonExecutable,
+    ]
+    if system() == "Windows":
+        cmd = ["bash", "configure"] + cmd
+    else:
+        cmd = ["./configure"] + cmd
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, path, "external_omniorb_configure.txt")
+    if r > 0:
+        print(p + c.ERROR + " configure error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("configure: "+p)
+        return
+
+    print(c.BOLD + "external/omniORB" + c.WARNING + " configured" + c.END)
+    sys.stdout.flush()
+
+    cmd = ["make", "-C", path, "-j", str(cfg["numCores"])]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, None, "external_omniorb_install.txt")
+    if r > 0:
+        print(p + c.ERROR + " build error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("build: "+p)
+        return
+
+    cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, None, "external_omniorb_install.txt")
+    if r > 0:
+        print(p + c.ERROR + " install error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("install: "+p)
+        return
+    print(c.BOLD + "external/omniorb" + c.WARNING + " installed" + c.END)
+    sys.stdout.flush()
+
+def install_omniorbpy(cfg):
+    #if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/ode.pc"):
+    #    print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
+    #    sys.stdout.flush
+    #    return
+    p = "external/omniORBpy"
+    path = os.path.join(cfg["devDir"], p)
+    pythonExecutable = sys.executable
+    cmd = [
+        'CXXFLAGS="-O2 -ffast-math -fPIC"',
+        'CFLAGS="-O2 -ffast-math -fPIC"',
+        "--prefix=" + cfg["devDir"] + "/install",
+        '--with-omniorb='+cfg["devDir"]+'/install',
+        "PYTHON="+pythonExecutable,
+    ]
+    if system() == "Windows":
+        cmd = ["bash", "configure"] + cmd
+    else:
+        cmd = ["./configure"] + cmd
+
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, path, "external_omniorbpy_configure.txt")
+    if r > 0:
+        print(p + c.ERROR + " configure error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("configure: "+p)
+        return
+
+    print(c.BOLD + "external/omniORBpy" + c.WARNING + " configured" + c.END)
+    sys.stdout.flush()
+    cmd = ["make", "-C", path, "install", "-j", str(cfg["numCores"])]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, None, "external_omniorbpy_install.txt")
+    if r > 0:
+        print(p + c.ERROR + " install error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("build: "+p)
+        return
+    print(c.BOLD + "external/omniorbpy" + c.WARNING + " installed" + c.END)
+    sys.stdout.flush()
+
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -422,6 +498,8 @@ def loadOverrides(cfg):
         "rtt_typelib": {"fetch": fetch_rtt_typelib, "install_path": "tools/rtt_typelib"},
         "orogen": {"fetch": fetch_orogen, "install_path": "tools/orogen"},
         "orocos.rb": {"install": install_orocos, "install_path": "tools/orocos"},
+        "external/omniORB": {"install": install_omniorb},
+        "external/omniORBpy": {"install": install_omniorbpy, "additional_deps": ["external/omniORB"]},
     }
     if system() == "Darwin":
         cfg["overrides"]["tools/orogen_cpp_proxies"] =  {"url": "git@github.com:malter/orogen_cpp_proxies.git"}

@@ -13,7 +13,7 @@ import sys
 def getDeps(cfg, pkg, deps, checked):
     if not pkg in cfg["deps"]:
         cfg["deps"][pkg] = []
-    #c.printWarning("get deps for " + pkg)
+    c.printWarning("get deps for " + pkg)
     f = None
     path = os.path.join(cfg["devDir"], pkg)
     if pkg in cfg["overrides"] and "install_path" in cfg["overrides"][pkg]:
@@ -55,18 +55,18 @@ def getDeps(cfg, pkg, deps, checked):
                                 getDeps(cfg, d, deps, checked)
         f.close()
     if pkg in cfg["overrides"] and "additional_deps" in cfg["overrides"][pkg]:
-        for dep in cfg["overrides"][pkg]["additional_deps"]:
-            deps.append(dep)
-            if not dep in cfg["deps"][pkg]:
-                cfg["deps"][pkg].append(dep)
-            if not dep in cfg["depsInverse"]:
-                cfg["depsInverse"][dep] = []
-            if not pkg in cfg["depsInverse"][dep]:
-                cfg["depsInverse"][dep].append(pkg)
+        for d in cfg["overrides"][pkg]["additional_deps"]:
+            deps.append(d)
+            if not d in cfg["depsInverse"]:
+                cfg["depsInverse"][d] = []
+            if not pkg in cfg["depsInverse"][d]:
+                cfg["depsInverse"][d].append(pkg)
+            if not d in cfg["deps"][pkg]:
+                cfg["deps"][pkg].append(d)
             if checked != None:
-                if dep not in checked:
-                    checked.append(dep)
-                    getDeps(cfg, dep, deps, checked)
+                if d not in checked:
+                    checked.append(d)
+                    getDeps(cfg, d, deps, checked)
 
 def installPythonPackage(cfg, p):
     if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
@@ -83,7 +83,9 @@ def installPythonPackage(cfg, p):
     if not os.path.isdir(path+"/build"):
         execute.makeDir(path+"/build")
     pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
-    out, err, r = execute.do([pythonExecutable, "setup.py", "install", "--prefix", cfg["devDir"]+"/install"], cfg , None, path, p.replace("/", "_")+"_build.txt")
+    cmd = [pythonExecutable, "setup.py", "install", "--prefix", cfg["devDir"]+"/install"]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg , None, path, p.replace("/", "_")+"_build.txt")
     if r != 0:
         print(p + c.ERROR + " build error" + c.END)
         cfg["errors"].append("build: "+p)
@@ -115,8 +117,8 @@ def installRubyPackage(cfg, p):
         cfg["errors"].append("build: "+p)
         return
     major,minor = utils.get_ruby_verison()
-    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
-    execute.do(["cp", "-r", "bin/*", "../../install/bin"])
+    execute.do(["cp", "-r", "lib/*", cfg["devDir"]+"/install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
+    execute.do(["cp", "-r", "bin/*", cfg["devDir"]+"/install/bin"])
     end = datetime.datetime.now()
     diff = end - start
     print(p + c.WARNING + " installed" + c.END)

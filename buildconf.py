@@ -42,45 +42,47 @@ def listPackages(cfg):
 
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            folders.append([path+"remotes/"+d, d])
-
-    for d in folders:
-        packages.append([d[1], ""])
-        with open(os.path.join(d[0], "source.yml")) as f:
-            source = yaml.safe_load(f)
-        if "version_control" in source:
-            for p in source["version_control"]:
-                # some rock configuration files are not well formated
-                # which results in a list with one key having no value
-                # instead of a dict
-                key = ""
-                items = p.items()
-                if len(items) == 1:
-                    key, value = list(items)[0]
-                else:
-                    for k, v in items:
-                        if not v:
-                            key = k
-                            break
-                if "*" not in key:
-                    packages.append([d[1], key])
-                else:
-                    wildcard_packages.append([d[1], key])
-        files = getAutobuildFiles(d[0])
-
-        for i in files:
-            with open(i) as f:
-                for line in f:
-                    if "_package" in line:
-                        l = line.split("_package")[1]
-                        arrLine = None
-                        if '"' in l:
-                            arrLine = line.split('"')
-                        elif "'" in l:
-                            arrLine = line.split("'")
-                        if arrLine:
-                            if "#" not in arrLine[0]:
-                                packages.append([d[1], arrLine[1]])
+            packages.append([d, ""])
+            with open(path+"remotes/"+d+"/source.yml") as f:
+                source = yaml.safe_load(f)
+            if "version_control" in source:
+                for p in source["version_control"]:
+                    # some rock configuration files are not well formated
+                    # which results in a list with one key having no value
+                    # instead of a dict
+                    key = ""
+                    items = p.items()
+                    if len(items) == 1:
+                        key, value = list(items)[0]
+                    else:
+                        for k, v in items:
+                            if not v:
+                                key = k
+                                break
+                    if "*" not in key:
+                        packages.append([d, key])
+                    else:
+                        wildcard_packages.append([d, key])
+            files = getAutobuildFiles(path+"remotes/"+d)
+            for i in files:
+                with open(i) as f:
+                    for line in f:
+                        if "_package" in line:
+                            l = line.split("_package")[1]
+                            arrLine = None
+                            if '"' in l:
+                                arrLine = line.split('"')
+                            elif "'" in l:
+                                arrLine = line.split("'")
+                            if arrLine:
+                                if "#" not in arrLine[0]:
+                                    packages.append([d, arrLine[1]])
+                        if "metapackage" in line:
+                            l = line.split()
+                            if len(l) == 3:
+                                l1 = l[1].strip().replace('"', "").replace("'", "").replace(',', "")
+                                l2 = l[2].strip().replace('"', "").replace("'", "").replace(',', "")
+                                packages.append([d, l1, l2])
 
     return (packages, wildcard_packages)
 
@@ -119,6 +121,34 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
         if cfg["update"]:
             print("Updating " + clonePath + " ... " + c.END, end="")
             # todo: check branch
+            out, err, r = execute.do(["git", "-C", clonePath, "branch"], cfg)
+            if r != 0:
+                cfg["errors"].append("update: "+package)
+                c.printError("\ncan't get branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
+            else:
+                branches = execute.decode(out).splitlines()
+                current_branch = None
+                for b in branches:
+                    if b[0] == "*":
+                        current_branch = b.split()[1].strip()
+                if not branch:
+                    out, err, r = execute.do(["git", "-C", clonePath, "remote", "show", "autobuild | sed -n '/HEAD branch/s/.*: //p'"], cfg)
+                    if r != 0:
+                        cfg["errors"].append("update: "+package)
+                        c.printError("\ncan't get default branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
+                    else:
+                        branch = execute.decode(out).strip()
+                print(branch + " [" + current_branch + "] " + c.END, end="")
+                if branch and branch != current_branch:
+                    args = ["-t", "autobuild/"+branch]
+                    for b in branches:
+                        if branch == b.strip():
+                            args = [branch]
+                            break
+                    out, err, r = execute.do(["git", "-C", clonePath, "checkout"]+args, cfg)
+                    if r != 0:
+                        cfg["errors"].append("update: "+package)
+                        c.printError("\ncan't checkout given branch \""+clonePath+"\":\n" + execute.decode(err))
             out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
                 cfg["errors"].append("update: "+package)
@@ -134,13 +164,54 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
         else:
             print("Fetching " + clonePath + " ... " + c.END, end="")
             sys.stdout.flush()
-            cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
-            if branch:
-                cmd += ["-b", branch]
-            if recursive:
-                cmd += ["--recursive"]
-            #print(" ".join(cmd))
-            execute.do(cmd, cfg)
+            if server == "archive":
+                archivePath = "/".join(clonePath.split("/")[:-1])
+                out, err, r = execute.do(["wget", "-P", archivePath, gitPackage])
+                if r != 0:
+                    cfg["errors"].append("wget: "+package)
+                    c.printError("\ncan't fetch \""+clonePath+"\":\n" + execute.decode(err))
+                    return True
+                sourceFile = os.path.join(archivePath, gitPackage.split("/")[-1])
+                arrFileName = gitPackage.split("/")[-1].split(".")
+                ending = arrFileName[-1]
+                folderName = ".".join(arrFileName[:-1])
+                cmd = []
+                if ending == "tar":
+                    cmd = ["tar", "-xf", sourceFile, "-C", archivePath]
+                elif ending == "gz":
+                    cmd = ["tar", "-xzf", sourceFile, "-C", archivePath]
+                    if arrFileName[-2] == "tar":
+                        folderName = ".".join(arrFileName[:-2])
+                elif ending == "tgz":
+                    cmd = ["tar", "-xzf", sourceFile, "-C", archivePath]
+                elif ending == "bz2":
+                    cmd = ["tar", "-xjf", sourceFile, "-C", archivePath]
+                    if arrFileName[-2] == "tar":
+                        folderName = ".".join(arrFileName[:-2])
+                elif ending == "zip":
+                    cmd = ["unzip", sourceFile, "-d", archivePath]
+                out, err, r = execute.do(cmd)
+                if r != 0:
+                    cfg["errors"].append("wget: "+package)
+                    c.printError("\ncan't fetch (unpack) \""+clonePath+"\":\n" + execute.decode(err))
+                    c.printError("\ncmd (unpack): \""+" ".join(cmd))
+                    return True
+                # rename folder
+                cmd = ["mv", os.path.join(archivePath, folderName), clonePath]
+                out, err, r = execute.do(cmd)
+                if r != 0:
+                    cfg["errors"].append("rename folder for: "+package)
+                    c.printError("\ncan't rename (mv) \""+clonePath+"\":\n" + execute.decode(err))
+                    c.printError("\ncmd (rename): \""+" ".join(cmd))
+                    return True
+            else:
+                cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
+                if branch:
+                    cmd += ["-b", branch]
+                if recursive:
+                    cmd += ["--recursive"]
+                #print(" ".join(cmd))
+                execute.do(cmd, cfg)
 
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
@@ -172,6 +243,8 @@ def getServerInfo(cfg, pDict, info):
                 haveServer = True
                 info["server"] = pInfo["url"]
                 info["gitPackage"] = ""
+            if pInfo["type"] == "archive" and "url" in pInfo:
+                info["archive"] = pInfo["url"]
         if not haveServer:
             for key,server in cfg["server"].items():
                 if key in pInfo:
@@ -222,12 +295,12 @@ def getServerInfo(cfg, pDict, info):
 
 def getPackageInfoHelper(cfg, package, base, info):
     matches = {}
-    path = cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base]
+    path = cfg["devDir"]+"/autoproj/remotes/"+cfg["packages"][base][0]
     if not os.path.exists(path):
-        path = cfg["devDir"]+"/autoproj/"+cfg["packages"][base]
+        path = cfg["devDir"]+"/autoproj/"+cfg["packages"][base][0]
     if not os.path.exists(path):
-        cfg["errors"].append("Cannot find path for: "+cfg["packages"][base])
-        c.printError("ERROR: Cannot find path for: "+cfg["packages"][base])
+        cfg["errors"].append("Cannot find path for: "+cfg["packages"][base][0])
+        c.printError("ERROR: Cannot find path for: "+cfg["packages"][base][0])
         return False
     with open(os.path.join(path, "source.yml")) as f:
         source = yaml.safe_load(f)
@@ -241,7 +314,7 @@ def getPackageInfoHelper(cfg, package, base, info):
                     if m and m.group() == base:
                         i2 = dict(info2)
                         i2["base"] = package
-                        i2["remote"] = cfg["packages"][base]
+                        i2["remote"] = cfg["packages"][base][0]
                         if "gitPackage" in i2:
                             if "basename" in matches:
                                 del matches["basename"]
@@ -338,8 +411,9 @@ def fetchPackage(cfg, package, layout_packages):
             c.printWarning("done")
         return True
 
-    if package in cfg["overrides"] and cfg["overrides"][package] == None:
-        print(cfg["overrides"])
+    #if package in cfg["overrides"] and cfg["overrides"][package] == None:
+    #    print(cfg["overrides"])
+    #print(package)
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
         if cfg["fetch"]:
@@ -373,7 +447,7 @@ def fetchPackage(cfg, package, layout_packages):
             if not fetchPackage(cfg, match, layout_packages):
                 result = False
         return result
-    elif package == cfg["packages"][package]:
+    elif package == cfg["packages"][package][0]:
         info = []
         print("\n ", end="")
         if getPackageInfoFromRemoteFolder(cfg, package, path+package, info):
@@ -392,15 +466,24 @@ def fetchPackage(cfg, package, layout_packages):
             return True
     else:
         info = {}
+        # override package if it is a metapackage
+        if len(cfg["packages"][package]) == 2:
+            package = cfg["packages"][package][1]
         if getPackageInfo(cfg, package, info):
             endM = True
             le = len(cfg["errors"])
             branch = None
-            if not "server" in info:
+            server = None
+            server2 = None
+            if "archive" in info:
+                server = "archive"
+                server2 = info["archive"]
+            elif not "server" in info:
                 cfg["errors"].append("fetch: "+package)
                 return
-            server = info["server"]
-            server2 = info["gitPackage"]
+            else:
+                server = info["server"]
+                server2 = info["gitPackage"]
 
             if "branch" in info:
                 branch = info["branch"]
@@ -431,7 +514,7 @@ def fetchPackage(cfg, package, layout_packages):
                         endM = False
 
             else:
-                if "server" in info:
+                if "server" in info or "archive" in info:
                     if "with_submodules" in info and info["with_submodules"]:
                         if clonePackage(cfg, info["package"], server, server2, branch, True):
                             endM = False
@@ -572,18 +655,21 @@ def updatePackageSets(cfg):
                     f.write(p[1] + "\n")
                 else:
                     f.write(bytes(p[1] + "\n", "utf-8"))
-                pDict[p[1]] = p[0]
+                if len(p) == 3:
+                    pDict[p[1]] = [p[0], p[2]]
+                else:
+                    pDict[p[1]] = [p[0]]
             else:
                 if sys.version_info.major <= 2:
                     f.write(p[0] + "\n")
                 else:
                     f.write(bytes(p[0] + "\n", "utf-8"))
-                pDict[p[0]] = p[0]
+                pDict[p[0]] = [p[0]]
         for p in wildcards:
             if len(p[1]) > 0:
-                pDict[p[1]] = p[0]
+                pDict[p[1]] = [p[0]]
             else:
-                pDict[p[0]] = p[0]
+                pDict[p[0]] = [p[0]]
     with open(path+"/bob/packages.yml", "w") as f:
         yaml.dump(pDict, f)
 
