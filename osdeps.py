@@ -277,6 +277,7 @@ def loadOsdeps(cfg):
                               "pylxml": [install, pyprefix+"lxml"],
                               "torchsummary": [pipInstall, "torchsummary"],
                               "colorlog": [pipInstall, "colorlog"],
+                              "SpeechRecognition": [pipInstall],
                               "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
                               "owlready2": [pipInstall, "Owlready2"],
                               "sigc": [install, "libsigcxx2"],

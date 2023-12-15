@@ -83,7 +83,7 @@ def installPythonPackage(cfg, p):
     if not os.path.isdir(path+"/build"):
         execute.makeDir(path+"/build")
     pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
-    cmd = [pythonExecutable, "setup.py", "install", "--prefix", cfg["devDir"]+"/install"]
+    cmd = [pythonExecutable, "setup.py", "install", "--prefix="+cfg["devDir"]+"/install"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg , None, path, p.replace("/", "_")+"_build.txt")
     if r != 0:
@@ -162,10 +162,10 @@ def installPackage(cfg, p, cmake_options=[]):
         if os.path.exists(orogenPath) and cfg["rebuild"]:
             execute.do(["rm", "-rf", orogenPath])
         if not os.path.exists(orogenPath):
-            cmd = ["orogen", "--transport=corba,typelib", "--import=std", "--extensions=cpp_proxies,modelExport", orogenFilename]
+            cmd = ["orogen", "--transport=corba,typelib", "--import=std", "--extensions=cpp_proxies,modelExport --no-rtt-scripting", orogenFilename]
             if p == "base/orogen/std":
                 cmd = ["orogen", "--transport=corba,typelib", "--extensions=cpp_proxies,modelExport", orogenFilename]
-            #print(" ".join(cmd))
+            print(" ".join(cmd))
             out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
             if r != 0:
                 print(p + c.ERROR + " orogen error" + c.END)

@@ -246,6 +246,11 @@ def install_blloader(cfg):
         cfg, "learning/bolero/src/bl_loader", ["-DPYTHON_SUPPORT=OFF"]
     )
 
+def install_trenhancer(cfg):
+    buildType = cfg["defBuildType"]
+    cfg["defBuildType"] = "debug"
+    bob_package.installPackage(cfg, "tools/cnd/service/trenhancer")
+    cfg["defBuildType"] = buildType
 
 def check_protobuf(cfg):
     return os.path.isfile(cfg["devDir"] + "/external/protobuf/protobuf.pc.in")
@@ -335,7 +340,13 @@ def fetch_rtt(cfg):
     return r
 
 def install_rtt(cfg):
-    bob_package.installPackage(cfg, "tools/rtt", ["-DENABLE_CORBA=ON -DCORBA_IMPLEMENTATION=OMNIORB"])
+    execute.do(["rm", os.path.join(cfg["devDir"], "tools/rtt/rtt/plugin/pluginpath.cpp")])
+    options = ['-DENABLE_CORBA=ON',
+               '-DCORBA_IMPLEMENTATION=OMNIORB',
+               '-DDEFAULT_PLUGIN_PATH="/"',
+               '-DPLUGINS_ENABLE_SCRIPTING=OFF',
+               '-DORO_DISABLE_PORT_DATA_SCRIPTING=ON']
+    bob_package.installPackage(cfg, "tools/rtt", [' '.join(options)])
 
 def fetch_typelib(cfg):
     if fetch_general_git(cfg, "tools", "tools/typelib",
@@ -389,6 +400,8 @@ def install_omniorb(cfg):
         'CXXFLAGS="-O2 -ffast-math -fPIC"',
         'CFLAGS="-O2 -ffast-math -fPIC"',
         "--prefix=" + cfg["devDir"] + "/install",
+        '--with-omniORB-config="/opt/local/etc/omniORB.cfg"',
+        '--with-omniNames-logdir="/opt/local/var"',
         "PYTHON="+pythonExecutable,
     ]
     if system() == "Windows":
@@ -507,6 +520,7 @@ def loadOverrides(cfg):
         cfg["overrides"]["pybind11_json"] = {"additional_deps": ["external/pybind11_json", "external/pybind11"], "install": dummy, "fetch": dummy, "patch": dummy, "check": dummy, "uninstall": dummy}
         cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
         cfg["overrides"]["node16"] = {"additional_deps": ["npm9"]}
+        cfg["overrides"]["tools/cnd/service/trenhancer"] = {"install": install_trenhancer}
 
     cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
     cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
@@ -557,7 +571,7 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("zlib")
         cfg["ignorePackages"].append("dataclasses")
         cfg["ignorePackages"].append("blender")
-        cfg["ignorePackages"].append("gui/vizkit3d")
+        #cfg["ignorePackages"].append("gui/vizkit3d")
         cfg["ignorePackages"].append("automake")
         cfg["ignorePackages"].append("libtool")
         cfg["ignorePackages"].append("libdw")
@@ -576,6 +590,8 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("kramdown")
         cfg["ignorePackages"].append("facets")
         cfg["ignorePackages"].append("flexmock")
+        cfg["ignorePackages"].append("external/omniORB")
+        cfg["ignorePackages"].append("external/omniORBpy")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")
