@@ -143,8 +143,10 @@ def setupEnv(cfg, update=False):
                 f.write('export OROGEN_MODEL_PATH="'+prefix+'/share/orogen/models"\n')
                 f.write('export ROCK_BUNDLE_PATH="'+prefix+'/../bundles"\n')
                 f.write('export ORBInitRef="NameService=corbaname::localhost"\n')
-                f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/types"\n')
+                f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/plugins"\n')
                 f.write('export QT_PLUGIN_DIR="'+prefix+'/lib/qt"\n')
+                f.write('export QT_PLUGIN_PATH="'+prefix+'/lib/qt"\n')
+                f.write('export VIZKIT_PLUGIN_RUBY_PATH="'+prefix+'/lib"\n')
                 f.write('source base/scripts/shell/zsh\n')
 
             _make_pybob_aliases(f)

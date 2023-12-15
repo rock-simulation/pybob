@@ -332,6 +332,18 @@ def fetch_general_git(cfg, path, package, url, hashId=None):
 
 # todo: move this to utils
 def fetch_archive(cfg, path, package, url, hashId=None):
+    clonePath = package
+    if package[-2:] == ".*":
+        arrPackage = package.split("/")[:-1]
+        p = gitPackage.split("/")[-1].split(".")[0]
+        if arrPackage[-1] != p:
+            arrPackage.append(p)
+        clonePath = "/".join(arrPackage)
+    if package in cfg["updated"]:
+        return False
+    else:
+        cfg["updated"].append(package)
+    clonePath = cfg["devDir"]+"/"+clonePath
     archivePath = "/".join(clonePath.split("/")[:-1])
     out, err, r = execute.do(["wget", "-P", archivePath, gitPackage])
     if r != 0:
@@ -518,8 +530,6 @@ def install_omniorbpy(cfg):
     sys.stdout.flush()
 
 def fetch_boost(cfg):
-    def fetch_archive(cfg, path, package, url, hashId=None):
-    folder = "orocos-toolchain"
     return fetch_archive(cfg, "external", "external/boost",
                          "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.bz2")
 
@@ -589,7 +599,7 @@ def loadOverrides(cfg):
         cfg["overrides"]["tools/cnd/service/trenhancer"] = {"install": install_trenhancer}
         if cfg["orogen"]:
             # to have the correct boost python version for pyrrock we have to build boost manually
-            cfg["overrides"]["boost"] = {"fetch": fetch_boost: "install": install_boost}
+            cfg["overrides"]["boost"] = {"fetch": fetch_boost, "install": install_boost}
 
     cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
     cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
@@ -661,7 +671,7 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("flexmock")
         cfg["ignorePackages"].append("external/omniORB")
         cfg["ignorePackages"].append("external/omniORBpy")
-        cfg["ignorePackages"].append("external/osg-qt4")
+        cfg["ignorePackages"].append("gui/osg_qt4")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")

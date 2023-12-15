@@ -301,5 +301,5 @@ def loadOsdeps(cfg):
                               "node16": [install, "nodejs16"],
                               "npm9": [install],
 })
-        if !cfg["orogen"]:
+        if not cfg["orogen"]:
             cfg["osdeps"]["boost"] = [install]
