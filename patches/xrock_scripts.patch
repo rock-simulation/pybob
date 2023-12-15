@@ -1,0 +1,15 @@
+diff --git xrock_scripts/scripts/export_cnd.py xrock_scripts/scripts/export_cnd.py
+index 554b4f5..c09e2a3 100644
+--- xrock_scripts/scripts/export_cnd.py
++++ xrock_scripts/scripts/export_cnd.py
+@@ -14,7 +14,9 @@ def tf_enhance(filename, urdf, cnd):
+     temp = f"{filename}_temp"
+     with open(temp, "w") as f:
+         f.write(yaml.dump(cnd, default_flow_style=False))
+-    os.system(f"cnd-tf-enhance {temp} --urdf {urdf} --out {filename}")
++    cmd = f"DYLD_LIBRARY_PATH=$MYLD_LIBRARY_PATH cnd-tf-enhance {temp} --urdf {urdf} --out {filename}"
++    print("excute: " + cmd)
++    os.system(cmd)
+     if os.path.exists(filename):
+         orig_cnd = None
+         tf_cnd = None
