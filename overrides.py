@@ -330,6 +330,48 @@ def fetch_general_git(cfg, path, package, url, hashId=None):
     c.printWarning("done")
     return True
 
+# todo: move this to utils
+def fetch_archive(cfg, path, package, url, hashId=None):
+    archivePath = "/".join(clonePath.split("/")[:-1])
+    out, err, r = execute.do(["wget", "-P", archivePath, gitPackage])
+    if r != 0:
+        cfg["errors"].append("wget: "+package)
+        c.printError("\ncan't fetch \""+clonePath+"\":\n" + execute.decode(err))
+        return True
+    sourceFile = os.path.join(archivePath, gitPackage.split("/")[-1])
+    arrFileName = gitPackage.split("/")[-1].split(".")
+    ending = arrFileName[-1]
+    folderName = ".".join(arrFileName[:-1])
+    cmd = []
+    if ending == "tar":
+        cmd = ["tar", "-xf", sourceFile, "-C", archivePath]
+    elif ending == "gz":
+        cmd = ["tar", "-xzf", sourceFile, "-C", archivePath]
+        if arrFileName[-2] == "tar":
+            folderName = ".".join(arrFileName[:-2])
+    elif ending == "tgz":
+        cmd = ["tar", "-xzf", sourceFile, "-C", archivePath]
+    elif ending == "bz2":
+        cmd = ["tar", "-xjf", sourceFile, "-C", archivePath]
+        if arrFileName[-2] == "tar":
+            folderName = ".".join(arrFileName[:-2])
+    elif ending == "zip":
+        cmd = ["unzip", sourceFile, "-d", archivePath]
+    out, err, r = execute.do(cmd)
+    if r != 0:
+        cfg["errors"].append("wget: "+package)
+        c.printError("\ncan't fetch (unpack) \""+clonePath+"\":\n" + execute.decode(err))
+        c.printError("\ncmd (unpack): \""+" ".join(cmd))
+        return True
+    # rename folder
+    cmd = ["mv", os.path.join(archivePath, folderName), clonePath]
+    out, err, r = execute.do(cmd)
+    if r != 0:
+        cfg["errors"].append("rename folder for: "+package)
+        c.printError("\ncan't rename (mv) \""+clonePath+"\":\n" + execute.decode(err))
+        c.printError("\ncmd (rename): \""+" ".join(cmd))
+        return True
+
 def fetch_rtt(cfg):
     r = fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
     if r:
@@ -475,6 +517,30 @@ def install_omniorbpy(cfg):
     print(c.BOLD + "external/omniorbpy" + c.WARNING + " installed" + c.END)
     sys.stdout.flush()
 
+def fetch_boost(cfg):
+    def fetch_archive(cfg, path, package, url, hashId=None):
+    folder = "orocos-toolchain"
+    return fetch_archive(cfg, "external", "external/boost",
+                         "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.bz2")
+
+def install_boost(cfg):
+    p = "external/boost"
+    path = os.path.join(cfg["devDir"], p)
+    cmd = ["bootstrap.sh", "--without-libraries=python", "--without-libraries=mpi", "--with-icu=/opt/local"]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, path, "external_boost_configure.txt")
+    if r > 0:
+        print(p + c.ERROR + " configure error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("configure: "+p)
+        return
+
+    cmd = ["b2", "--prefix=", "--no-cmake-config", "threading=single,multi", "cxxflags=-std=c++11", "install"]
+    print(" ".join(cmd))
+    out, err, r = execute.do(cmd, cfg, None, path, "external_boost_install.txt")
+    if r > 0:
+        print(p + c.ERROR + " install error: " + execute.decode(err) + c.END)
+        cfg["errors"].append("install: "+p)
+        return
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -521,6 +587,9 @@ def loadOverrides(cfg):
         cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
         cfg["overrides"]["node16"] = {"additional_deps": ["npm9"]}
         cfg["overrides"]["tools/cnd/service/trenhancer"] = {"install": install_trenhancer}
+        if cfg["orogen"]:
+            # to have the correct boost python version for pyrrock we have to build boost manually
+            cfg["overrides"]["boost"] = {"fetch": fetch_boost: "install": install_boost}
 
     cfg["overrides"]["tools/orogen"] = cfg["overrides"]["orogen"]
     cfg["overrides"]["tools/rtt_typelib"] = cfg["overrides"]["rtt_typelib"]
@@ -592,6 +661,7 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("flexmock")
         cfg["ignorePackages"].append("external/omniORB")
         cfg["ignorePackages"].append("external/omniORBpy")
+        cfg["ignorePackages"].append("external/osg-qt4")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")

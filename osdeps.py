@@ -230,7 +230,6 @@ def loadOsdeps(cfg):
                               "qt4-webkit": [install, "qt5-qtwebkit"],
                               "qt": [install, "qt5"],
                               "pkg-config": [install],
-                              "boost": [install],
                               "osg": [install, "OpenSceneGraph"],
                               "numpy": [install, pyprefix+"numpy"],
                               "cython": [install, pyprefix+"cython"],
@@ -302,3 +301,5 @@ def loadOsdeps(cfg):
                               "node16": [install, "nodejs16"],
                               "npm9": [install],
 })
+        if !cfg["orogen"]:
+            cfg["osdeps"]["boost"] = [install]
