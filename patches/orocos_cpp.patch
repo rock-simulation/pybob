@@ -39,6 +39,21 @@ index 9118ffe..78c3a4b 100644
          orocos-rtt-corba-${OROCOS_TARGET}
          typelib
          lib_config
+diff --git src/CorbaNameService.cpp src/CorbaNameService.cpp
+index b6d51d7..e6010d6 100644
+--- src/CorbaNameService.cpp
++++ src/CorbaNameService.cpp
+@@ -127,7 +127,9 @@ std::vector< std::string > CorbaNameService::getRegisteredTasks()
+                 //isActive or so. this is true at least in the case where they are retrieved from remote.
+                 //This hack omits all orocosrb tasks, because I don't kow about a better way
+                 //to omit these tasks.
+-                if(name.find("orocosrb") != std::string::npos )
++                 if(name.find("orocosrb") != std::string::npos )
++                    continue;
++                 if(name.find("OrocosCPP") != std::string::npos )
+                     continue;
+                 
+                 // force connect to object.
 diff --git src/LoggerProxy.cpp src/LoggerProxy.cpp
 index 21efbd0..a6db59f 100644
 --- src/LoggerProxy.cpp
@@ -122,3 +137,35 @@ index 8854738..313796a 100644
          LOG_DEBUG_S << "Loading typekit from " << fname;
          if(!loader.loadLibrary(fname))
              throw std::runtime_error("Error, could not load transport " + transport + " for component " + typekitName);
+diff --git src/TypeRegistry.cpp src/TypeRegistry.cpp
+index a236d67..3bdfbc8 100644
+--- src/TypeRegistry.cpp
++++ src/TypeRegistry.cpp
+@@ -25,10 +25,15 @@ TypeRegistry::TypeRegistry(PkgConfigRegistryPtr pkgreg) :
+ 
+ TypeRegistry::TypeRegistry() : TypeRegistry(PkgConfigRegistry::get())
+ {
++    typeToTypekit.insert(std::make_pair("int", "rtt-types"));
++    typeToTypekit.insert(std::make_pair("bool", "rtt-types"));
++    typeToTypekit.insert(std::make_pair("string", "rtt-types"));
++    typeToTypekit.insert(std::make_pair("double", "rtt-types"));
+ }
+ 
+ bool TypeRegistry::loadTypeRegistry(const std::string& typekitName, bool force)
+ {
++    //LOG_ERROR_S << "Check for " << typekitName;
+     if(std::find(loadedTypekits.begin(), loadedTypekits.end(), typekitName) != loadedTypekits.end() && !force){
+         return true;
+     }
+diff --git src/orocos_cpp.cpp src/orocos_cpp.cpp
+index fcb1b35..218225c 100644
+--- src/orocos_cpp.cpp
++++ src/orocos_cpp.cpp
+@@ -94,6 +94,7 @@ bool initializeCORBA(int argc, char**argv, std::string host="", size_t max_messa
+         std::cerr << "\nCould not connect to name service '"<<host<<"'" <<std::endl;
+         return false;
+     }
++    omniORB::setClientCallTimeout(500);
+     return true;
+ }
+ 
