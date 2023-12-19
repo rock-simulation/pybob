@@ -1,0 +1,78 @@
+diff --git CMakeLists.txt CMakeLists.txt
+index aad6f5f..7c1e9d6 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -1,29 +1,28 @@
+-cmake_minimum_required(VERSION 2.8.3)
+ project(srdfdom)
++cmake_minimum_required(VERSION 2.6)
+ 
+-find_package(Boost REQUIRED)
+-include_directories(SYSTEM ${Boost_INCLUDE_DIR})
++find_package(urdfdom REQUIRED)
++find_package(urdfdom_headers REQUIRED)
++find_package(console_bridge REQUIRED)
+ 
+-find_package(catkin REQUIRED COMPONENTS console_bridge urdfdom_headers cmake_modules)
++find_package(PkgConfig)
++pkg_check_modules(TinyXML tinyxml)
++link_directories(${TinyXML_LIBRARY_DIRS})
+ 
+-find_package(TinyXML REQUIRED)
+ 
+-include_directories(include ${TinyXML_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+-link_directories(${catkin_LIBRARY_DIRS})
++include_directories(include ${urdfdom_INCLUDE_DIRS} ${urdfdom_headers_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS})
++add_library(${PROJECT_NAME} SHARED src/model.cpp)
++target_link_Libraries(${PROJECT_NAME} ${console_bridge_LIBRARIES} ${TinyXML_LIBRARIES})
+ 
+-catkin_package(
+-  LIBRARIES ${PROJECT_NAME}
+-  INCLUDE_DIRS include ${TinyXML_INCLUDE_DIRS}
+-  DEPENDS console_bridge urdfdom_headers
+-)
++file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/include/srdfdom/*.h")
++install(FILES ${files} DESTINATION include/srdfdom)
+ 
+-add_library(${PROJECT_NAME} src/model.cpp)
+-target_link_libraries(${PROJECT_NAME} ${TinyXML_LIBRARIES} ${catkin_LIBRARIES})
++install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+ 
+-install(TARGETS ${PROJECT_NAME}
+-  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+-)
+-install(DIRECTORY include/${PROJECT_NAME}/
+-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+-  FILES_MATCHING PATTERN "*.h"
+-)
++set(TARGET_NAME ${PROJECT_NAME})
++set(DEPS_PKGCONFIG tinyxml)
++configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_NAME}.pc.in
++    ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc @ONLY)
++
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.pc
++    DESTINATION lib/pkgconfig)
+diff --git src/model.cpp src/model.cpp
+index d0bf352..7d21c42 100644
+--- src/model.cpp
++++ src/model.cpp
+@@ -179,7 +179,7 @@ void srdf::Model::loadGroups(const urdf::ModelInterface &urdf_model, TiXmlElemen
+         continue;
+       }
+       bool found = false;
+-      boost::shared_ptr<const urdf::Link> l = urdf_model.getLink(tip_str);
++      urdf::LinkConstSharedPtr l = urdf_model.getLink(tip_str);
+       std::set<std::string> seen;
+       while (!found && l)
+       {
+@@ -561,8 +561,9 @@ bool srdf::Model::initXml(const urdf::ModelInterface &urdf_model, TiXmlElement *
+   
+   // get the robot name
+   const char *name = robot_xml->Attribute("name");
+-  if (!name)
++  if (!name){
+     logError("No name given for the robot.");
++  }
+   else
+   {
+     name_ = std::string(name); boost::trim(name_);
