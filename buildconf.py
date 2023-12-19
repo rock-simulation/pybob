@@ -104,7 +104,7 @@ def checkBaseName(package, info):
             info["gitPackage"] = info["gitPackage"].replace("$PACKAGE",
                                                             package.split("/")[-1])
 
-def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
+def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=False):
     clonePath = package
     if package[-2:] == ".*":
         arrPackage = package.split("/")[:-1]
@@ -149,7 +149,13 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
                     if r != 0:
                         cfg["errors"].append("update: "+package)
                         c.printError("\ncan't checkout given branch \""+clonePath+"\":\n" + execute.decode(err))
-            out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
+            out = None
+            err = None
+            r = None
+            if commit != None:
+                out, err, r = execute.do(["git", "-C", clonePath, "checkout", commit], cfg)
+            else:
+                out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
             if r != 0:
                 cfg["errors"].append("update: "+package)
                 c.printError("\ncan't update \""+clonePath+"\":\n" + execute.decode(err))
@@ -210,8 +216,19 @@ def clonePackage(cfg, package, server, gitPackage, branch, recursive=False):
                     cmd += ["-b", branch]
                 if recursive:
                     cmd += ["--recursive"]
-                #print(" ".join(cmd))
-                execute.do(cmd, cfg)
+                print(" ".join(cmd))
+                out, err, r = execute.do(cmd, cfg)
+                if r != 0:
+                    cfg["errors"].append("clone: "+package)
+                    c.printError("\ncan't clone \""+clonePath+"\":\n" + execute.decode(err))
+                    return True
+                if commit != None:
+                    out, err, r = execute.do(["git", "-C", clonePath, "checkout", commit], cfg)
+                    if r != 0:
+                        cfg["errors"].append("git checkout: "+package+" "+commit)
+                        c.printError("\ncan't checkout \""+clonePath+"\":\n" + execute.decode(err))
+                        return True
+
 
             # apply patch if we have one
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
@@ -257,6 +274,8 @@ def getServerInfo(cfg, pDict, info):
                 info["branch"] = pInfo["branch"]
         if "tag" in pInfo:
             info["branch"] = pInfo["tag"]
+        if "commit" in pInfo:
+            info["commit"] = pInfo["commit"]
         if "with_submodules" in pInfo:
             info["with_submodules"] = pInfo["with_submodules"]
         return True
@@ -473,6 +492,7 @@ def fetchPackage(cfg, package, layout_packages):
             endM = True
             le = len(cfg["errors"])
             branch = None
+            commit = None
             server = None
             server2 = None
             if "archive" in info:
@@ -487,6 +507,8 @@ def fetchPackage(cfg, package, layout_packages):
 
             if "branch" in info:
                 branch = info["branch"]
+            if "commit" in info:
+                commit = info["commit"]
             if package in cfg["overrides"]:
                 value = cfg["overrides"][package]
                 if "branch" in value:
@@ -507,19 +529,19 @@ def fetchPackage(cfg, package, layout_packages):
 
             if "basename" in info:
                 if "with_submodules" in info and info["with_submodules"]:
-                    if clonePackage(cfg, package, server, server2, branch, True):
+                    if clonePackage(cfg, package, server, server2, branch, commit,  True):
                         endM = False
                 else:
-                    if clonePackage(cfg, package, server, server2, branch):
+                    if clonePackage(cfg, package, server, server2, branch, commit):
                         endM = False
 
             else:
                 if "server" in info or "archive" in info:
                     if "with_submodules" in info and info["with_submodules"]:
-                        if clonePackage(cfg, info["package"], server, server2, branch, True):
+                        if clonePackage(cfg, info["package"], server, server2, branch, commit, True):
                             endM = False
                     else:
-                        if clonePackage(cfg, info["package"], server, server2, branch):
+                        if clonePackage(cfg, info["package"], server, server2, commit, branch):
                             endM = False
             layout_packages.append(package)
             if len(cfg["errors"]) > le:
