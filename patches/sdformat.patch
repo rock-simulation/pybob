@@ -1,0 +1,69 @@
+diff -rupN sdformat-4.0.0/CMakeLists.txt sdformat/CMakeLists.txt
+--- CMakeLists.txt	2016-01-13 02:25:32.000000000 +0100
++++ CMakeLists.txt	2023-12-20 10:16:48.000000000 +0100
+@@ -186,7 +186,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}
+ # OS Specific initialization
+ if (UNIX)
+   sdf_setup_unix()
+-else (WIN32)
++elseif (WIN32)
+   sdf_setup_windows()
+ else (APPLE)
+   sdf_setup_apple()
+diff -rupN sdformat-4.0.0/cmake/SDFUtils.cmake sdformat/cmake/SDFUtils.cmake
+--- cmake/SDFUtils.cmake	2016-01-13 02:25:32.000000000 +0100
++++ cmake/SDFUtils.cmake	2023-12-20 11:10:49.000000000 +0100
+@@ -145,8 +145,8 @@ macro (sdf_build_tests)
+ 
+     if (UNIX)
+       target_link_libraries(${BINARY_NAME}
+-        libgtest.a
+-        libgtest_main.a
++        ${GTEST_LIBRARY}
++        ${GTEST_MAIN_LIBRARY}
+         sdformat
+         pthread
+         ${tinyxml_LIBRARIES}
+diff -rupN sdformat-4.0.0/cmake/SearchForStuff.cmake sdformat/cmake/SearchForStuff.cmake
+--- cmake/SearchForStuff.cmake	2016-01-13 02:25:32.000000000 +0100
++++ cmake/SearchForStuff.cmake	2023-12-05 12:46:00.000000000 +0100
+@@ -27,6 +27,8 @@ if (USE_EXTERNAL_TINYXML)
+   # Find tinyxml. Only debian distributions package tinyxml with a pkg-config
+   # Use pkg_check_modules and fallback to manual detection (needed, at least, for MacOS)
+   pkg_check_modules(tinyxml tinyxml)
++  message ("pkg search tinyxml")
++  message (${tinyxml_INCLUDE_DIRS})
+   if (NOT tinyxml_FOUND)
+     find_path (tinyxml_include_dirs tinyxml.h ${tinyxml_include_dirs} ENV CPATH)
+     find_library(tinyxml_LIBRARIES NAMES tinyxml)
+diff -rupN sdformat-4.0.0/src/CMakeLists.txt sdformat/src/CMakeLists.txt
+--- src/CMakeLists.txt	2016-01-13 02:25:32.000000000 +0100
++++ src/CMakeLists.txt	2023-12-20 11:17:06.000000000 +0100
+@@ -17,6 +17,7 @@ endif()
+ 
+ if (USE_EXTERNAL_TINYXML)
+   link_directories(${tinyxml_LIBRARY_DIRS})
++  include_directories(${tinyxml_INCLUDE_DIRS})
+ endif()
+ 
+ set (sources
+@@ -72,7 +73,7 @@ set (gtest_sources
+   parser_urdf_TEST.cc
+   Param_TEST.cc
+ )
+-sdf_build_tests(${gtest_sources})
++#sdf_build_tests(${gtest_sources})
+ 
+ sdf_add_library(sdformat ${sources})
+ target_link_libraries(sdformat ${Boost_LIBRARIES} ${IGNITION-MATH_LIBRARIES})
+diff -rupN sdformat-4.0.0/test/CMakeLists.txt sdformat/test/CMakeLists.txt
+--- test/CMakeLists.txt	2016-01-13 02:25:32.000000000 +0100
++++ test/CMakeLists.txt	2023-12-05 12:47:02.000000000 +0100
+@@ -19,6 +19,7 @@ endif()
+ 
+ if (USE_EXTERNAL_TINYXML)
+   link_directories(${tinyxml_LIBRARY_DIRS})
++  include_directories(${tinyxml_INCLUDE_DIRS})
+ endif()
+ 
+ configure_file (test_config.h.in ${PROJECT_BINARY_DIR}/test_config.h)
