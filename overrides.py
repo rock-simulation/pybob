@@ -610,6 +610,7 @@ def loadOverrides(cfg):
         # "learning/bolero/src/bl_loader": {"install": install_blloader},
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge", "external/tinyxml", "tinyxml2"]},
+        "external/trac_ik/trac_ik_lib": {"additional_deps": ["external/sdformat"]},
         "external/rbdl": {"fetch": fetch_rbdl},
         "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
         "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
