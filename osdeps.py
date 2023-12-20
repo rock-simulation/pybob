@@ -222,6 +222,7 @@ def loadOsdeps(cfg):
                               "yaml-cpp": [install],
                               "jsoncpp": [install],
                               "external/tinyxml": [install, "tinyxml"],
+                              "tinyxml2": [install, "tinyxml2"],
                               "qwt": [install],
                               "qwt5-qt4": [install, "qwt"],
                               "pkg-config": [install],

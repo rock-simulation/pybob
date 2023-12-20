@@ -1,8 +1,8 @@
 diff --git CMakeLists.txt CMakeLists.txt
-index aad6f5f..7c1e9d6 100644
+index aad6f5f..4735352 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -1,29 +1,28 @@
+@@ -1,29 +1,29 @@
 -cmake_minimum_required(VERSION 2.8.3)
  project(srdfdom)
 +cmake_minimum_required(VERSION 2.6)
@@ -16,6 +16,7 @@ index aad6f5f..7c1e9d6 100644
 -find_package(catkin REQUIRED COMPONENTS console_bridge urdfdom_headers cmake_modules)
 +find_package(PkgConfig)
 +pkg_check_modules(TinyXML tinyxml)
++include_directories(${TinyXML_INCLUDE_DIRS})
 +link_directories(${TinyXML_LIBRARY_DIRS})
  
 -find_package(TinyXML REQUIRED)

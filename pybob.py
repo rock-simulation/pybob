@@ -240,6 +240,12 @@ def install_():
             if os.path.isfile(pathToCheck+"/manifest.xml"):
                 found = True
                 done = True
+            elif os.path.isfile(pathToCheck+"/setup.py"):
+                found = True
+                done = True
+            elif os.path.isfile(pathToCheck+"/Rakefile"):
+                found = True
+                done = True
             elif os.path.exists(pathToCheck+"/autoproj"):
                 # found dev root
                 done = True

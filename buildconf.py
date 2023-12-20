@@ -234,7 +234,7 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
             patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
             print("check for patches", end="")
             if os.path.exists(patch):
-                cmd = ["patch", "-N", "-p0", "-d", "-t", clonePath, "-i", patch]
+                cmd = ["patch", "-N", "-p0", "-t", "-d", clonePath, "-i", patch]
                 print(" ".join(cmd))
                 out, err, r = execute.do(cmd)
                 print(execute.decode(out))
@@ -288,6 +288,8 @@ def getServerInfo(cfg, pDict, info):
             info["branch"] = pDict["branch"]
     if "tag" in pDict:
         info["branch"] = pDict["tag"]
+    if "commit" in pDict:
+        info["commit"] = pDict["commit"]
     if "with_submodules" in pDict:
         info["with_submodules"] = pDict["with_submodules"]
 
@@ -541,7 +543,7 @@ def fetchPackage(cfg, package, layout_packages):
                         if clonePackage(cfg, info["package"], server, server2, branch, commit, True):
                             endM = False
                     else:
-                        if clonePackage(cfg, info["package"], server, server2, commit, branch):
+                        if clonePackage(cfg, info["package"], server, server2, branch, commit):
                             endM = False
             layout_packages.append(package)
             if len(cfg["errors"]) > le:

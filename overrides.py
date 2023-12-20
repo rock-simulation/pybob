@@ -335,7 +335,7 @@ def fetch_archive(cfg, path, package, url, hashId=None):
     clonePath = package
     if package[-2:] == ".*":
         arrPackage = package.split("/")[:-1]
-        p = gitPackage.split("/")[-1].split(".")[0]
+        p = url.split("/")[-1].split(".")[0]
         if arrPackage[-1] != p:
             arrPackage.append(p)
         clonePath = "/".join(arrPackage)
@@ -345,13 +345,13 @@ def fetch_archive(cfg, path, package, url, hashId=None):
         cfg["updated"].append(package)
     clonePath = cfg["devDir"]+"/"+clonePath
     archivePath = "/".join(clonePath.split("/")[:-1])
-    out, err, r = execute.do(["wget", "-P", archivePath, gitPackage])
+    out, err, r = execute.do(["wget", "-P", archivePath, url])
     if r != 0:
         cfg["errors"].append("wget: "+package)
         c.printError("\ncan't fetch \""+clonePath+"\":\n" + execute.decode(err))
         return True
-    sourceFile = os.path.join(archivePath, gitPackage.split("/")[-1])
-    arrFileName = gitPackage.split("/")[-1].split(".")
+    sourceFile = os.path.join(archivePath, url.split("/")[-1])
+    arrFileName = url.split("/")[-1].split(".")
     ending = arrFileName[-1]
     folderName = ".".join(arrFileName[:-1])
     cmd = []
@@ -383,6 +383,7 @@ def fetch_archive(cfg, path, package, url, hashId=None):
         c.printError("\ncan't rename (mv) \""+clonePath+"\":\n" + execute.decode(err))
         c.printError("\ncmd (rename): \""+" ".join(cmd))
         return True
+    return False
 
 def fetch_rtt(cfg):
     r = fetch_general_git(cfg, "tools", "tools/rtt", "https://github.com/orocos-toolchain/rtt.git", "baaea5022b")
@@ -530,13 +531,34 @@ def install_omniorbpy(cfg):
     sys.stdout.flush()
 
 def fetch_boost(cfg):
-    return fetch_archive(cfg, "external", "external/boost",
-                         "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.bz2")
+    p = "external/boost"
+    path = os.path.join(cfg["devDir"], p)
+    if os.path.isfile(path+"/manifest.xml"):
+        return False
+    r = fetch_archive(cfg, "external", p,
+                      "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.bz2")
+    if not r:
+        # create empty manifest to not fetch boost again
+        cmd = ["touch", "manifest.xml"]
+        out, err, r = execute.do(cmd, cfg, None, path)
+        if r > 0:
+            print(p + c.ERROR + " fetch error: " + execute.decode(err) + c.END)
+            cfg["errors"].append("fetch: "+p)
+            return False
+        return True
+    return False
+        
 
 def install_boost(cfg):
     p = "external/boost"
     path = os.path.join(cfg["devDir"], p)
-    cmd = ["bootstrap.sh", "--without-libraries=python", "--without-libraries=mpi", "--with-icu=/opt/local"]
+    if os.path.isfile(path+"/installed.txt"):
+        return False
+    cmd = ["bash",
+           "bootstrap.sh",
+           "--without-libraries=python",
+           "--without-libraries=mpi",
+           "--with-icu=/opt/local"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, path, "external_boost_configure.txt")
     if r > 0:
@@ -544,13 +566,20 @@ def install_boost(cfg):
         cfg["errors"].append("configure: "+p)
         return
 
-    cmd = ["b2", "--prefix=", "--no-cmake-config", "threading=single,multi", "cxxflags=-std=c++11", "install"]
+    cmd = ["./b2",
+           "--prefix="+cfg["devDir"] + "/install",
+           "--no-cmake-config",
+           "threading=multi",
+           "cxxflags=-std=c++11",
+           "install"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, path, "external_boost_install.txt")
     if r > 0:
         print(p + c.ERROR + " install error: " + execute.decode(err) + c.END)
         cfg["errors"].append("install: "+p)
         return
+    cmd = ["touch", "installed.txt"]
+    out, err, r = execute.do(cmd, cfg, None, path)
 
 def loadOverrides(cfg):
     cfg["overrides"] = {
@@ -580,7 +609,7 @@ def loadOverrides(cfg):
         },
         # "learning/bolero/src/bl_loader": {"install": install_blloader},
         "control/kdl": {"install": install_kdl},
-        "control/urdfdom": {"additional_deps": ["base/console_bridge"]},
+        "control/urdfdom": {"additional_deps": ["base/console_bridge", "external/tinyxml", "tinyxml2"]},
         "external/rbdl": {"fetch": fetch_rbdl},
         "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
         "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
