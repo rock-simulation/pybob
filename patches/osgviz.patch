@@ -1,0 +1,62 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index 4501db9..eae2a12 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -36,19 +36,12 @@ if(USE_MARS_VBO)
+ endif()
+ 
+ if (UNIX)
++if (APPLE)
++else ()
+ 	set(ADDITIONAL_LIBS X11)
++endif ()
+ endif (UNIX)
+ 
+-rock_library(osgVizInterfaces
+-	HEADERS interfaces/Clickable.h
+-			interfaces/WindowInterface.h
+-			interfaces/Updatable.h
+-			interfaces/MouseMoveCallback.h
+-      interfaces/WindowResizeCallback.h
+-	SOURCES Main.cpp
+-)
+-
+-
+ rock_library(osgVizGraphics
+     SOURCES graphics/interfaces/data/GraphicData.cpp
+             graphics/interfaces/data/LightData.cpp
+@@ -144,7 +137,19 @@ rock_library(ModelLoader
+     SOURCES modules/viz/ModelLoader/ModelLoader.cpp
+     HEADERS modules/viz/ModelLoader/ModelLoader.h
+     DEPS osgViz)
+-    
++
++rock_library(osgVizInterfaces
++	HEADERS interfaces/Clickable.h
++			interfaces/WindowInterface.h
++			interfaces/Updatable.h
++			interfaces/MouseMoveCallback.h
++      interfaces/WindowResizeCallback.h
++	SOURCES Main.cpp
++  DEPS osgViz  PrimitivesFactory ModelLoader
++  DEPS_PKGCONFIG openscenegraph
++)
++
++
+ rock_executable(osgViz_bin Main.cpp
+     DEPS osgViz PrimitivesFactory ModelLoader
+     LIBS ${ADDITIONAL_LIBS})
+diff --git src/OsgViz.cpp src/OsgViz.cpp
+index bbfb2f1..09f96e9 100644
+--- src/OsgViz.cpp
++++ src/OsgViz.cpp
+@@ -111,7 +111,9 @@ namespace osgviz
+     void OsgViz::startThread(int microseconds){
+         if (!thread){
+ #ifndef WIN32
++#ifndef __APPLE__
+             XInitThreads();
++#endif
+ #endif
+             thread = new UpdateThread(this, microseconds);
+             thread->startThread();
