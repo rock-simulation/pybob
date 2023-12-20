@@ -1,0 +1,77 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index 2570802..17a0ba4 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -12,6 +12,8 @@ else()
+   message(SEND_ERROR "Could not find osgQt or openscenegraph-osgQt5 with pkg-config")
+ endif()
+ 
++find_package(OpenGL REQUIRED)
++
+ rock_library(vizkit3d
+ 	SOURCES
+ 		QtThreadedWidget.cpp
+@@ -63,6 +65,7 @@ rock_library(vizkit3d
+ 		Qt5::UiPlugin
+ 		${Boost_THREAD_LIBRARY}
+ 		${Boost_SYSTEM_LIBRARY}
++    ${OPENGL_LIBRARY}
+ 	DEPS_PKGCONFIG
+ 		osgViz
+ 		${OSGQT_PKGCONFIG_NAME}
+diff --git src/Vizkit3DPlugin.cpp src/Vizkit3DPlugin.cpp
+index 851b92f..17a69f3 100644
+--- src/Vizkit3DPlugin.cpp
++++ src/Vizkit3DPlugin.cpp
+@@ -1,3 +1,4 @@
++#include "Vizkit3DPlugin.hpp"
+ #include <osg/Group>
+ #include <typeinfo>
+ #include <cxxabi.h>
+@@ -5,7 +6,6 @@
+ #include <osgViz/Object.h>
+ #include <osgViz/interfaces/Clickable.h>
+ 
+-#include "Vizkit3DPlugin.hpp"
+ #include "Vizkit3DWidget.hpp"
+ #include "TransformerGraph.hpp"
+ 
+diff --git src/Vizkit3DWidget.cpp src/Vizkit3DWidget.cpp
+index a3bfdc1..ace0f85 100644
+--- src/Vizkit3DWidget.cpp
++++ src/Vizkit3DWidget.cpp
+@@ -1,3 +1,4 @@
++#include "Vizkit3DWidget.hpp"
+ #include <QComboBox>
+ #include <QGroupBox>
+ #include <QProcessEnvironment>
+@@ -9,7 +10,6 @@
+ #include <algorithm>
+ 
+ #include "Vizkit3DBase.hpp"
+-#include "Vizkit3DWidget.hpp"
+ #include "Vizkit3DPlugin.hpp"
+ #include "QPropertyBrowserWidget.hpp"
+ #include "AxesNode.hpp"
+diff --git viz/GridVisualization.cpp viz/GridVisualization.cpp
+index 3180dae..9682d16 100644
+--- viz/GridVisualization.cpp
++++ viz/GridVisualization.cpp
+@@ -1,5 +1,5 @@
+-#include "../src/GridNode.hpp"
+ #include "GridVisualization.hpp"
++#include "../src/GridNode.hpp"
+ 
+ namespace vizkit3d
+ {
+diff --git viz/TextureBoxVisualization.cpp viz/TextureBoxVisualization.cpp
+index 987135a..3c28559 100644
+--- viz/TextureBoxVisualization.cpp
++++ viz/TextureBoxVisualization.cpp
+@@ -1,5 +1,5 @@
+-#include "../src/TextureBox.hpp"
+ #include "TextureBoxVisualization.hpp"
++#include "../src/TextureBox.hpp"
+ 
+ namespace vizkit3d
+ {
