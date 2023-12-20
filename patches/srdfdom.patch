@@ -76,3 +76,20 @@ index d0bf352..7d21c42 100644
    else
    {
      name_ = std::string(name); boost::trim(name_);
+diff --git srdfdom.pc.in srdfdom.pc.in
+new file mode 100644
+index 0000000..a20c71a
+--- /dev/null
++++ srdfdom.pc.in
+@@ -0,0 +1,11 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=${prefix}/lib
++includedir=${prefix}/include
++
++Name: @TARGET_NAME@
++Description: @PROJECT_DESCRIPTION@
++Version: @PROJECT_VERSION@
++Requires: @DEPS_PKGCONFIG@
++Libs: -L${libdir} -l@TARGET_NAME@
++Cflags: -I${includedir}
