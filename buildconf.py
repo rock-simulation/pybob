@@ -231,8 +231,8 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
 
 
             # apply patch if we have one
-            patch = cfg["pyScriptDir"] + "/patches/" + package.split("/")[-1] + ".patch"
-            print("check for patches", end="")
+            patch = cfg["pyScriptDir"] + "/patches/" + clonePath.split("/")[-1] + ".patch"
+            print("check for patches: "+patch, end="")
             if os.path.exists(patch):
                 cmd = ["patch", "-N", "-p0", "-t", "-d", clonePath, "-i", patch]
                 print(" ".join(cmd))
