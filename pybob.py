@@ -246,6 +246,9 @@ def install_():
             elif os.path.isfile(pathToCheck+"/Rakefile"):
                 found = True
                 done = True
+            elif os.path.isfile(pathToCheck+"/CMakeLists.txt"):
+                found = True
+                done = True
             elif os.path.exists(pathToCheck+"/autoproj"):
                 # found dev root
                 done = True
