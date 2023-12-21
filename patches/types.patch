@@ -24,10 +24,10 @@ index 63ce05a..0f98b16 100644
  namespace base
  {
 diff --git a/src/Time.cpp b/src/Time.cpp
-index 95ff379..ae84b85 100644
+index c4fa634..81e6834 100644
 --- src/Time.cpp
 +++ src/Time.cpp
-@@ -284,7 +284,13 @@ Time Time::fromString(const std::string& stringTime, Time::Resolution resolution
+@@ -296,7 +296,13 @@ Time Time::fromString(const string& stringTime, Time::Resolution resolution,
      }
  
      struct tm tm;
@@ -39,10 +39,10 @@ index 95ff379..ae84b85 100644
      if (NULL == strptime(mainTime.c_str(), mainFormat.c_str(), &tm))
 +#endif
      {
-         throw std::runtime_error(
+         throw runtime_error(
              "Time::fromString failed: " + mainTime + "' did not match the given "
 diff --git a/src/Time.hpp b/src/Time.hpp
-index 3baffb5..a0ca1ff 100644
+index 93382f3..4ed27e2 100644
 --- src/Time.hpp
 +++ src/Time.hpp
 @@ -6,6 +6,11 @@
@@ -57,3 +57,19 @@ index 3baffb5..a0ca1ff 100644
  namespace base
  {
      struct Time
+diff --git a/viz/TrajectoryVisualization.hpp b/viz/TrajectoryVisualization.hpp
+index de2edbe..eabb22e 100644
+--- viz/TrajectoryVisualization.hpp
++++ viz/TrajectoryVisualization.hpp
+@@ -1,10 +1,10 @@
+ #ifndef TRAJECTORYVISUALISATION_H
+ #define TRAJECTORYVISUALISATION_H
++#include <vizkit3d/Vizkit3DPlugin.hpp>
+ #include <Eigen/Geometry>
+ #include <osg/Geometry>
+ #include <osg/LineWidth>
+ #include <deque>
+-#include <vizkit3d/Vizkit3DPlugin.hpp>
+ #include <base/geometry/Spline.hpp>
+ #include <base/Trajectory.hpp>
+ 
