@@ -1,0 +1,17 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9448fd0..7e240e1 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -17,7 +17,11 @@ endif(USE_CPP11)
+ # dont use -march https://stackoverflow.com/questions/71647793/eigen-static-lib-aligned-free-double-free-or-corruption
+ # it will be not working with orogen component and will result "double free or corruption (out)"
+ #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DEIGEN_NO_DEBUG -march=native -Wl,--no-as-needed")
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DEIGEN_NO_DEBUG -Wl,--no-as-needed")
++if (APPLE)
++   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DEIGEN_NO_DEBUG")
++else (APPLE)
++   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DEIGEN_NO_DEBUG -Wl,--no-as-needed")
++endif (APPLE)
+ SET(CMAKE_CXX_COMPILER /usr/bin/g++)
+ 
+ message("CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
