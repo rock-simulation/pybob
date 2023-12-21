@@ -1,0 +1,44 @@
+diff --git trac_ik_lib/CMakeLists.txt trac_ik_lib/CMakeLists.txt
+index 8c8354e..31aba18 100644
+--- trac_ik_lib/CMakeLists.txt
++++ trac_ik_lib/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 2.8.3)
++cmake_minimum_required(VERSION 3.3)
+ find_package(Rock)
+ rock_init(trac_ik 1.4.11)
+ 
+@@ -18,9 +18,10 @@ set(CMAKE_IGNORE_PATH "/opt/ros/")
+ find_package(Boost REQUIRED COMPONENTS system thread regex filesystem program_options date_time math_c99 math_c99f math_c99l math_tr1 math_tr1f math_tr1l)
+ find_package(PkgConfig REQUIRED)
+ find_package(SDFormat REQUIRED)
+-pkg_check_modules(pkg_nlopt REQUIRED nlopt)
++#pkg_check_modules(pkg_nlopt REQUIRED nlopt)
+ pkg_check_modules(Eigen REQUIRED eigen3)
+ 
++
+ # TODO: resolve libraries to absolute paths
+ 
+ file(GLOB_RECURSE CPP_FILES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+@@ -42,7 +43,7 @@ include_directories(
+ rock_library(trac_ik
+     SOURCES ${CPP_FILES}
+     #HEADERS ${HPP_FILES}
+-    LIBS    ${pkg_nlopt_LIBRARIES}
++    LIBS    #${pkg_nlopt_LIBRARIES}
+             ${Boost_LIBRARIES}
+             ${Boost_SYSTEM_LIBRARY}
+             ${Boost_MATH_LIBRARY}
+diff --git trac_ik_lib/src/trac_ik.cpp trac_ik_lib/src/trac_ik.cpp
+index 2bb1820..1fe74ba 100644
+--- trac_ik_lib/src/trac_ik.cpp
++++ trac_ik_lib/src/trac_ik.cpp
+@@ -114,7 +114,7 @@ namespace TRAC_IK {
+           lb(joint_num-1)=std::numeric_limits<float>::lowest();
+           ub(joint_num-1)=std::numeric_limits<float>::max();
+         }
+-        LOG_DEBUG("trac_ik: IK Using joint %s  with lower limit %d and upper limit %d", joint->name, lb(joint_num-1), ub(joint_num-1));
++        LOG_DEBUG("trac_ik: IK Using joint %s  with lower limit %d and upper limit %d", joint->name.c_str(), lb(joint_num-1), ub(joint_num-1));
+       }
+     }
+ 

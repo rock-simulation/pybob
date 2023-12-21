@@ -581,6 +581,14 @@ def install_boost(cfg):
     cmd = ["touch", "installed.txt"]
     out, err, r = execute.do(cmd, cfg, None, path)
 
+def fetch_nlopt(cfg):
+    folder = "orocos-toolchain"
+    return fetch_general_git(cfg, "external", "external/nlopt",
+                             "https://github.com/stevengj/nlopt")
+
+def install_nlopt(cfg):
+    bob_package.installPackage(cfg, "external/nlopt")
+
 def loadOverrides(cfg):
     cfg["overrides"] = {
         "simulation/ode": {
@@ -610,7 +618,7 @@ def loadOverrides(cfg):
         # "learning/bolero/src/bl_loader": {"install": install_blloader},
         "control/kdl": {"install": install_kdl},
         "control/urdfdom": {"additional_deps": ["base/console_bridge", "external/tinyxml", "tinyxml2"]},
-        "external/trac_ik/trac_ik_lib": {"additional_deps": ["external/sdformat"]},
+        "external/trac_ik/trac_ik_lib": {"additional_deps": ["control/sdformat", "control/kdl_parser", "nlopt"]},
         "external/rbdl": {"fetch": fetch_rbdl},
         "rtt": {"fetch": fetch_rtt, "install": install_rtt, "install_path": "tools/rtt"},
         "typelib": {"fetch": fetch_typelib, "install_path": "tools/typelib"},
@@ -627,6 +635,7 @@ def loadOverrides(cfg):
         cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/pybind11"]}
         cfg["overrides"]["node16"] = {"additional_deps": ["npm9"]}
         cfg["overrides"]["tools/cnd/service/trenhancer"] = {"install": install_trenhancer}
+        cfg["overrides"]["nlopt"] =  {"fetch": fetch_nlopt, "install_path": "external/nlopt", "install": install_nlopt, "check": dummy}
         if cfg["orogen"]:
             # to have the correct boost python version for pyrrock we have to build boost manually
             cfg["overrides"]["boost"] = {"fetch": fetch_boost, "install": install_boost}
@@ -702,6 +711,9 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("external/omniORB")
         cfg["ignorePackages"].append("external/omniORBpy")
         cfg["ignorePackages"].append("gui/osg_qt4")
+        cfg["ignorePackages"].append("gui/osg_qt5")
+        cfg["ignorePackages"].append("qt5")
+        cfg["ignorePackages"].append("qt5-opengl")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")
         cfg["ignorePackages"].append("python-dev")

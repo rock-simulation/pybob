@@ -301,6 +301,7 @@ def loadOsdeps(cfg):
                               "libspdlog": [install, "spdlog"],
                               "node16": [install, "nodejs16"],
                               "npm9": [install],
+                              "nlopt": [install],
 })
         if not cfg["orogen"]:
             cfg["osdeps"]["boost"] = [install]
