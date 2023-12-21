@@ -423,18 +423,6 @@ def fetchPackage(cfg, package, layout_packages):
     if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
         c.printWarning("done")
         return True
-    if package in cfg["osdeps"]:
-        if cfg["fetch"] and cfg["no_os_deps"] == False:
-            if len(cfg["osdeps"][package]) > 1:
-                cfg["osdeps"][package][0](cfg, cfg["osdeps"][package][1])
-            else:
-                cfg["osdeps"][package][0](cfg, package)
-            c.printWarning("done")
-        return True
-
-    #if package in cfg["overrides"] and cfg["overrides"][package] == None:
-    #    print(cfg["overrides"])
-    #print(package)
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
         if cfg["fetch"]:
@@ -449,6 +437,19 @@ def fetchPackage(cfg, package, layout_packages):
             cfg["errors"].append("missing: "+package)
             c.printError("error")
             return False
+
+    if package in cfg["osdeps"]:
+        if cfg["fetch"] and cfg["no_os_deps"] == False:
+            if len(cfg["osdeps"][package]) > 1:
+                cfg["osdeps"][package][0](cfg, cfg["osdeps"][package][1])
+            else:
+                cfg["osdeps"][package][0](cfg, package)
+            c.printWarning("done")
+        return True
+
+    #if package in cfg["overrides"] and cfg["overrides"][package] == None:
+    #    print(cfg["overrides"])
+    #print(package)
 
     path = cfg["devDir"]+"/autoproj/remotes/"
 
