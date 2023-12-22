@@ -1,5 +1,17 @@
-diff --git bindings/python/CMakeLists.txt bindings/python/CMakeLists.txt
-index b82e643..833493c 100644
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6839a29..5d9cc0e 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -1,6 +1,6 @@
+ # CMakeLists.txt has to be located in the project folder and cmake has to be
+ # executed from 'project/build' with 'cmake ../'.
+-cmake_minimum_required(VERSION 3.0)
++cmake_minimum_required(VERSION 3.3)
+ find_package(Rock)
+ project(lib_config VERSION 0.1)
+ rock_init()
+diff --git a/bindings/python/CMakeLists.txt b/bindings/python/CMakeLists.txt
+index 5b07cb4..e159740 100644
 --- bindings/python/CMakeLists.txt
 +++ bindings/python/CMakeLists.txt
 @@ -2,11 +2,15 @@ FIND_PACKAGE(PythonInterp REQUIRED)
@@ -7,7 +19,7 @@ index b82e643..833493c 100644
  
  if (PYTHON_VERSION_MAJOR EQUAL 3)
 +  if(APPLE)
-+    FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt REQUIRED)
++    FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED)
 +  else(APPLE)
      FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
 -    if(NOT DEFINED Boost_python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_FOUND)
