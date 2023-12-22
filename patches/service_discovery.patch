@@ -1,0 +1,24 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 95002ae..3d335b1 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -1,7 +1,7 @@
+ # CMakeLists.txt has to be located in the project folder and cmake has to be
+ # executed from 'project/build' with 'cmake ../'.
+ 
+-cmake_minimum_required(VERSION 2.6)
++cmake_minimum_required(VERSION 3.3)
+ find_package(Rock)
+ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake")
+ set(PROJECT_DESCRIPTION "Service discovery based on AVAHI")
+diff --git a/src/service_discovery.pc.in b/src/service_discovery.pc.in
+index 365b618..9db276c 100644
+--- src/service_discovery.pc.in
++++ src/service_discovery.pc.in
+@@ -7,5 +7,5 @@ Name: @PROJECT_NAME@
+ Description: @PROJECT_DESCRIPTION@
+ Version: @PROJECT_VERSION@
+ Libs: -L${libdir} -l@PROJECT_NAME@ 
+-Requires: sigc++-2.0 base-logging
++Requires: sigc++-2.0 base-logging avahi-client
+ Cflags: -I${includedir} -I${includedir}/service_discovery/backward @THIS_PKG_CFLAGS@
