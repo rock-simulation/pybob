@@ -547,7 +547,7 @@ def fetch_boost(cfg):
             return False
         return True
     return False
-        
+
 
 def install_boost(cfg):
     p = "external/boost"
@@ -746,3 +746,10 @@ def loadOverrides(cfg):
             for it in ov["overrides"]:
                 for key, value in it.items():
                     cfg["overrides"][key] = value
+
+    filename = cfg["path"] + "/autoproj/manifest"
+    with open(filename) as f:
+        manifest = yaml.safe_load(f)
+    if "ignored_packages" in manifest:
+        for package in manifest["ignored_packages"]:
+            cfg["ignorePackages"].append(package)
