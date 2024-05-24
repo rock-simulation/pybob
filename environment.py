@@ -9,6 +9,8 @@ import execute
 import utils
 
 QT5_UBUNTU = False
+UBUNTU_MAJOR = 20
+
 if system() == "Linux":
     qt5_ubuntu_env_var = os.environ.get("QT5_UBUNTU")
     if qt5_ubuntu_env_var is None:
@@ -17,7 +19,8 @@ if system() == "Linux":
         except ImportError:
             raise ImportError("please install the distro package: pip install distro\n"
                               "(or set QT5_UBUNTU to True or False prior to using pybob)")
-        QT5_UBUNTU = distro.id() == "ubuntu" and int(distro.major_version(best=True)) >= 20
+        UBUNTU_MAJOR = int(distro.major_version(best=True))
+        QT5_UBUNTU = distro.id() == "ubuntu" and UBUNTU_MAJOR >= 20
     else:
         QT5_UBUNTU = bool(qt5_ubuntu_env_var)
 
