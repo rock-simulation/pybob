@@ -5,7 +5,7 @@ import colorconsole as c
 import execute
 from platform import system
 import sys
-from environment import QT5_UBUNTU
+from environment import QT5_UBUNTU, UBUNTU_MAJOR
 
 def gemInstall(cfg, pkg):
     cmd = ["sudo", "gem", "install", pkg]
@@ -143,6 +143,7 @@ def loadOsdeps(cfg):
             "torchdiffeq": [pipInstall, "git+https://github.com/rtqichen/torchdiffeq"],
             "torchsummary": [pipInstall],
             "tensorboard": [pipInstall],
+            "tinyxml2": [install, "libtinyxml2-dev"],
             "pyswarms": [pipInstall],
             "eigen3": [install, "libeigen3-dev"],
             "yaml-cpp": [install, "libyaml-cpp-dev"],
@@ -158,6 +159,11 @@ def loadOsdeps(cfg):
             "jsoncpp": [install, "libjsoncpp-dev"],
             "lua51": [install, "liblua5.1-0-dev"],
             "curl": [install, "libcurl4-gnutls-dev"],
+            "poco": [install, "libpoco-dev"],
+            "glog": [install, "libgoogle-glog-dev"],
+            "graphviz": [install],
+            "automake": [install],
+            "libtool": [install],
             "utilrb": [gemInstall],
             "hoe": [gemInstall],
             "hoe-yard": [gemInstall],
@@ -166,12 +172,20 @@ def loadOsdeps(cfg):
             "omniorb": [install, "omniorb-nameserver libomniorb4-dev libomniorb4-2"],
             })
         if QT5_UBUNTU:
-            cfg["osdeps"]["qt"] = [install, "qt5-default"]
+            if UBUNTU_MAJOR == 24:
+                cfg["osdeps"]["qt"] = [install, "qtbase5-dev"]
+                # also override qt4 deps
+                cfg["osdeps"]["qt4"] = [install, "qtbase5-dev"]
+                cfg["osdeps"]["qt5"] = [install, "qtbase5-dev"]
+                cfg["osdeps"]["qt5-svg"] = [install, "libqt5svg5-dev"]
+            else:
+                cfg["osdeps"]["qt"] = [install, "qt5-default"]
+                # also override qt4 deps
+                cfg["osdeps"]["qt4"] = [install, "qt5-default"]
+                cfg["osdeps"]["qt5"] = [install, "qt5-default"]
             cfg["osdeps"]["qtwebkit"] = [install, "libqt5webkit5-dev"]
-            cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]
-            # also override qt4 deps
-            cfg["osdeps"]["qt4"] = [install, "qt5-default"]
             cfg["osdeps"]["qt4-webkit"] = [install, "libqt5webkit5-dev"]
+            cfg["osdeps"]["opencv"] = [install, "libopencv-dev"]
 
         else:
             cfg["osdeps"]["qt"] = [install, "qt4-default"]
@@ -179,6 +193,11 @@ def loadOsdeps(cfg):
             cfg["osdeps"]["opencv"] = [install, "libcvaux-dev libhighgui-dev libopencv-dev"]
             cfg["osdeps"]["qt4"] = [install, "qt4-default"]
             cfg["osdeps"]["qt4-webkit"] = [install, "libqtwebkit-dev"]
+            if UBUNTU_MAJOR == 24:
+                cfg["osdeps"]["qt5"] = [install, "qtbase5-dev"]
+                cfg["osdeps"]["qt5-svg"] = [install, "libqt5svg5-dev"]
+            else:
+                cfg["osdeps"]["qt5"] = [install, "qt5-default"]
 
         if not cfg["buildOptional"]:
             cfg["osdeps"]["qt4"] = [install, "libqt4-dev"]
