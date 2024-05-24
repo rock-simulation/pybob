@@ -1,0 +1,13 @@
+diff --git CMakeLists.txt CMakeLists.txt
+index 8f4a922..4485e96 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -5,7 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/modules/Rock.cmake)
+ rock_init()
+ 
+ install(FILES
+-    modules/FindBoost.cmake
++    #modules/FindBoost.cmake
+     modules/FindGem.cmake
+     modules/FindNumpy.cmake
+     modules/FindRuby.cmake
