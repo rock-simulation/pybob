@@ -748,8 +748,9 @@ def loadOverrides(cfg):
                     cfg["overrides"][key] = value
 
     filename = cfg["path"] + "/autoproj/manifest"
-    with open(filename) as f:
-        manifest = yaml.safe_load(f)
-    if "ignored_packages" in manifest:
-        for package in manifest["ignored_packages"]:
-            cfg["ignorePackages"].append(package)
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            manifest = yaml.safe_load(f)
+        if "ignored_packages" in manifest:
+            for package in manifest["ignored_packages"]:
+                cfg["ignorePackages"].append(package)
