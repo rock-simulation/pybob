@@ -1,24 +1,41 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 27127ea..7cdf630 100644
+index bc6b78a..a4ce663 100644
 --- CMakeLists.txt
 +++ CMakeLists.txt
-@@ -55,7 +55,7 @@ cpr_option(CPR_GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
+@@ -61,8 +61,8 @@ endmacro()
+ message(STATUS "C++ Requests CMake Options")
+ message(STATUS "=======================================================")
+ cpr_option(USE_SYSTEM_CURL
+-    "If ON, this project will look in the system paths for an installed curl library" OFF)
+-cpr_option(BUILD_CPR_TESTS "Set to ON to build cpr tests." ON)
++    "If ON, this project will look in the system paths for an installed curl library" ON)
++cpr_option(BUILD_CPR_TESTS "Set to ON to build cpr tests." OFF)
+ cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
  cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
- cpr_option(CURL_VERBOSE_LOGGING "Curl verbose logging during building curl" OFF)
- cpr_option(CPR_USE_SYSTEM_GTEST "If ON, this project will look in the system paths for an installed gtest library. If none is found it will use the build in one." OFF)
--cpr_option(CPR_USE_SYSTEM_CURL "If enabled we will use the curl lib already installed on this system." OFF)
-+cpr_option(CPR_USE_SYSTEM_CURL "If enabled we will use the curl lib already installed on this system." ON)
- cpr_option(CPR_ENABLE_SSL "Enables or disables the SSL backend. Required to perform HTTPS requests." ON)
- cpr_option(CPR_FORCE_OPENSSL_BACKEND "Force to use the OpenSSL backend. If CPR_FORCE_OPENSSL_BACKEND, CPR_FORCE_DARWINSSL_BACKEND, CPR_FORCE_MBEDTLS_BACKEND, and CPR_FORCE_WINSSL_BACKEND are set to to OFF, cpr will try to automatically detect the best available SSL backend (WinSSL - Windows, OpenSSL - Linux, DarwinSSL - Mac ...)." OFF)
- cpr_option(CPR_FORCE_WINSSL_BACKEND "Force to use the WinSSL backend. If CPR_FORCE_OPENSSL_BACKEND, CPR_FORCE_DARWINSSL_BACKEND, CPR_FORCE_MBEDTLS_BACKEND, and CPR_FORCE_WINSSL_BACKEND are set to to OFF, cpr will try to automatically detect the best available SSL backend (WinSSL - Windows, OpenSSL - Linux, DarwinSSL - Mac ...)." OFF)
+ cpr_option(USE_SYSTEM_GTEST
 diff --git a/cpr/CMakeLists.txt b/cpr/CMakeLists.txt
-index 654dc58..61edc4e 100644
+index 39c6c12..e51c11b 100644
 --- cpr/CMakeLists.txt
 +++ cpr/CMakeLists.txt
-@@ -48,6 +48,18 @@ set_target_properties(cpr
- # Import GNU common install directory variables
- include(GNUInstallDirs)
- 
+@@ -53,3 +53,28 @@ else()
+         ${CPR_INCLUDE_DIRS}
+         ${CURL_INCLUDE_DIRS})
+ endif()
++
++if(WIN32)
++  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
++else(WIN32)
++  set(LIB_INSTALL_DIR lib)
++endif(WIN32)
++
++set(_INSTALL_DESTINATIONS
++        RUNTIME DESTINATION bin
++        LIBRARY DESTINATION ${LIB_INSTALL_DIR}
++        ARCHIVE DESTINATION lib
++)
++
++install(TARGETS ${PROJECT_NAME} ${_INSTALL_DESTINATIONS})
++
 +file(GLOB public_headers ${CPR_INCLUDE_DIRS}/cpr/[a-z]*.h)
 +
 +install(
@@ -29,11 +46,6 @@ index 654dc58..61edc4e 100644
 +set(PC_FILE ${CMAKE_BINARY_DIR}/cpr.pc)
 +configure_file("cpr.pc.in" ${PC_FILE} @ONLY)
 +install(FILES ${PC_FILE} DESTINATION lib/pkgconfig)
-+
-+
- if(CPR_USE_SYSTEM_CURL)
-         install(TARGETS cpr
-                 EXPORT cprTargets
 --- cpr/cpr.pc.in	1970-01-01 01:00:00.000000000 +0100
 +++ cpr/cpr.pc.in	2017-11-09 12:32:27.411397944 +0100
 @@ -0,0 +1,12 @@
