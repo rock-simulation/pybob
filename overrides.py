@@ -202,6 +202,8 @@ def check_minizip(cfg):
 
 def fetch_minizip(cfg):
     path = cfg["devDir"] + "/external"
+    if os.path.isdir(os.path.join(path, "minizip")):
+        return
     print(c.BOLD + "Fetching " + "external/minizip ... " + c.END, end="")
     sys.stdout.flush
     cwd = os.getcwd()
