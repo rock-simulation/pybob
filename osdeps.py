@@ -321,6 +321,7 @@ def loadOsdeps(cfg):
                               "node16": [install, "nodejs16"],
                               "npm9": [install],
                               "nlopt": [install],
+                              "glog": [install, "google-glog"],
 })
         if not cfg["orogen"]:
             cfg["osdeps"]["boost"] = [install]
