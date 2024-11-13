@@ -13,6 +13,7 @@ import datetime
 import yaml
 import pipes
 import bob_package
+import utils
 from threading import Thread
 
 # todo:
@@ -195,7 +196,7 @@ def diff_():
     for p in toInstall:
         if p in cfg["osdeps"]:
             continue
-        if p in cfg["ignorePackages"] or ("orogen" in p and not cfg["orogen"]):
+        if utils.ignorePackage(cfg, p) or ("orogen" in p and not cfg["orogen"]):
             continue
         if p in cfg["overrides"] and "fetch" in cfg["overrides"][p]:
             continue
@@ -407,7 +408,7 @@ def info_():
                 mans.append(d)
     print("\n  packages dependencies " + package + ":")
     print(handled)
-    
+
 def show_log_():
     packageList = []
     package = sys.argv[2].replace("/", "_")

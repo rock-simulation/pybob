@@ -40,7 +40,7 @@ def getDeps(cfg, pkg, deps, checked):
                     if len(arrLine) < 3:
                         continue
                     d = arrLine[1]
-                    if d not in cfg["ignorePackages"] or ("orogen" in d and not cfg["orogen"]):
+                    if not utils.ignorePackage(cfg, d) or ("orogen" in d and not cfg["orogen"]):
                     #d not in cfg["osdeps"] and
                         deps.append(d)
                         if not d in cfg["depsInverse"]:
@@ -69,7 +69,7 @@ def getDeps(cfg, pkg, deps, checked):
                     getDeps(cfg, d, deps, checked)
 
 def installPythonPackage(cfg, p):
-    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
+    if utils.ignorePackage(cfg, p) or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
     if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
@@ -97,7 +97,7 @@ def installPythonPackage(cfg, p):
     cfg["installed"].append(p)
 
 def installRubyPackage(cfg, p):
-    if p in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in p):
+    if utils.ignorePackage(cfg, p) or (not cfg["orogen"] and "orogen" in p):
         return
     path = cfg["devDir"]+"/"+p
     if p in cfg["overrides"] and "install_path" in cfg["overrides"][p]:
@@ -128,7 +128,7 @@ def installRubyPackage(cfg, p):
 
 def installPackage(cfg, p, cmake_options=[]):
     # todo: handle path override
-    if p in cfg["ignorePackages"] or ("orogen" in p and not cfg["orogen"]):
+    if utils.ignorePackage(cfg, p) or ("orogen" in p and not cfg["orogen"]):
         return
 
     path = cfg["devDir"]+"/"+p

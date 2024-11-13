@@ -6,10 +6,10 @@ import yaml
 import colorconsole as c
 import multiprocessing
 import execute
+from utils import ignorePackage
 import re
 
 rockBranches = ["$ROCK_BRANCH", "$ROCK_FLAVOR"]
-
 
 def setupCfg(cfg):
     # todo: handle this files differently
@@ -26,6 +26,11 @@ def setupCfg(cfg):
     if not "packages" in cfg and os.path.isfile(path+"/packages.yml"):
         with open(path+"/packages.yml") as f:
             cfg["packages"] = yaml.safe_load(f)
+    with open(cfg["devDir"]+"/autoproj/manifest") as f:
+        manifest = yaml.safe_load(f)
+    if "exclude_packages" in manifest:
+        for p in manifest["exclude_packages"]:
+            cfg["ignorePackages"].append(p)
 
 def listPackages(cfg):
     path = cfg["devDir"]+"/autoproj/";
@@ -355,10 +360,18 @@ def getPackageInfoHelper(cfg, package, base, info):
     return False
 
 def getPackageInfo(cfg, package, info):
-    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
+    # check if we find the packages in the ignore list
+    if ignorePackage(cfg, package):
         return
+
+    # check if we have an orogen package
+    if not cfg["orogen"] and "orogen" in package:
+        return
+
+    # check if the package is known as osdep
     if package in cfg["osdeps"]:
         return
+
     #if package in cfg["overrides"]:
     #    return
     setupCfg(cfg)
@@ -420,9 +433,15 @@ def fetchPackage(cfg, package, layout_packages):
     print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
-    if package in cfg["ignorePackages"] or (not cfg["orogen"] and "orogen" in package):
+    # check if we find the packages in the ignore list
+    if ignorePackage(cfg, package):
+        c.printWarning("done")
+        return
+
+    if (not cfg["orogen"] and "orogen" in package):
         c.printWarning("done")
         return True
+
     if package in cfg["overrides"] and "fetch" in cfg["overrides"][package]:
         le = len(cfg["errors"])
         if cfg["fetch"]:
