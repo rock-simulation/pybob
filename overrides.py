@@ -445,10 +445,10 @@ def install_orocos(cfg):
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def install_omniorb(cfg):
-    #if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/ode.pc"):
-    #    print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
-    #    sys.stdout.flush
-    #    return
+    if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/omniORB4.pc"):
+        print(c.BOLD + "omniorb" + c.WARNING + " installed (found install/lib/pkgconfig/omniORB4.pc)" + c.END)
+        sys.stdout.flush
+        return
     p = "external/omniORB"
     path = os.path.join(cfg["devDir"], p)
 
@@ -651,6 +651,11 @@ def loadOverrides(cfg):
     cfg["rename"] = {}
     cfg["rename"]["omniorb"] = "external/omniORB"
     cfg["rename"]["rtt"] = "tools/rtt"
+
+    if system() == "Darwin":
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["nlohmann-json"]}
+    else:
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/json"]}
 
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
