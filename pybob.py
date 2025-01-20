@@ -97,6 +97,8 @@ def fetchi(package, returnPackages = False):
         cfg["name_matching"] = False
         buildconf.fetchPackages(cfg, layout_packages)
     else:
+        if package in cfg["rename"]:
+            package = cfg["rename"][package]
         buildconf.fetchPackage(cfg, package, layout_packages)
 
     if not cfg["continueOnError"] and len(cfg["errors"]) > 0:
@@ -119,9 +121,13 @@ def fetchi(package, returnPackages = False):
 
     while len(mans) > 0:
         p = mans.pop()
+        if p in cfg["rename"]:
+            p = cfg["rename"][p]
         bob_package.getDeps(cfg, p, deps, None)
         while len(deps) > 0:
             d = deps.pop()
+            if d in cfg["rename"]:
+                d = cfg["rename"][d]
             if d not in layout_packages and d not in handled:
                 mans2 = list(layout_packages)
                 if not buildconf.fetchPackage(cfg, d, mans2):
@@ -178,6 +184,7 @@ def diff_():
         if sys.argv[2] == "buildconf":
             diff_remotes()
         else:
+            # todo: handle rename here
             buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
 
     deps = []
@@ -188,9 +195,11 @@ def diff_():
     toInstall = []
     diffs = []
     for d in deps[::-1]:
+        # todo: handle rename here
         if d not in toInstall:
             toInstall.append(d)
     for p in layout_packages:
+        # todo: handle rename here
         if p not in toInstall:
             toInstall.append(p)
     for p in toInstall:
@@ -268,7 +277,10 @@ def install_():
         if os.path.isfile(pathToCheck+"/manifest.xml"):
             layout_packages.append(os.path.relpath(pathToCheck, cfg["devDir"]))
         else:
-            buildconf.fetchPackage(cfg, sys.argv[2], layout_packages)
+            package = sys.argv[2]
+            if package in cfg["rename"]:
+                package = cfg["rename"][package]
+            buildconf.fetchPackage(cfg, package, layout_packages)
     deps = []
     checked = []
     if cfg["checkDeps"]:
@@ -276,9 +288,13 @@ def install_():
             bob_package.getDeps(cfg, p, deps, checked)
     toInstall = []
     for d in deps[::-1]:
+        if d in cfg["rename"]:
+            d = cfg["rename"][d]
         if d not in toInstall:
             toInstall.append(d)
     for p in layout_packages:
+        if p in cfg["rename"]:
+            p = cfg["rename"][p]
         if p not in toInstall:
             toInstall.append(p)
     iList = []

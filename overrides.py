@@ -648,6 +648,9 @@ def loadOverrides(cfg):
     cfg["overrides"]["tools/typelib"] = cfg["overrides"]["typelib"]
     cfg["overrides"]["tools/orocos.rb"] = cfg["overrides"]["orocos.rb"]
     cfg["overrides"]["base/orogen/std"] = {"additional_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]}
+    cfg["rename"] = {}
+    cfg["rename"]["omniorb"] = "external/omniORB"
+    cfg["rename"]["rtt"] = "tools/rtt"
 
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
@@ -682,6 +685,11 @@ def loadOverrides(cfg):
     if not cfg["orogen"]:
         cfg["ignorePackages"].append("tools/roby")
         cfg["ignorePackages"].append("tools/cnd/service/trenhancer")
+        cfg["ignorePackages"].append("rtt")
+        cfg["ignorePackages"].append("tools/rtt")
+        cfg["ignorePackages"].append("omniorb")
+        cfg["ignorePackages"].append("external/omniORB")
+        cfg["ignorePackages"].append("external/omniORBpy")
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
@@ -710,8 +718,6 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("kramdown")
         cfg["ignorePackages"].append("facets")
         cfg["ignorePackages"].append("flexmock")
-        cfg["ignorePackages"].append("external/omniORB")
-        cfg["ignorePackages"].append("external/omniORBpy")
         cfg["ignorePackages"].append("gui/osg_qt4")
         cfg["ignorePackages"].append("gui/osg_qt5")
         cfg["ignorePackages"].append("qt5")
