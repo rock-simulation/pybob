@@ -8,8 +8,14 @@ import sys
 from environment import QT5_UBUNTU, UBUNTU_MAJOR
 
 def gemInstall(cfg, pkg):
-    cmd = ["sudo", "gem", "install", pkg]
-
+    cmd = ["sudo", "gem", "install"]
+    if "#" in pkg:
+        arrPkg = pkg.split("#")
+        cmd.append(arrPkg[0])
+        cmd.append("-v")
+        cmd.append(arrPkg[1])
+    else:
+        cmd.append(pkg)
     print(" ".join(cmd))
     out, err, r = execute.do(cmd)
     if len(out) > 0:
@@ -176,7 +182,7 @@ def loadOsdeps(cfg):
             "utilrb": [gemInstall],
             "ruby-backports": [gemInstall, "backports"],
             "metaruby": [gemInstall, "metaruby"],
-            "hoe": [gemInstall],
+            "hoe": [gemInstall, "hoe#3.26"],
             "hoe-yard": [gemInstall],
             "yard": [gemInstall],
             "rake-compiler": [gemInstall],
@@ -282,7 +288,7 @@ def loadOsdeps(cfg):
                               "python-sklearn": [install, pyprefix+"scikit-learn"],
                               "scikit-learn": [install, pyprefix+"scikit-learn"],
                               "urdf-parser-py": [pipInstall, "urdf-parser-py"],
-                              "omniorb": [install, "omniorb"],
+                              #"omniorb": [install, "omniorb"],
                               "utilrb": [gemInstall, "utilrb"],
                               "ruby-backports": [gemInstall, "backports"],
                               "metaruby": [gemInstall, "metaruby"],
@@ -318,7 +324,7 @@ def loadOsdeps(cfg):
                               "gremlinpython3_4_6": [pipInstall, "gremlinpython=3.4.6"],
                               "owlready2": [pipInstall, "Owlready2"],
                               "sigc": [install, "libsigcxx2"],
-                              "hoe": [gemInstall],
+                              "hoe": [gemInstall, "hoe#3.26"],
                               "hoe-yard": [gemInstall],
                               "yard": [gemInstall],
                               "rake-compiler": [gemInstall],

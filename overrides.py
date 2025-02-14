@@ -463,10 +463,10 @@ def install_orocos(cfg):
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def install_omniorb(cfg):
-    #if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/ode.pc"):
-    #    print(c.BOLD + "simulation/ode" + c.WARNING + " installed" + c.END)
-    #    sys.stdout.flush
-    #    return
+    if os.path.isfile(cfg["devDir"] + "/install/lib/pkgconfig/omniORB4.pc"):
+        print(c.BOLD + "omniorb" + c.WARNING + " installed (found install/lib/pkgconfig/omniORB4.pc)" + c.END)
+        sys.stdout.flush
+        return
     p = "external/omniORB"
     path = os.path.join(cfg["devDir"], p)
 
@@ -666,6 +666,14 @@ def loadOverrides(cfg):
     cfg["overrides"]["tools/typelib"] = cfg["overrides"]["typelib"]
     cfg["overrides"]["tools/orocos.rb"] = cfg["overrides"]["orocos.rb"]
     cfg["overrides"]["base/orogen/std"] = {"additional_deps": ["tools/orogen_cpp_proxies", "tools/orogen_model_exporter", "tools/service_discovery"]}
+    cfg["rename"] = {}
+    cfg["rename"]["omniorb"] = "external/omniORB"
+    cfg["rename"]["rtt"] = "tools/rtt"
+
+    if system() == "Darwin":
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["nlohmann-json"]}
+    else:
+        cfg["overrides"]["external/pybind11_json"] = {"additional_deps": ["external/json"]}
 
     if system() == "Windows":
         cfg["overrides"]["simulation/ode-16"] = {
@@ -700,6 +708,11 @@ def loadOverrides(cfg):
     if not cfg["orogen"]:
         cfg["ignorePackages"].append("tools/roby")
         cfg["ignorePackages"].append("tools/cnd/service/trenhancer")
+        cfg["ignorePackages"].append("rtt")
+        cfg["ignorePackages"].append("tools/rtt")
+        cfg["ignorePackages"].append("omniorb")
+        cfg["ignorePackages"].append("external/omniORB")
+        cfg["ignorePackages"].append("external/omniORBpy")
 
     if system() == "Darwin":
         cfg["ignorePackages"].append("python")
@@ -728,8 +741,6 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("kramdown")
         cfg["ignorePackages"].append("facets")
         cfg["ignorePackages"].append("flexmock")
-        cfg["ignorePackages"].append("external/omniORB")
-        cfg["ignorePackages"].append("external/omniORBpy")
         cfg["ignorePackages"].append("gui/osg_qt4")
         cfg["ignorePackages"].append("gui/osg_qt5")
         cfg["ignorePackages"].append("qt5")

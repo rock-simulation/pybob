@@ -1,0 +1,40 @@
+diff -ru a/modules/pyMarshal.cc b/modules/pyMarshal.cc
+--- modules/pyMarshal.cc	2025-01-24 11:38:55
++++ modules/pyMarshal.cc	2017-02-20 23:45:59
+@@ -2977,11 +2977,24 @@
+ {
+   OMNIORB_CHECK_TCS_W_FOR_UNMARSHAL(stream.TCS_W(), stream);
+ 
++#if (PY_VERSION_HEX >= 0x03030000) // Python 3.3 or later
++  Py_UCS4  c   = stream.TCS_W()->unmarshalWChar(stream);
++  int kind = PyUnicode_KIND(c);
++  Py_UCS4 maxchar = 0x10ffff;
++  if (kind == PyUnicode_2BYTE_KIND)
++      maxchar = 0xffff;
++  else if (kind == PyUnicode_1BYTE_KIND)
++      maxchar = 0xff;
++  PyObject* r_o = PyUnicode_New(1, maxchar);
++  PyUnicode_WriteChar(r_o, 0, c);
++#else
+   Py_UNICODE  c   = stream.TCS_W()->unmarshalWChar(stream);
+   PyObject*   r_o = PyUnicode_FromUnicode(0, 1);
+   Py_UNICODE* str = PyUnicode_AS_UNICODE(r_o);
+   str[0]          = c;
+   str[1]          = 0;
++#endif
++
+   return r_o;
+ }
+ 
+@@ -4632,7 +4645,11 @@
+ 		       omniPy::formatString("Expecting unicode, got %r",
+ 					    "O", a_o->ob_type));
+   }
++#if (PY_VERSION_HEX < 0x03030000)
+   if (PyUnicode_GET_SIZE(a_o) != 1) {
++#else
++  if (PyUnicode_GetLength(a_o) != 1) {
++#endif
+     THROW_PY_BAD_PARAM(BAD_PARAM_WrongPythonType, compstatus,
+ 		       omniPy::formatString("Expecting unicode of length 1, "
+ 					    "got %r",
