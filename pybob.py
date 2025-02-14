@@ -113,6 +113,8 @@ def fetchi(package, returnPackages = False):
     mans = []
     if cfg["checkDeps"]:
         mans = list(layout_packages)
+        if os.path.exists(package):
+            mans.append(package)
     handled = []
     output = []
     checked = []

@@ -125,36 +125,37 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
     if os.path.isdir(clonePath):
         if cfg["update"]:
             print("Updating " + clonePath + " ... " + c.END, end="")
-            # todo: check branch
-            out, err, r = execute.do(["git", "-C", clonePath, "branch"], cfg)
-            if r != 0:
-                cfg["errors"].append("update: "+package)
-                c.printError("\ncan't get branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
-            else:
-                branches = execute.decode(out).splitlines()
-                current_branch = None
-                for b in branches:
-                    if b[0] == "*":
-                        current_branch = b.split()[1].strip()
-                if not branch:
-                    out, err, r = execute.do(["git", "-C", clonePath, "remote", "show", "autobuild | sed -n '/HEAD branch/s/.*: //p'"], cfg)
-                    if r != 0:
-                        cfg["errors"].append("update: "+package)
-                        c.printError("\ncan't get default branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
-                    else:
-                        branch = execute.decode(out).strip()
-                print(branch + " [" + current_branch + "] " + c.END, end="")
-                if branch and branch != current_branch:
-                    args = ["-t", "autobuild/"+branch]
+            # we ignore the branch if we want to checkout a specific commit
+            if commit == None:
+                out, err, r = execute.do(["git", "-C", clonePath, "branch"], cfg)
+                if r != 0:
+                    cfg["errors"].append("update: "+package)
+                    c.printError("\ncan't get branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
+                else:
+                    branches = execute.decode(out).splitlines()
+                    current_branch = None
                     for b in branches:
-                        if branch == b.strip():
-                            args = [branch]
-                            break
-                    out, err, r = execute.do(["git", "-C", clonePath, "checkout"]+args, cfg)
-                    if r != 0:
-                        cfg["errors"].append("update: "+package)
-                        c.printError("\ncan't checkout given branch \""+clonePath+"\":\n" + execute.decode(err))
-            out = None
+                        if b[0] == "*":
+                            current_branch = b.split()[1].strip()
+                    if not branch:
+                        out, err, r = execute.do(["git", "-C", clonePath, "remote", "show", "autobuild | sed -n '/HEAD branch/s/.*: //p'"], cfg)
+                        if r != 0:
+                            cfg["errors"].append("update: "+package)
+                            c.printError("\ncan't get default branch of git repo \""+clonePath+"\":\n" + execute.decode(err))
+                        else:
+                            branch = execute.decode(out).strip()
+                    print(branch + " [" + current_branch + "] " + c.END, end="")
+                    if branch and branch != current_branch:
+                        args = ["-t", "autobuild/"+branch]
+                        for b in branches:
+                            if branch == b.strip():
+                                args = [branch]
+                                break
+                        out, err, r = execute.do(["git", "-C", clonePath, "checkout"]+args, cfg)
+                        if r != 0:
+                            cfg["errors"].append("update: "+package)
+                            c.printError("\ncan't checkout given branch \""+clonePath+"\":\n" + execute.decode(err))
+                out = None
             err = None
             r = None
             if commit != None:
@@ -217,7 +218,7 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
                     return True
             else:
                 cmd = ["git", "clone", "-o", "autobuild", "-q", server+gitPackage, clonePath]
-                if branch:
+                if branch and commit == None:
                     cmd += ["-b", branch]
                 if recursive:
                     cmd += ["--recursive"]
@@ -430,6 +431,8 @@ def getPackageInfoFromRemoteFolder(cfg, package, folder, info):
     return True
 
 def fetchPackage(cfg, package, layout_packages):
+    if package == ".":
+        return False
     print("Check: " + package + " ... " + c.END, end="")
     sys.stdout.flush()
     setupCfg(cfg)
@@ -446,7 +449,7 @@ def fetchPackage(cfg, package, layout_packages):
         le = len(cfg["errors"])
         if cfg["fetch"]:
             cfg["overrides"][package]["fetch"](cfg)
-        else:
+        elif "check" in cfg["overrides"][package]:
             cfg["overrides"][package]["check"](cfg)
         if len(cfg["errors"]) == le:
             layout_packages.append(package)
@@ -473,6 +476,7 @@ def fetchPackage(cfg, package, layout_packages):
     path = cfg["devDir"]+"/autoproj/remotes/"
 
     matches = []
+
     if cfg["name_matching"] :
         for key, value in cfg["packages"].items():
             if package in key and key not in layout_packages:
@@ -538,6 +542,8 @@ def fetchPackage(cfg, package, layout_packages):
                 if "url" in value:
                     server = value["url"]
                     server2 = ""
+                if "github" in value:
+                    server2 = value["github"]
             else:
                 for key, value in cfg["overrides"].items():
                     r = re.compile(key)

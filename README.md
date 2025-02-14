@@ -31,6 +31,10 @@ or `False` if you have a older system which is incompatible with QT5.
 
        sudo apt install git python3-yaml python3-distro
 
+On newer Ubuntu versions it is recommended to use a virtual env for python packages:
+
+       sudo apt install python3-venv
+       
 # Prepare macOS for pybob:
 
   For OS X it is recommended to use python3.6 and Qt5, although the tools generally are compatible to python2.7 and Qt4.
@@ -66,6 +70,14 @@ or `False` if you have a older system which is incompatible with QT5.
        mkdir mars-dev
        cd mars-dev
        git clone https://github.com/rock-simulation/pybob.git
+create venv:
+       python3 -m venv install/venv
+activate venv:
+       . install/venv/bin/activate
+intall deps into venv:
+       pip install PyYaml
+       pip install setuptools
+continue with pybob
        cd pybob
        ./pybob.py buildconf path="https://github.com/rock-simulation/simulation-buildconf.git"
        cd ..
@@ -85,3 +97,6 @@ To be able to build Rock core libs on macOS one have to install ruby2.7 via macp
 
 # Todo:
   - check if "git pull" fails
+  - add submodule support
+  - add override links from package sets
+  - add override handling of package sets

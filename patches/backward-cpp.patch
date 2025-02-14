@@ -1,0 +1,211 @@
+diff --git BackwardMacros.cmake BackwardMacros.cmake
+new file mode 100644
+index 0000000..beccb66
+--- /dev/null
++++ BackwardMacros.cmake
+@@ -0,0 +1,128 @@
++#
++# BackwardMacros.cmake
++# Copyright 2013 Google Inc. All Rights Reserved.
++#
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++#
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++#
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++# SOFTWARE.
++
++###############################################################################
++# OPTIONS
++###############################################################################
++
++set(STACK_WALKING_UNWIND TRUE CACHE BOOL
++	"Use compiler's unwind API")
++set(STACK_WALKING_BACKTRACE FALSE CACHE BOOL
++	"Use backtrace from (e)glibc for stack walking")
++
++set(STACK_DETAILS_AUTO_DETECT TRUE CACHE BOOL
++	"Auto detect backward's stack details dependencies")
++
++set(STACK_DETAILS_BACKTRACE_SYMBOL FALSE CACHE BOOL
++	"Use backtrace from (e)glibc for symbols resolution")
++set(STACK_DETAILS_DW FALSE CACHE BOOL
++	"Use libdw to read debug info")
++set(STACK_DETAILS_BFD FALSE CACHE BOOL
++	"Use libbfd to read debug info")
++
++###############################################################################
++# CONFIGS
++###############################################################################
++if (${STACK_DETAILS_AUTO_DETECT})
++
++        set(BACKWARD_USED_LIBRARY "")
++
++	include(FindPackageHandleStandardArgs)
++
++	# find libdw
++	find_path(LIBDW_INCLUDE_DIR NAMES "elfutils/libdw.h" "elfutils/libdwfl.h")
++	find_library(LIBDW_LIBRARY dw PATHS "/usr/lib/x86_64-linux-gnu/")
++	set(LIBDW_INCLUDE_DIRS ${LIBDW_INCLUDE_DIR} )
++	set(LIBDW_LIBRARIES ${LIBDW_LIBRARY} )
++	
++	find_package_handle_standard_args(libdw DEFAULT_MSG
++		LIBDW_LIBRARY LIBDW_INCLUDE_DIR)
++	mark_as_advanced(LIBDW_INCLUDE_DIR LIBDW_LIBRARY)
++
++	# find libbfd
++	find_path(LIBBFD_INCLUDE_DIR NAMES "bfd.h")
++	find_path(LIBDL_INCLUDE_DIR NAMES "dlfcn.h")
++	find_library(LIBBFD_LIBRARY bfd PATHS "/usr/lib/x86_64-linux-gnu/")
++	find_library(LIBDL_LIBRARY dl PATHS "/usr/lib/x86_64-linux-gnu/")
++	set(LIBBFD_INCLUDE_DIRS ${LIBBFD_INCLUDE_DIR} ${LIBDL_INCLUDE_DIR})
++	set(LIBBFD_LIBRARIES ${LIBBFD_LIBRARY} ${LIBDL_LIBRARY})
++	find_package_handle_standard_args(libbfd DEFAULT_MSG
++		LIBBFD_LIBRARY LIBBFD_INCLUDE_DIR
++		LIBDL_LIBRARY LIBDL_INCLUDE_DIR)
++	mark_as_advanced(LIBBFD_INCLUDE_DIR LIBBFD_LIBRARY
++		LIBDL_INCLUDE_DIR LIBDL_LIBRARY)
++
++	if (LIBDW_FOUND)
++		LIST(APPEND BACKWARD_INCLUDE_DIRS ${LIBDW_INCLUDE_DIRS})
++		LIST(APPEND BACKWARD_LIBRARIES ${LIBDW_LIBRARIES})
++		set(STACK_DETAILS_DW TRUE)
++		set(STACK_DETAILS_BFD FALSE)
++		set(STACK_DETAILS_BACKTRACE_SYMBOL FALSE)
++		set(BACKWARD_USED_LIBRARY "#define BACKWARD_HAS_DW 1")
++	elseif(LIBBFD_FOUND)
++		LIST(APPEND BACKWARD_INCLUDE_DIRS ${LIBBFD_INCLUDE_DIRS})
++		LIST(APPEND BACKWARD_LIBRARIES ${LIBBFD_LIBRARIES})
++		set(STACK_DETAILS_DW FALSE)
++		set(STACK_DETAILS_BFD TRUE)
++		set(STACK_DETAILS_BACKTRACE_SYMBOL FALSE)
++                set(BACKWARD_USED_LIBRARY "#define BACKWARD_HAS_BFD 1")
++	else()
++		set(STACK_DETAILS_DW FALSE)
++		set(STACK_DETAILS_BFD FALSE)
++		set(STACK_DETAILS_BACKTRACE_SYMBOL TRUE)
++	endif()
++        set(PKGCONFIG_LIBS ${BACKWARD_LIBRARIES})
++else()
++	if (STACK_DETAILS_DW)
++		LIST(APPEND BACKWARD_LIBRARIES dw)
++	endif()
++
++	if (STACK_DETAILS_BFD)
++		LIST(APPEND BACKWARD_LIBRARIES bfd dl)
++	endif()
++endif()
++
++macro(map_definitions var_prefix define_prefix)
++	foreach(def ${ARGN})
++		if (${${var_prefix}${def}})
++			LIST(APPEND BACKWARD_DEFINITIONS "${define_prefix}${def}=1")
++		else()
++			LIST(APPEND BACKWARD_DEFINITIONS "${define_prefix}${def}=0")
++		endif()
++	endforeach()
++endmacro()
++
++map_definitions("STACK_WALKING_" "BACKWARD_HAS_" UNWIND BACKTRACE)
++map_definitions("STACK_DETAILS_" "BACKWARD_HAS_" BACKTRACE_SYMBOL DW BFD)
++
++foreach(def ${BACKWARD_DEFINITIONS})
++	message(STATUS "${def}")
++endforeach()
++
++LIST(APPEND BACKWARD_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR})
++
++macro(add_backward target)
++	target_include_directories(${target} PRIVATE ${BACKWARD_INCLUDE_DIRS})
++	set_property(TARGET ${target} APPEND PROPERTY COMPILE_DEFINITIONS ${BACKWARD_DEFINITIONS})
++	set_property(TARGET ${target} APPEND PROPERTY LINK_LIBRARIES ${BACKWARD_LIBRARIES})
++endmacro()
++mark_as_advanced(BACKWARD_INCLUDE_DIR BACKWARD_DEFINITIONS BACKWARD_LIBRARIES)
+diff --git CMakeLists.txt CMakeLists.txt
+index 97327cc..392185f 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -22,6 +22,7 @@
+ 
+ cmake_minimum_required(VERSION 3.0)
+ project(backward CXX)
++set(PROJECT_VERSION 0.1)
+ 
+ # Introduce variables:
+ # * CMAKE_INSTALL_LIBDIR
+@@ -68,6 +69,11 @@ endif()
+ # BACKWARD OBJECT
+ ###############################################################################
+ 
++configure_file(backward_config.hpp.in backward_config.hpp @ONLY)
++configure_file(backward.pc.in backward.pc @ONLY)
++
++include_directories(${CMAKE_BINARY_DIR})
++
+ add_library(backward_object OBJECT backward.cpp)
+ target_compile_definitions(backward_object PRIVATE ${BACKWARD_DEFINITIONS})
+ target_include_directories(backward_object PRIVATE ${BACKWARD_INCLUDE_DIRS})
+@@ -75,6 +81,10 @@ set(BACKWARD_ENABLE $<TARGET_OBJECTS:backward_object> CACHE STRING
+ 	"Link with this object to setup backward automatically")
+ 
+ 
++install (FILES backward.hpp ${CMAKE_BINARY_DIR}/backward_config.hpp DESTINATION include/backward)
++# install (TARGETS backward_object DESTINATION lib)
++install(FILES ${CMAKE_BINARY_DIR}/backward.pc DESTINATION lib/pkgconfig)
++
+ ###############################################################################
+ # BACKWARD LIBRARY (Includes backward.cpp)
+ ###############################################################################
+diff --git backward.hpp backward.hpp
+index 6efa46d..d2b585d 100644
+--- backward.hpp
++++ backward.hpp
+@@ -24,6 +24,8 @@
+ #ifndef H_6B9572DA_A64B_49E6_B234_051480991C89
+ #define H_6B9572DA_A64B_49E6_B234_051480991C89
+ 
++#include "backward_config.hpp"
++
+ #ifndef __cplusplus
+ #error "It's not going to compile without a C++ compiler..."
+ #endif
+diff --git backward.pc.in backward.pc.in
+new file mode 100644
+index 0000000..ff1054c
+--- /dev/null
++++ backward.pc.in
+@@ -0,0 +1,12 @@
++prefix=@CMAKE_INSTALL_PREFIX@
++exec_prefix=@CMAKE_INSTALL_PREFIX@
++libdir=${prefix}/lib
++includedir=${prefix}/include
++
++Name: @PROJECT_NAME@
++Description: Backward is a beautiful stack trace pretty printer for C++.
++Version: @PROJECT_VERSION@
++Requires: @PKGCONFIG_REQUIRES@
++Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@
++Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
++
+diff --git backward_config.hpp.in backward_config.hpp.in
+new file mode 100644
+index 0000000..9140300
+--- /dev/null
++++ backward_config.hpp.in
+@@ -0,0 +1,2 @@
++//Auto detected backtrace method
++@BACKWARD_USED_LIBRARY@
+\ No newline at end of file
+-- 
+2.25.1

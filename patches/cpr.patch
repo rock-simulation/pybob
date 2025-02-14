@@ -1,8 +1,21 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index bc6b78a..a4ce663 100644
---- CMakeLists.txt
-+++ CMakeLists.txt
-@@ -61,8 +61,8 @@ endmacro()
+diff -urN ../cpr_orig/CMakeLists.txt ./CMakeLists.txt
+--- ../cpr_orig/CMakeLists.txt	2019-07-08 09:49:45.640033362 +0200
++++ ./CMakeLists.txt	2019-07-08 10:04:18.994871575 +0200
+@@ -11,11 +11,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
+ 
+ project(cpr CXX)
++add_definitions(-fPIC)
+ 
+-if(NOT ${CMAKE_VERSION} LESS 3.2)
+-    set(CMAKE_CXX_STANDARD 11)
+-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-else()
++if(${CMAKE_VERSION} LESS 3.1)
+     message(STATUS "Checking compiler flags for C++11 support.")
+     # Set C++11 support flags for various compilers
+     include(CheckCXXCompilerFlag)
+@@ -61,8 +59,8 @@ endmacro()
  message(STATUS "C++ Requests CMake Options")
  message(STATUS "=======================================================")
  cpr_option(USE_SYSTEM_CURL
@@ -13,34 +26,22 @@ index bc6b78a..a4ce663 100644
  cpr_option(GENERATE_COVERAGE "Set to ON to generate coverage reports." OFF)
  cpr_option(CPR_CURL_NOSIGNAL "Set to ON to disable use of signals in libcurl." OFF)
  cpr_option(USE_SYSTEM_GTEST
-diff --git a/cpr/CMakeLists.txt b/cpr/CMakeLists.txt
-index 39c6c12..e51c11b 100644
---- cpr/CMakeLists.txt
-+++ cpr/CMakeLists.txt
-@@ -53,3 +53,28 @@ else()
-         ${CPR_INCLUDE_DIRS}
-         ${CURL_INCLUDE_DIRS})
+@@ -74,8 +72,19 @@ if(BUILD_CPR_TESTS)
+     enable_testing()
  endif()
-+
-+if(WIN32)
-+  set(LIB_INSTALL_DIR bin) # .dll are in PATH, like executables
-+else(WIN32)
-+  set(LIB_INSTALL_DIR lib)
-+endif(WIN32)
-+
-+set(_INSTALL_DESTINATIONS
-+        RUNTIME DESTINATION bin
-+        LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-+        ARCHIVE DESTINATION lib
-+)
-+
-+install(TARGETS ${PROJECT_NAME} ${_INSTALL_DESTINATIONS})
+ 
+-add_subdirectory(opt)
++#add_subdirectory(opt)
+ add_subdirectory(cpr)
+ if(BUILD_CPR_TESTS)
+     add_subdirectory(test)
+ endif()
 +
 +file(GLOB public_headers ${CPR_INCLUDE_DIRS}/cpr/[a-z]*.h)
 +
 +install(
-+	FILES ${public_headers}
-+	DESTINATION include/cpr
++       FILES ${public_headers}
++       DESTINATION include/cpr
 +)
 +
 +set(PC_FILE ${CMAKE_BINARY_DIR}/cpr.pc)
@@ -54,23 +55,10 @@ index 39c6c12..e51c11b 100644
 +libdir=${prefix}/lib
 +includedir=${prefix}/include/
 +
-+Name: minizip
-+Description: Minizip
++Name: Curl for People
++Description: C++ Requests: Curl for People, a spiritual port of Python Requests
 +Version: @PROJECT_VERSION@
 +Libs: -L${libdir} -lcpr -lcurl
 +
 +Cflags: -I${includedir}
 +
-diff -rupN cpr_orig/manifest.xml cpr/manifest.xml
---- manifest.xml	1970-01-01 01:00:00.000000000 +0100
-+++ manifest.xml	2017-11-09 12:48:10.527410452 +0100
-@@ -0,0 +1,9 @@
-+<package>
-+    <description brief="cpr">
-+      Manifest for external cpr needed due to patch
-+    </description>
-+
-+    <depend package="simulation/lib_manager" />
-+    <rosdep name="curl" />
-+    <tags>needs_opt</tags>
-+</package>

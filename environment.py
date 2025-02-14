@@ -50,8 +50,8 @@ def setupEnv(cfg, update=False):
     prefix_bin = prefix + "/bin"
     prefix_lib = prefix + "/lib"
     prefix_pkg = prefix_lib + "/pkgconfig"
-    if platform == "Darwin":
-        prefix_pkg = "/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:"+prefix_pkg
+    # if platform == "Darwin":
+    #     prefix_pkg = "/opt/local/share/pkgconfig:/opt/local/lib/pkgconfig:"+prefix_pkg
     pythonver = "%d.%d" % (sys.version_info.major, sys.version_info.minor)
     pythonpath = prefix_lib + "/python%d.%d/site-packages" % (sys.version_info.major, sys.version_info.minor)
     if platform == "Windows":
@@ -89,6 +89,12 @@ def setupEnv(cfg, update=False):
     out, err = p.communicate()
     aPath = out.strip()
 
+    p = subprocess.Popen("pkg-config --variable pc_path pkg-config", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    out, err = p.communicate()
+    pkg_config_pathes = out.strip()
+    if len(pkg_config_pathes) > 0:
+        prefix_pkg += ":"+pkg_config_pathes.decode("utf-8")
+
     if len(aPath) > 0:
         with open(cfg["devDir"]+"/bobenv.sh", "w") as f:
             f.write("#! /bin/bash\n")
@@ -112,15 +118,14 @@ def setupEnv(cfg, update=False):
                 f.write('export DYLD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$DYLD_LIBRARY_PATH"\n')
                 f.write('export MYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
                 f.write('export USE_QT5=1\n')
-                f.write('export CXXFLAGS="-std=c++11"\n')
             elif platform == "Linux":
                 f.write('export LD_LIBRARY_PATH="'+prefix_lib+':'+prefix_lib_orocos+':$LD_LIBRARY_PATH"\n')
-                f.write('export CXXFLAGS="-std=c++11"\n')
                 if QT5_UBUNTU:
                     f.write('export USE_QT5=1\n')
             else:
                 f.write('export PATH="'+prefix_lib+':'+prefix_lib_orocos+':$PATH"\n')
                 f.write('export USE_QT5=1\n')
+            f.write('export CXXFLAGS="-std=c++14"\n')
             f.write('export ROCK_CONFIGURATION_PATH="'+prefix_config+'"\n')
             f.write('export PYTHONPATH="' + pythonpath + ':$PYTHONPATH"\n')
 
@@ -129,6 +134,7 @@ def setupEnv(cfg, update=False):
             f.write('else\n')
             f.write('  export PKG_CONFIG_PATH="'+prefix_pkg+':$PKG_CONFIG_PATH"\n')
             f.write('fi\n')
+
             if platform == "Darwin":
                 major,minor = utils.get_ruby_verison()
                 ruby_subpath = "/ruby"+major+"."+minor+"/"+major+"."+minor+".0"
@@ -138,20 +144,46 @@ def setupEnv(cfg, update=False):
                 f.write('export USE_QT5=1\n')
                 f.write('export OROCOS_TARGET="macosx"\n')
                 f.write('export TYPELIB_RUBY_PLUGIN_PATH="'+prefix+'/share/typelib/ruby"\n')
-                f.write('export TYPELIB_CXX_LOADER="castxml"\n')
 
-                f.write('export CXXFLAGS="-fPIC -std=c++11"\n')
+                f.write('export CXXFLAGS="-fPIC -std=c++14"\n')
                 f.write('export TYPELIB_CASTXML_DEFAULT_OPTIONS="-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include -I/opt/local/include"\n')
-                f.write('export OROGEN_PLUGIN_PATH="'+prefix+'/share/orogen/plugins"\n')
-                f.write('export OROGEN_MODEL_PATH="'+prefix+'/share/orogen/models"\n')
-                f.write('export ROCK_BUNDLE_PATH="'+prefix+'/../bundles"\n')
-                f.write('export ORBInitRef="NameService=corbaname::localhost"\n')
-                f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/plugins"\n')
-                f.write('export QT_PLUGIN_DIR="'+prefix+'/lib/qt"\n')
-                f.write('export QT_PLUGIN_PATH="'+prefix+'/lib/qt"\n')
-                f.write('export VIZKIT_PLUGIN_RUBY_PATH="'+prefix+'/lib"\n')
-                f.write('source base/scripts/shell/zsh\n')
+            elif platform == "Linux":
+                major,minor = utils.get_ruby_verison()
+                ruby_subpath = "ruby"+major+"."+minor+"/"+major+"."+minor+".0"
+                ruby_subpath2 = "ruby/"+major+"."+minor+".0"
+                ruby_archdir = utils.get_ruby_archdir()
+                arr_prefix = prefix_lib.split(":")
+                castxml_pathes = ["/usr/include/c++/13", "/usr/include/x86_64-linux-gnu/c++/13",
+                                  "/usr/include/c++/13/backward", "/usr/local/include",
+                                  "/usr/include/x86_64-linux-gnu", "/usr/include"]
+                castxml_default_options = ""
+                for p in castxml_pathes:
+                    castxml_default_options += "-I"+p+" "
+                f.write('export TYPELIB_CASTXML_DEFAULT_OPTIONS="'+castxml_default_options+'"\n')
+                pathes = []
+                print(ruby_subpath)
+                print(ruby_subpath2)
+                print(ruby_archdir)
+                for p in arr_prefix:
+                    print(p)
+                    pathes.append(os.path.join(p, ruby_subpath))
+                    pathes.append(os.path.join(p, ruby_subpath2))
+                    pathes.append(os.path.join(p, "ruby", "vendor_ruby"))
+                    pathes.append(os.path.join(p, ruby_archdir, ruby_subpath2))
+                f.write('export RUBYLIB="'+":".join(pathes)+'"\n')
+                f.write('export OROCOS_TARGET="gnulinux"\n')
 
+            f.write('export TYPELIB_CXX_LOADER="castxml"\n')
+            f.write('export TYPELIB_RUBY_PLUGIN_PATH="'+prefix+'/share/typelib/ruby"\n')
+            f.write('export OROGEN_PLUGIN_PATH="'+prefix+'/share/orogen/plugins"\n')
+            f.write('export OROGEN_MODEL_PATH="'+prefix+'/share/orogen/models"\n')
+            f.write('export ROCK_BUNDLE_PATH="'+prefix+'/../bundles"\n')
+            f.write('export ORBInitRef="NameService=corbaname::localhost"\n')
+            f.write('export RTT_COMPONENT_PATH="'+prefix+'/lib/orocos/plugins"\n')
+            f.write('export QT_PLUGIN_DIR="'+prefix+'/lib/qt"\n')
+            f.write('export QT_PLUGIN_PATH="'+prefix+'/lib/qt"\n')
+            f.write('export VIZKIT_PLUGIN_RUBY_PATH="'+prefix+'/lib"\n')
+            f.write('source base/scripts/shell/zsh\n')
             _make_pybob_aliases(f)
 
     execute.makeDir(cfg["devDir"]+"/install/bin")

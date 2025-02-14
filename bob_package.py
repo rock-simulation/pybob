@@ -15,10 +15,14 @@ def getDeps(cfg, pkg, deps, checked):
         cfg["deps"][pkg] = []
     c.printWarning("get deps for " + pkg)
     f = None
-    path = os.path.join(cfg["devDir"], pkg)
+    if os.path.exists(pkg):
+        path = pkg
+    else:
+        path = os.path.join(cfg["devDir"], pkg)
     if pkg in cfg["overrides"] and "install_path" in cfg["overrides"][pkg]:
         path = os.path.join(cfg["devDir"], cfg["overrides"][pkg]["install_path"])
     manifest_path = os.path.join(path, "manifest.xml")
+    print(manifest_path)
     if os.path.isfile(manifest_path):
         f = open(manifest_path, "r")
     if not f:
@@ -83,7 +87,7 @@ def installPythonPackage(cfg, p):
     if not os.path.isdir(path+"/build"):
         execute.makeDir(path+"/build")
     pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
-    cmd = [pythonExecutable, "setup.py", "install", "--prefix="+cfg["devDir"]+"/install"]
+    cmd = [pythonExecutable, "-m", "pip", "install", "--upgrade", ".", "--target="+cfg["devDir"]+"/install/lib/"+pythonExecutable+"/site-packages"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg , None, path, p.replace("/", "_")+"_build.txt")
     if r != 0:
@@ -117,7 +121,10 @@ def installRubyPackage(cfg, p):
         cfg["errors"].append("build: "+p)
         return
     major,minor = utils.get_ruby_verison()
-    execute.do(["cp", "-r", "lib/*", cfg["devDir"]+"/install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
+    ruby_lib_path = cfg["devDir"]+"/install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"
+    if not os.path.isdir(ruby_lib_path):
+        execute.makeDir(ruby_lib_path)
+    execute.do(["cp", "-r", "lib/*", ruby_lib_path])
     execute.do(["cp", "-r", "bin/*", cfg["devDir"]+"/install/bin"])
     end = datetime.datetime.now()
     diff = end - start
@@ -161,10 +168,13 @@ def installPackage(cfg, p, cmake_options=[]):
         orogenPath = os.path.join(path, ".orogen")
         if os.path.exists(orogenPath) and cfg["rebuild"]:
             execute.do(["rm", "-rf", orogenPath])
+        transport = "corba,typelib"
+        if system() == "Linux":
+            transport += ",mqueue"
         if not os.path.exists(orogenPath):
-            cmd = ["orogen", "--transport=corba,typelib", "--import=std", "--extensions=cpp_proxies,modelExport --no-rtt-scripting", orogenFilename]
+            cmd = ["orogen", "--transport="+transport, "--import=std", "--extensions=cpp_proxies,modelExport --no-rtt-scripting", orogenFilename]
             if p == "base/orogen/std":
-                cmd = ["orogen", "--transport=corba,typelib", "--extensions=cpp_proxies,modelExport", orogenFilename]
+                cmd = ["orogen", "--transport="+transport, "--extensions=cpp_proxies,modelExport", orogenFilename]
             print(" ".join(cmd))
             out, err, r = execute.do(cmd, cfg, None, path, p.replace("/", "_")+"_orogen.txt")
             if r != 0:

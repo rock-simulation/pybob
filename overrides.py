@@ -301,7 +301,7 @@ def uninstall_protobuf(cfg):
     execute.do(["make", "clean"])
     os.chdir(cwd)
 
-def fetch_general_git(cfg, path, package, url, hashId=None):
+def fetch_general_git(cfg, path, package, url, hashId=None, branch=None, folder=None):
     path = os.path.join(cfg["devDir"], path)
     path2 = os.path.join(cfg["devDir"], package)
     print(c.BOLD + "Fetching " + package +" ... " + c.END, end="")
@@ -310,7 +310,14 @@ def fetch_general_git(cfg, path, package, url, hashId=None):
     if not os.path.exists(path2):
         execute.makeDir(path)
         os.chdir(path)
-        execute.do(["git", "clone", url])
+        cmd = ["git", "clone", url]
+        if branch:
+            cmd.append("-b")
+            cmd.append(branch)
+        if folder:
+            cmd.append(folder)
+        print(" ".join(cmd))
+        execute.do(cmd)
         if hashId:
             os.chdir(path2)
             execute.do(["git", "checkout", hashId])
@@ -423,8 +430,16 @@ def fetch_orogen(cfg):
     if system() == "Darwin":
         folder = "malter"
     print("fetch orogen: " + folder)
+    git_path = "git@github.com:"+folder+"/orogen.git"
+    branch = None
+    if "orogen" in cfg["overrides"]:
+        value = cfg["overrides"]["orogen"]
+        if "branch" in value:
+            branch = value["branch"]
+        if "github" in value:
+            git_path = "git@github.com:"+value["github"]+".git"
     return fetch_general_git(cfg, "tools", "tools/orogen",
-                             "git@github.com:"+folder+"/orogen.git")
+                             git_path, None, branch, "orogen")
 
 def fetch_rtt_typelib(cfg):
     folder = "orocos-toolchain"
@@ -440,8 +455,11 @@ def install_orocos(cfg):
     execute.do(["rake"])
     # todo: put ruby pat to cfg; get correct ruby version and add it to path
     major,minor = utils.get_ruby_verison()
+    ruby_lib_path = "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"
+    if not os.path.isdir(ruby_lib_path):
+        execute.makeDir(ruby_lib_path)
     execute.do(["cp", "-r", "lib/orocos/orocos/*", "lib/orocos/"])
-    execute.do(["cp", "-r", "lib/*", "../../install/lib/ruby"+major+"."+minor+"/"+major+"."+minor+".0"])
+    execute.do(["cp", "-r", "lib/*", ruby_lib_path])
     execute.do(["cp", "-r", "bin/*", "../../install/bin"])
 
 def install_omniorb(cfg):
@@ -676,7 +694,7 @@ def loadOverrides(cfg):
         #"typelib",
         "simulation/configmaps",
         "qt4-opengl",
-        "tools/graph_analysis",
+        #"tools/graph_analysis",
     ]
 
     if not cfg["orogen"]:
