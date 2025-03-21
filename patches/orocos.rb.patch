@@ -192,3 +192,12 @@ index 49a704f2..4c5fc1be 100644
                      false
                  end
              end
+@@ -386,7 +386,7 @@ def has_port?(name)
+             CORBA.refine_exceptions(self) do
+                 begin
+                     do_has_port?(name)
+-                rescue Orocos::NotFound
++                rescue Orocos::NotFound, Orocos::CORBAError
+                     false
+                 end
+             end
