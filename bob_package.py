@@ -88,6 +88,8 @@ def installPythonPackage(cfg, p):
         execute.makeDir(path+"/build")
     pythonExecutable = "python"+str(sys.version_info.major)+"."+str(sys.version_info.minor)
     cmd = [pythonExecutable, "-m", "pip", "install", "--upgrade", ".", "--target="+cfg["devDir"]+"/install/lib/"+pythonExecutable+"/site-packages"]
+    #working on apple:
+    cmd = [pythonExecutable, "setup.py", "install", "--prefix="+cfg["devDir"]+"/install", "--single-version-externally-managed",  "--root=/"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg , None, path, p.replace("/", "_")+"_build.txt")
     if r != 0:
@@ -126,6 +128,13 @@ def installRubyPackage(cfg, p):
         execute.makeDir(ruby_lib_path)
     execute.do(["cp", "-r", "lib/*", ruby_lib_path])
     execute.do(["cp", "-r", "bin/*", cfg["devDir"]+"/install/bin"])
+    # apple version
+    # cmd = ["cp", "-r", "lib/*", cfg["devDir"]+"/install/lib/ruby/"+major+"."+minor+".0"]
+    # print(" ".join(cmd))
+    # execute.do(cmd)
+    # cmd = ["cp", "-r", "bin/*", cfg["devDir"]+"/install/bin"]
+    # print(" ".join(cmd))
+    # execute.do(cmd)
     end = datetime.datetime.now()
     diff = end - start
     print(p + c.WARNING + " installed" + c.END)

@@ -576,7 +576,7 @@ def install_boost(cfg):
         return False
     cmd = ["bash",
            "bootstrap.sh",
-           "--without-libraries=python",
+           #"--without-libraries=python",
            "--without-libraries=mpi",
            "--with-icu=/opt/local"]
     print(" ".join(cmd))
@@ -589,8 +589,14 @@ def install_boost(cfg):
     cmd = ["./b2",
            "--prefix="+cfg["devDir"] + "/install",
            "--no-cmake-config",
-           "threading=multi",
+           "--layout=system",
+           "variant=release",
+           "threading=single,multi",
            "cxxflags=-std=c++11",
+           "link=static,shared",
+           "runtime-link=shared",
+           "-j14",
+           "--build-type=complete",
            "install"]
     print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, path, "external_boost_install.txt")
@@ -744,6 +750,7 @@ def loadOverrides(cfg):
         cfg["ignorePackages"].append("gui/osg_qt4")
         cfg["ignorePackages"].append("gui/osg_qt5")
         cfg["ignorePackages"].append("qt5")
+        cfg["ignorePackages"].append("osg")
         cfg["ignorePackages"].append("qt5-opengl")
     elif system() == "Windows":
         cfg["ignorePackages"].append("python")

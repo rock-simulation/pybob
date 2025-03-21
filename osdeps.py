@@ -346,6 +346,7 @@ def loadOsdeps(cfg):
                               "npm9": [install],
                               "nlopt": [install],
                               "glog": [install, "google-glog"],
-})
+                              "coinor": [install, "coinor-cbc coinor-cgl coinor-clp coinor-coinutils coinor-liblemon coinor-osi"],
+                              })
         if not cfg["orogen"]:
             cfg["osdeps"]["boost"] = [install]

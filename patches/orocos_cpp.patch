@@ -161,11 +161,12 @@ diff --git src/orocos_cpp.cpp src/orocos_cpp.cpp
 index fcb1b35..218225c 100644
 --- src/orocos_cpp.cpp
 +++ src/orocos_cpp.cpp
-@@ -94,6 +94,7 @@ bool initializeCORBA(int argc, char**argv, std::string host="", size_t max_messa
+@@ -94,6 +94,8 @@ bool initializeCORBA(int argc, char**argv, std::string host="", size_t max_messa
          std::cerr << "\nCould not connect to name service '"<<host<<"'" <<std::endl;
          return false;
      }
-+    omniORB::setClientCallTimeout(500);
++    omniORB::setClientCallTimeout(50000);
++    omniORB::setClientThreadCallTimeout(50000);
      return true;
  }
  
