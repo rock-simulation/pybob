@@ -96,6 +96,9 @@ continue with pybob
 To be able to build Rock core libs on macOS one have to install ruby2.7 via macports, since the system ruby library is not compatible. Also the macports ruby version have to be selected: `sudo port select ruby ruby27` – and restart the terminal.
 
 Install castxml: `sudo port install castxml`
+needed gems:
+  sudo gem install rice -v 3.0.0
+  sudo gem isntall eigen
 
 # Todo:
   - check if "git pull" fails

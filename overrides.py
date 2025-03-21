@@ -82,18 +82,18 @@ def fetch_ode_16(cfg):
     cwd = os.getcwd()
     execute.makeDir(path)
     os.chdir(path)
-    if not os.path.isfile(path + "/ode-0.16.tar.gz"):
+    if not os.path.isfile(path + "/ode-0.16.6.tar.gz"):
         if os.path.isdir(path + "/ode-16"):
             uninstall_ode(cfg)
         execute.do(
             [
                 "wget",
                 "-q",
-                "https://bitbucket.org/odedevs/ode/downloads/ode-0.16.tar.gz",
+                "https://bitbucket.org/odedevs/ode/downloads/ode-0.16.6.tar.gz",
             ]
         )
-        execute.do(["tar", "-xzf", "ode-0.16.tar.gz"])
-        execute.do(["mv", "ode-0.16", "ode-16"])
+        execute.do(["tar", "-xzf", "ode-0.16.6.tar.gz"])
+        execute.do(["mv", "ode-0.16.6", "ode-16"])
         patch_ode_16(cfg)
         if not os.path.isfile("ode-16/ode.pc.in"):
             cfg["errors"].append("fetch: simulation/ode")
@@ -122,6 +122,7 @@ def install_ode(cfg):
     else:
         cmd = ["./configure"] + cmd
 
+    print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode_configure.txt")
 
     print(c.BOLD + "simulation/ode" + c.WARNING + " configured" + c.END)
@@ -151,6 +152,10 @@ def install_ode_16(cfg):
         'CXXFLAGS="-O2 -ffast-math -fPIC"',
         'CFLAGS="-O2 -ffast-math -fPIC"',
         "--enable-double-precision",
+        "--enable-libccd",
+        "--enable-shared",
+        "--disable-static",
+        #"--disable-threading-intf",
         "--prefix=" + cfg["devDir"] + "/install",
         "--with-drawstuff=none",
         "--disable-demos",
@@ -161,6 +166,7 @@ def install_ode_16(cfg):
     else:
         cmd = ["./configure"] + cmd
 
+    print(" ".join(cmd))
     out, err, r = execute.do(cmd, cfg, None, path, "simulation_ode-16_configure.txt")
 
     print(c.BOLD + "simulation/ode-16" + c.WARNING + " configured" + c.END)

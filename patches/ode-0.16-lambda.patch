@@ -8,15 +8,26 @@
  } dJointFeedback;
  
  
---- ode/src/step.cpp	Thu Jul 24 22:18:40 2008
-+++ ode/src/step.cpp	Mon Oct 15 12:58:57 2012
-@@ -478,7 +478,8 @@
+--- ode/src/step.cpp	2018-12-09 21:04:03
++++ ode/src/step.cpp	2025-02-20 12:10:43
+@@ -478,6 +478,8 @@
          currLambda += RLE__RHS_LAMBDA_MAX;
      }
      if (fb != NULL) {
--        if (jointBodyIndex == dJCB__MIN) {
-+        fb->lambda = *(rowRhsLambda+RLE_LAMBDA+5*RLE__RHS_LAMBDA_MAX);
-+        if (jointBodyIndex == dJCB__MIN) {
++        // read motor force limits if available
++        if(infom >= 6) fb->lambda = *(rowRhsLambda+RLE_LAMBDA+5*RLE__RHS_LAMBDA_MAX);
+         if (jointBodyIndex == dJCB__MIN) {
              fb->f1[dV3E_X] = sumLX;
              fb->f1[dV3E_Y] = sumLY;
-             fb->f1[dV3E_Z] = sumLZ;
+--- ode/src/quickstep.cpp	2018-12-09 21:04:03
++++ ode/src/quickstep.cpp	2025-02-20 12:09:53
+@@ -2992,7 +3003,8 @@
+ #endif
+ 
+                     dJointFeedback *fb = joint->feedback;
+-
++                    // read motor force limits if available
++                    if(fb_infom >= 6) fb->lambda = lambdacurr[5];
+                     if (joint->node[1].body) {
+                         Multiply1_12q1 (data, Jcopycurr + JCE__J2_MIN, lambdacurr, fb_infom);
+                         dSASSERT(JCE__MAX == 12);
