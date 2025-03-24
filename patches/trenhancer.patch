@@ -1,0 +1,21 @@
+diff --git bin/cnd-tf-viz bin/cnd-tf-viz
+index d1e26ea..8a26435 100644
+--- bin/cnd-tf-viz
++++ bin/cnd-tf-viz
+@@ -200,14 +200,14 @@ def parse_cnd(path, hide_consumers=False):
+ 
+ def extract_tf_from_cnd(path):
+     tmpfile = "/tmp/transformerviz-{}.cnd".format(uuid.uuid4())
+-    cmd = "cnd-tf-enhance --extract "+path+" --out "+tmpfile
++    cmd = "DYLD_LIBRARY_PATH=$MYLD_LIBRARY_PATH cnd-tf-enhance --extract "+path+" --out "+tmpfile
+     print("Executing "+cmd)
+     os.system(cmd)
+     return tmpfile
+ 
+ def trenhance_cnd(path):
+     tmpfile = "/tmp/transformerviz-{}.cnd".format(uuid.uuid4())
+-    cmd = "cnd-tf-enhance "+path+" --out "+tmpfile
++    cmd = "DYLD_LIBRARY_PATH=$MYLD_LIBRARY_PATH cnd-tf-enhance "+path+" --out "+tmpfile
+     print("Executing "+cmd)
+     os.system(cmd)
+     return tmpfile
