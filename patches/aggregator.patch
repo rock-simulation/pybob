@@ -1,0 +1,16 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index ce47d6e..c047ddd 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -1,7 +1,11 @@
++rock_find_cmake(Boost COMPONENTS system REQUIRED)
++
+ rock_library(aggregator
+     SOURCES TimestampEstimator.cpp
+             StreamAlignerStatus.cpp
+     DEPS_PKGCONFIG base-types base-lib
++    DEPS
++            Boost::system
+     HEADERS TimestampEstimator.hpp
+             TimestampEstimatorStatus.hpp
+             StreamAligner.hpp
