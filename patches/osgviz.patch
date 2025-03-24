@@ -1,8 +1,28 @@
-diff --git src/CMakeLists.txt src/CMakeLists.txt
-index 4501db9..eae2a12 100644
+index 4501db9..6c703b9 100644
 --- src/CMakeLists.txt
 +++ src/CMakeLists.txt
-@@ -36,19 +36,12 @@ if(USE_MARS_VBO)
+@@ -17,11 +17,15 @@ endif(MSVC)
+ 
+ include(CheckIncludeFileCXX)
+ 
+-set (CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${OPENSCENEGRAPH_INCLUDE_DIRS})
+-CHECK_INCLUDE_FILE_CXX("osg/Version" HAVE_OSG_VERSION_H)
+-if(${HAVE_OSG_VERSION_H})
+-    ADD_DEFINITIONS(-DHAVE_OSG_VERSION_H)
+-endif()
++find_package(OpenSceneGraph REQUIRED  osgDB osgText osgUtil osgParticle osgFX osgGA osgViewer osgManipulator)
++include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
++link_directories(${OPENSCENEGRAPH_LIBRARY_DIRS})
++
++# set (CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${OPENSCENEGRAPH_INCLUDE_DIRS})
++# CHECK_INCLUDE_FILE_CXX("osg/Version" HAVE_OSG_VERSION_H)
++# if(${HAVE_OSG_VERSION_H})
++#     ADD_DEFINITIONS(-DHAVE_OSG_VERSION_H)
++# endif()
+ 
+ CHECK_INCLUDE_FILE_CXX("tr1/functional" USE_TR1)
+ if(${USE_TR1})
+@@ -36,19 +40,12 @@ if(USE_MARS_VBO)
  endif()
  
  if (UNIX)
@@ -25,11 +45,54 @@ index 4501db9..eae2a12 100644
  rock_library(osgVizGraphics
      SOURCES graphics/interfaces/data/GraphicData.cpp
              graphics/interfaces/data/LightData.cpp
-@@ -144,7 +137,19 @@ rock_library(ModelLoader
+@@ -58,7 +55,7 @@ rock_library(osgVizGraphics
+             graphics/interfaces/data/GraphicData.h
+             graphics/interfaces/data/LightData.h
+             graphics/wrapper/OSGLightStruct.h
+-    DEPS_PKGCONFIG openscenegraph)
++    LIBS ${OPENSCENEGRAPH_LIBRARIES})
+ 
+ 
+ rock_library(osgViz
+@@ -100,9 +97,9 @@ rock_library(osgViz
+            tools/SearchNodes.h
+            tools/GlobalPos.h
+                
+-    LIBS ${ADDITIONAL_LIBS}
++    LIBS ${ADDITIONAL_LIBS} ${OPENSCENEGRAPH_LIBRARIES}
+     DEPS osgVizGraphics 
+-    DEPS_PKGCONFIG openscenegraph
++    #DEPS_PKGCONFIG openscenegraph
+ )
+ 
+ rock_library(PrimitivesFactory
+@@ -127,7 +124,8 @@ rock_library(PrimitivesFactory
+     modules/viz/Primitives/Primitives/SphereNode.hpp
+     modules/viz/Primitives/Primitives/TextNode.hpp
+     modules/viz/Primitives/Primitives/Graph_2D.hpp
+-    DEPS osgViz)
++    DEPS osgViz
++    LIBS ${OPENSCENEGRAPH_LIBRARIES})
+ 
+ rock_library(ManipulationClickHandler
+     SOURCES
+@@ -136,18 +134,33 @@ rock_library(ManipulationClickHandler
+     HEADERS
+     modules/ManipulationClickHandler/ManipulationClickHandler.h
+     modules/ManipulationClickHandler/TranslateRotateDragger.h
+-    DEPS osgViz PrimitivesFactory)
++    DEPS osgViz PrimitivesFactory
++    LIBS ${OPENSCENEGRAPH_LIBRARIES})
+ 
+     
+ 
+ rock_library(ModelLoader
      SOURCES modules/viz/ModelLoader/ModelLoader.cpp
      HEADERS modules/viz/ModelLoader/ModelLoader.h
-     DEPS osgViz)
+-    DEPS osgViz)
 -    
++    DEPS osgViz
++    LIBS ${OPENSCENEGRAPH_LIBRARIES})
 +
 +rock_library(osgVizInterfaces
 +	HEADERS interfaces/Clickable.h
@@ -39,14 +102,18 @@ index 4501db9..eae2a12 100644
 +      interfaces/WindowResizeCallback.h
 +	SOURCES Main.cpp
 +  DEPS osgViz  PrimitivesFactory ModelLoader
-+  DEPS_PKGCONFIG openscenegraph
++  LIBS ${OPENSCENEGRAPH_LIBRARIES}
 +)
 +
 +
  rock_executable(osgViz_bin Main.cpp
      DEPS osgViz PrimitivesFactory ModelLoader
-     LIBS ${ADDITIONAL_LIBS})
-diff --git src/OsgViz.cpp src/OsgViz.cpp
+-    LIBS ${ADDITIONAL_LIBS})
++    LIBS ${ADDITIONAL_LIBS} ${OPENSCENEGRAPH_LIBRARIES}
++)
+ 
+ 
+ 
 index bbfb2f1..09f96e9 100644
 --- src/OsgViz.cpp
 +++ src/OsgViz.cpp
