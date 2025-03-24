@@ -1,8 +1,33 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index a5aae81..77965de 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -1,3 +1,6 @@
++FIND_PACKAGE( Boost COMPONENTS program_options filesystem REQUIRED )
++INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
++
+ rock_library(cnd-execution
+     SOURCES
+         NetworkUpdateManager.cpp
+@@ -31,11 +34,11 @@ rock_library(cnd-execution
+         orocos_cpp
+         base-logging
+         logger-proxies
++    DEPS
++        Boost::filesystem
+ )
+ target_link_libraries(cnd-execution dl)
+ 
+-FIND_PACKAGE( Boost COMPONENTS program_options filesystem REQUIRED )
+-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+ 
+ rock_executable(cnd-add
+     SOURCES cnd_add_main.cpp
 diff --git src/RTTTaskManager.cpp src/RTTTaskManager.cpp
-index 8c23df4..ce0c156 100644
+index 96ea177..29b9c4e 100644
 --- src/RTTTaskManager.cpp
 +++ src/RTTTaskManager.cpp
-@@ -624,7 +624,7 @@ TaskContextPtr RTTTaskManager::getTaskContextProxy(const std::string &taskName,
+@@ -815,7 +815,7 @@ TaskContextPtr RTTTaskManager::getTaskContextProxy(const std::string &taskName,
          LOG_INFO_S << "Failed to create task context for task: " << taskName << " ("<<retrials
                          <<"/"<<_config.task_retrieval_retrials<<")"<<std::endl;
          retrials++;
@@ -59,7 +84,7 @@ index 7ad77ec..d738069 100644
  Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
  
 diff --git src/task_context_cache.hpp src/task_context_cache.hpp
-index 81f1f6c..a6bc866 100644
+index bf2561f..4ec9d79 100644
 --- src/task_context_cache.hpp
 +++ src/task_context_cache.hpp
 @@ -1,8 +1,9 @@
