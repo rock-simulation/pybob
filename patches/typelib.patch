@@ -43,3 +43,15 @@ index bc721a5..5d26cf8 100644
                           *includes, *defines, *rawflags,
                           *castxml_default_options, io.path]
                      else
+diff --git lang/tlb/xmltools.hh lang/tlb/xmltools.hh
+index bb5a3a7..46f2566 100644
+--- lang/tlb/xmltools.hh
++++ lang/tlb/xmltools.hh
+@@ -4,6 +4,7 @@
+ #include <libxml/xmlmemory.h>
+ #include "parsing.hh"
+ #include <boost/lexical_cast.hpp>
++#include <libxml/tree.h>
+ 
+ namespace
+ {
