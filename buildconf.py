@@ -247,6 +247,16 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
                 print(execute.decode(err))
                 print(r)
             c.printWarning("done")
+            patch = cfg["pyScriptDir"] + "/patches/" + "_".join(clonePath.split("/")[-2:]) + ".patch"
+            print("check for patches: "+patch, end="")
+            if os.path.exists(patch):
+                cmd = ["patch", "-N", "-p0", "-t", "-d", clonePath, "-i", patch]
+                print(" ".join(cmd))
+                out, err, r = execute.do(cmd)
+                print(execute.decode(out))
+                print(execute.decode(err))
+                print(r)
+            c.printWarning("done")
             return True
     return False
 

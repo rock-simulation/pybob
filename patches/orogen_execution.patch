@@ -1,0 +1,50 @@
+diff --git bin/CMakeLists.txt bin/CMakeLists.txt
+index 1541d37..49a1408 100644
+--- bin/CMakeLists.txt
++++ bin/CMakeLists.txt
+@@ -15,6 +15,6 @@ rock_executable(rock-runtime
+     SOURCES rock-runtime.cpp
+     DEPS_PKGCONFIG orocos_cpp cnd-model cnd-execution)
+     
+-target_compile_features(rock-launch PRIVATE cxx_std_17)
+-target_compile_features(rock-runtime PRIVATE cxx_std_17)
++#target_compile_features(rock-launch PRIVATE cxx_std_17)
++#target_compile_features(rock-runtime PRIVATE cxx_std_17)
+ 
+diff --git bin/rock-launch.cpp bin/rock-launch.cpp
+index 2aeabce..9889559 100644
+--- bin/rock-launch.cpp
++++ bin/rock-launch.cpp
+@@ -332,8 +332,9 @@ int main(int argc, char** argv)
+     bool st;
+     try{
+         st = op_call(yamlString);
+-    }catch(...){
++    }catch(const std::exception &exc){
+         std::cerr << "\nTransition failed! Received exception while communicating with CNDHandler. It might have crashed." << std::endl;
++        std::cerr << exc.what() << std::endl;
+         return(EXIT_FAILURE);
+     }
+     base::Time end = base::Time::now();
+diff --git bin/rock-runtime.cpp bin/rock-runtime.cpp
+index a34add7..46be457 100644
+--- bin/rock-runtime.cpp
++++ bin/rock-runtime.cpp
+@@ -175,7 +175,7 @@ protected:
+     std::string corba_ns(){
+         return  "ORBInitRef=NameService=corbaname::" + config.corba_nameserver;
+     }
+-    std::string renaming(std::optional<std::reference_wrapper<std::vector<std::string>>> args=std::nullopt){
++    std::string renaming(boost::optional<std::reference_wrapper<std::vector<std::string>>> args=boost::none){
+         std::string task = "--rename=orogen_default_execution__ProcessServer:"+config.process_server_task_name;
+         std::string logger = "--rename=orogen_default_execution__ProcessServer_Logger:"+config.process_server_task_name+"_Logger";
+         if(args.has_value()){
+@@ -187,7 +187,7 @@ protected:
+ 
+     bool prepare_command_local(std::string& exec, std::vector<std::string>& args){
+         exec = "orogen_default_execution__ProcessServer";
+-        renaming(args);
++        renaming(std::reference_wrapper<std::vector<std::string>>(args));
+ 
+         return true;
+     }
