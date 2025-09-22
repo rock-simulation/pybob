@@ -47,47 +47,52 @@ def listPackages(cfg):
 
     for d in os.listdir(path+"remotes"):
         if os.path.isdir(path+"remotes/"+d):
-            packages.append([d, ""])
-            with open(path+"remotes/"+d+"/source.yml") as f:
-                source = yaml.safe_load(f)
-            if "version_control" in source:
-                for p in source["version_control"]:
-                    # some rock configuration files are not well formated
-                    # which results in a list with one key having no value
-                    # instead of a dict
-                    key = ""
-                    items = p.items()
-                    if len(items) == 1:
-                        key, value = list(items)[0]
-                    else:
-                        for k, v in items:
-                            if not v:
-                                key = k
-                                break
-                    if "*" not in key:
-                        packages.append([d, key])
-                    else:
-                        wildcard_packages.append([d, key])
-            files = getAutobuildFiles(path+"remotes/"+d)
-            for i in files:
-                with open(i) as f:
-                    for line in f:
-                        if "_package" in line:
-                            l = line.split("_package")[1]
-                            arrLine = None
-                            if '"' in l:
-                                arrLine = line.split('"')
-                            elif "'" in l:
-                                arrLine = line.split("'")
-                            if arrLine:
-                                if "#" not in arrLine[0]:
-                                    packages.append([d, arrLine[1]])
-                        if "metapackage" in line:
-                            l = line.split()
-                            if len(l) == 3:
-                                l1 = l[1].strip().replace('"', "").replace("'", "").replace(',', "")
-                                l2 = l[2].strip().replace('"', "").replace("'", "").replace(',', "")
-                                packages.append([d, l1, l2])
+            folders.append([path+"remotes/"+d, d])
+
+    for f in folders:
+        path_ = f[0]
+        d = f[1]
+        packages.append([d, ""])
+        with open(path_+"/source.yml") as f:
+            source = yaml.safe_load(f)
+        if "version_control" in source:
+            for p in source["version_control"]:
+                # some rock configuration files are not well formated
+                # which results in a list with one key having no value
+                # instead of a dict
+                key = ""
+                items = p.items()
+                if len(items) == 1:
+                    key, value = list(items)[0]
+                else:
+                    for k, v in items:
+                        if not v:
+                            key = k
+                            break
+                if "*" not in key:
+                    packages.append([d, key])
+                else:
+                    wildcard_packages.append([d, key])
+        files = getAutobuildFiles(path_)
+        for i in files:
+            with open(i) as f:
+                for line in f:
+                    if "_package" in line:
+                        l = line.split("_package")[1]
+                        arrLine = None
+                        if '"' in l:
+                            arrLine = line.split('"')
+                        elif "'" in l:
+                            arrLine = line.split("'")
+                        if arrLine:
+                            if "#" not in arrLine[0]:
+                                packages.append([d, arrLine[1]])
+                    if "metapackage" in line:
+                        l = line.split()
+                        if len(l) == 3:
+                            l1 = l[1].strip().replace('"', "").replace("'", "").replace(',', "")
+                            l2 = l[2].strip().replace('"', "").replace("'", "").replace(',', "")
+                            packages.append([d, l1, l2])
 
     return (packages, wildcard_packages)
 
