@@ -164,6 +164,7 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
             err = None
             r = None
             if commit != None:
+                print("checkout commit / tag: " + commit)
                 out, err, r = execute.do(["git", "-C", clonePath, "checkout", commit], cfg)
             else:
                 out, err, r = execute.do(["git", "-C", clonePath, "pull"], cfg)
@@ -234,6 +235,7 @@ def clonePackage(cfg, package, server, gitPackage, branch, commit, recursive=Fal
                     c.printError("\ncan't clone \""+clonePath+"\":\n" + execute.decode(err))
                     return True
                 if commit != None:
+                    print("checkout commit / tag: " + commit)
                     out, err, r = execute.do(["git", "-C", clonePath, "checkout", commit], cfg)
                     if r != 0:
                         cfg["errors"].append("git checkout: "+package+" "+commit)
@@ -269,7 +271,7 @@ def getServerInfo(cfg, pDict, info):
     # todo:
     #    - parse patches
     #    - impelment clean tag support
-    # tag can be used as branches with git clone if no branch with
+    # tag can be used as commits / branches with git clone if no branch with
     # the same name exists
     setupCfg(cfg)
     if len(pDict) == 1:
@@ -294,7 +296,8 @@ def getServerInfo(cfg, pDict, info):
             else:
                 info["branch"] = pInfo["branch"]
         if "tag" in pInfo:
-            info["branch"] = pInfo["tag"]
+            #info["branch"] = pInfo["tag"]
+            info["commit"] = pInfo["tag"]
         if "commit" in pInfo:
             info["commit"] = pInfo["commit"]
         if "with_submodules" in pInfo:
@@ -308,7 +311,8 @@ def getServerInfo(cfg, pDict, info):
         else:
             info["branch"] = pDict["branch"]
     if "tag" in pDict:
-        info["branch"] = pDict["tag"]
+        #info["branch"] = pDict["tag"]
+        info["commit"] = pDict["tag"]
     if "commit" in pDict:
         info["commit"] = pDict["commit"]
     if "with_submodules" in pDict:
@@ -559,6 +563,10 @@ def fetchPackage(cfg, package, layout_packages):
                     server2 = ""
                 if "github" in value:
                     server2 = value["github"]
+                if "commit" in value:
+                    commit = value["commit"]
+                if "tag" in value:
+                    commit = value["tag"]
             else:
                 for key, value in cfg["overrides"].items():
                     r = re.compile(key)
