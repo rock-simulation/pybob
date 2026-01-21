@@ -1,7 +1,7 @@
-diff --git trac_ik_lib/CMakeLists.txt trac_ik_lib/CMakeLists.txt
+diff --git CMakeLists.txt CMakeLists.txt
 index 8c8354e..31aba18 100644
---- trac_ik_lib/CMakeLists.txt
-+++ trac_ik_lib/CMakeLists.txt
+--- CMakeLists.txt
++++ CMakeLists.txt
 @@ -1,4 +1,4 @@
 -cmake_minimum_required(VERSION 2.8.3)
 +cmake_minimum_required(VERSION 3.3)
@@ -31,8 +31,8 @@ index 8c8354e..31aba18 100644
              ${Boost_MATH_LIBRARY}
 diff --git trac_ik_lib/src/trac_ik.cpp trac_ik_lib/src/trac_ik.cpp
 index 2bb1820..1fe74ba 100644
---- trac_ik_lib/src/trac_ik.cpp
-+++ trac_ik_lib/src/trac_ik.cpp
+--- src/trac_ik.cpp
++++ src/trac_ik.cpp
 @@ -114,7 +114,7 @@ namespace TRAC_IK {
            lb(joint_num-1)=std::numeric_limits<float>::lowest();
            ub(joint_num-1)=std::numeric_limits<float>::max();
