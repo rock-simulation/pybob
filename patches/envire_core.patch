@@ -1,0 +1,759 @@
+diff --git src/CMakeLists.txt src/CMakeLists.txt
+index 079071b..4ae459e 100644
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -1,3 +1,5 @@
++set(Boost_USE_STATIC_LIBS OFF)
++
+ find_package(Boost COMPONENTS serialization filesystem system thread)
+ 
+ set(headers items/ItemBase.hpp
+diff --git src/events/EdgeEvents.hpp src/events/EdgeEvents.hpp
+index 8d97975..99515d2 100644
+--- src/events/EdgeEvents.hpp
++++ src/events/EdgeEvents.hpp
+@@ -26,9 +26,9 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/items/ItemBase.hpp>
+-#include <envire_core/graph/GraphTypes.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "../items/ItemBase.hpp"
++#include "../graph/GraphTypes.hpp"
++#include "GraphEvent.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/events/FrameEvents.hpp src/events/FrameEvents.hpp
+index 743b9cb..300f955 100644
+--- src/events/FrameEvents.hpp
++++ src/events/FrameEvents.hpp
+@@ -26,8 +26,8 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/items/Frame.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "../items/Frame.hpp"
++#include "GraphEvent.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/events/GraphEvent.cpp src/events/GraphEvent.cpp
+index 38da90d..9530f38 100644
+--- src/events/GraphEvent.cpp
++++ src/events/GraphEvent.cpp
+@@ -24,7 +24,7 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/events/GraphEvent.hpp>
++#include "GraphEvent.hpp"
+ #include <ostream>
+ 
+ namespace envire { namespace core
+@@ -58,4 +58,4 @@ std::ostream& operator<<(std::ostream& ostream, const GraphEvent& graph_event)
+     return ostream;
+ }
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/events/GraphEvent.hpp src/events/GraphEvent.hpp
+index fb2a533..8b5305a 100644
+--- src/events/GraphEvent.hpp
++++ src/events/GraphEvent.hpp
+@@ -25,7 +25,7 @@
+ //
+ 
+ #pragma once
+-#include <envire_core/events/GraphEventExceptions.hpp>
++#include "GraphEventExceptions.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/events/GraphEventDispatcher.cpp src/events/GraphEventDispatcher.cpp
+index 3da9ac1..3943e70 100644
+--- src/events/GraphEventDispatcher.cpp
++++ src/events/GraphEventDispatcher.cpp
+@@ -24,12 +24,12 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/events/GraphEventDispatcher.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
+-#include <envire_core/events/EdgeEvents.hpp>
+-#include <envire_core/events/ItemAddedEvent.hpp>
+-#include <envire_core/events/ItemRemovedEvent.hpp>
+-#include <envire_core/events/FrameEvents.hpp>
++#include "GraphEventDispatcher.hpp"
++#include "GraphEvent.hpp"
++#include "EdgeEvents.hpp"
++#include "ItemAddedEvent.hpp"
++#include "ItemRemovedEvent.hpp"
++#include "FrameEvents.hpp"
+ 
+ #include <cassert>
+ 
+diff --git src/events/GraphEventDispatcher.hpp src/events/GraphEventDispatcher.hpp
+index ae9f8d4..3b8db0d 100644
+--- src/events/GraphEventDispatcher.hpp
++++ src/events/GraphEventDispatcher.hpp
+@@ -27,7 +27,7 @@
+ #pragma once
+ #include <list>
+ #include <string>
+-#include <envire_core/events/GraphEventSubscriber.hpp>
++#include "GraphEventSubscriber.hpp"
+ 
+ 
+ namespace envire { namespace core
+diff --git src/events/GraphEventPublisher.cpp src/events/GraphEventPublisher.cpp
+index b24a0a8..21805f3 100644
+--- src/events/GraphEventPublisher.cpp
++++ src/events/GraphEventPublisher.cpp
+@@ -31,8 +31,8 @@
+  *      Author: aboeckmann
+  */
+ #include <algorithm>
+-#include <envire_core/events/GraphEventPublisher.hpp>
+-#include <envire_core/events/GraphEventSubscriber.hpp>
++#include "GraphEventPublisher.hpp"
++#include "GraphEventSubscriber.hpp"
+ #include <cassert>
+ 
+ using namespace envire::core;
+diff --git src/events/GraphEventPublisher.hpp src/events/GraphEventPublisher.hpp
+index 6bb7893..caf532a 100644
+--- src/events/GraphEventPublisher.hpp
++++ src/events/GraphEventPublisher.hpp
+@@ -33,7 +33,7 @@
+ 
+ #pragma once
+ #include <vector>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "GraphEvent.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/events/GraphEventQueue.cpp src/events/GraphEventQueue.cpp
+index 140a23d..cb254a6 100644
+--- src/events/GraphEventQueue.cpp
++++ src/events/GraphEventQueue.cpp
+@@ -24,7 +24,7 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/events/GraphEventQueue.hpp>
++#include "GraphEventQueue.hpp"
+ #include <typeinfo>
+ #include <iostream>
+ 
+@@ -85,4 +85,4 @@ void envire::core::GraphEventQueue::flush()
+         it = event_queue.erase(it);
+         delete event;
+     }
+-}
+\ No newline at end of file
++}
+diff --git src/events/GraphEventQueue.hpp src/events/GraphEventQueue.hpp
+index 3dee60b..2c22926 100644
+--- src/events/GraphEventQueue.hpp
++++ src/events/GraphEventQueue.hpp
+@@ -26,8 +26,8 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/events/GraphEventSubscriber.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "GraphEventSubscriber.hpp"
++#include "GraphEvent.hpp"
+ #include <list>
+ 
+ namespace envire { namespace core
+@@ -53,4 +53,4 @@ private:
+     std::list<GraphEvent*> event_queue;
+ };
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/events/GraphEventSubscriber.cpp src/events/GraphEventSubscriber.cpp
+index 1bf7006..066e14b 100644
+--- src/events/GraphEventSubscriber.cpp
++++ src/events/GraphEventSubscriber.cpp
+@@ -24,8 +24,8 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/events/GraphEventSubscriber.hpp>
+-#include <envire_core/events/GraphEventPublisher.hpp>
++#include "GraphEventSubscriber.hpp"
++#include "GraphEventPublisher.hpp"
+ #include <cassert>
+ 
+ using namespace envire::core;
+diff --git src/events/GraphItemEventDispatcher.hpp src/events/GraphItemEventDispatcher.hpp
+index 5967b51..7485c14 100644
+--- src/events/GraphItemEventDispatcher.hpp
++++ src/events/GraphItemEventDispatcher.hpp
+@@ -25,10 +25,10 @@
+ //
+ 
+ #pragma once
+-#include <envire_core/events/GraphEventSubscriber.hpp>
+-#include <envire_core/events/GraphEventPublisher.hpp>
+-#include <envire_core/events/ItemAddedEvent.hpp>
+-#include <envire_core/events/ItemRemovedEvent.hpp>
++#include "GraphEventSubscriber.hpp"
++#include "GraphEventPublisher.hpp"
++#include "ItemAddedEvent.hpp"
++#include "ItemRemovedEvent.hpp"
+ #include <typeindex>
+ 
+ 
+diff --git src/events/ItemAddedEvent.hpp src/events/ItemAddedEvent.hpp
+index 55b3ff3..9494ffc 100644
+--- src/events/ItemAddedEvent.hpp
++++ src/events/ItemAddedEvent.hpp
+@@ -26,8 +26,8 @@
+ 
+ #pragma once
+ #include <typeindex>
+-#include <envire_core/items/ItemBase.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "../items/ItemBase.hpp"
++#include "GraphEvent.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/events/ItemRemovedEvent.hpp src/events/ItemRemovedEvent.hpp
+index 6e414e2..331fd12 100644
+--- src/events/ItemRemovedEvent.hpp
++++ src/events/ItemRemovedEvent.hpp
+@@ -25,8 +25,8 @@
+ //
+ 
+ #pragma once
+-#include <envire_core/items/ItemBase.hpp>
+-#include <envire_core/events/GraphEvent.hpp>
++#include "../items/ItemBase.hpp"
++#include "GraphEvent.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/graph/EnvireGraph.cpp src/graph/EnvireGraph.cpp
+index 2425723..3f2043f 100644
+--- src/graph/EnvireGraph.cpp
++++ src/graph/EnvireGraph.cpp
+@@ -25,7 +25,7 @@
+ //
+ 
+ 
+-#include <envire_core/graph/EnvireGraph.hpp>
++#include "EnvireGraph.hpp"
+ #include <fstream>
+ #include <boost/archive/binary_oarchive.hpp>
+ #include <boost/archive/binary_iarchive.hpp>
+diff --git src/graph/EnvireGraph.hpp src/graph/EnvireGraph.hpp
+index ab5af7f..6ab438c 100644
+--- src/graph/EnvireGraph.hpp
++++ src/graph/EnvireGraph.hpp
+@@ -26,11 +26,11 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/graph/TransformGraph.hpp>
+-#include <envire_core/items/Frame.hpp>
+-#include <envire_core/events/ItemAddedEvent.hpp>
+-#include <envire_core/events/ItemRemovedEvent.hpp>
+-#include <envire_core/util/Demangle.hpp>
++#include "TransformGraph.hpp"
++#include "../items/Frame.hpp"
++#include "../events/ItemAddedEvent.hpp"
++#include "../events/ItemRemovedEvent.hpp"
++#include "../util/Demangle.hpp"
+ 
+ #include <typeindex>
+ #include <typeinfo>
+diff --git src/graph/Graph.hpp src/graph/Graph.hpp
+index d38ddf3..6d660f2 100644
+--- src/graph/Graph.hpp
++++ src/graph/Graph.hpp
+@@ -28,19 +28,19 @@
+ 
+ #include <type_traits>
+ 
+-#include <envire_core/events/GraphEventPublisher.hpp>
+-#include <envire_core/events/FrameEvents.hpp>
+-#include <envire_core/events/EdgeEvents.hpp>
++#include "../events/GraphEventPublisher.hpp"
++#include "../events/FrameEvents.hpp"
++#include "../events/EdgeEvents.hpp"
+ 
+ #include <boost/graph/filtered_graph.hpp>
+ #include <boost/graph/copy.hpp>
+ #include <boost/concept_check.hpp>
+ 
+-#include <envire_core/graph/GraphTypes.hpp>
+-#include <envire_core/graph/TreeView.hpp>
+-#include <envire_core/graph/GraphExceptions.hpp>
+-#include <envire_core/graph/GraphVisitors.hpp>
+-#include <envire_core/graph/Path.hpp>
++#include "GraphTypes.hpp"
++#include "TreeView.hpp"
++#include "GraphExceptions.hpp"
++#include "GraphVisitors.hpp"
++#include "Path.hpp"
+ 
+ 
+ namespace envire { namespace core
+diff --git src/graph/GraphDrawing.hpp src/graph/GraphDrawing.hpp
+index 534e5e1..5810282 100644
+--- src/graph/GraphDrawing.hpp
++++ src/graph/GraphDrawing.hpp
+@@ -28,10 +28,10 @@
+ 
+ #include <fstream> // std::ofstream
+ 
+-#include <envire_core/graph/EnvireGraph.hpp>
++#include "EnvireGraph.hpp"
+ #include <boost/graph/graphviz.hpp>
+ #include <boost/algorithm/string.hpp>
+-#include <envire_core/util/Demangle.hpp>
++#include "../util/Demangle.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/graph/GraphExceptions.hpp src/graph/GraphExceptions.hpp
+index fda5679..3e69d2f 100644
+--- src/graph/GraphExceptions.hpp
++++ src/graph/GraphExceptions.hpp
+@@ -28,7 +28,7 @@
+ 
+ #include <stdexcept>
+ #include <string>
+-#include <envire_core/items/Frame.hpp>
++#include "../items/Frame.hpp"
+ #include <boost/uuid/uuid.hpp>
+ 
+ namespace envire { namespace core
+diff --git src/graph/GraphTypes.hpp src/graph/GraphTypes.hpp
+index 5fa548f..150dba2 100644
+--- src/graph/GraphTypes.hpp
++++ src/graph/GraphTypes.hpp
+@@ -34,6 +34,7 @@
+ #include <boost/graph/labeled_graph.hpp>
+ #undef private
+ 
++#include <cstdint>
+ #include <string>
+ #include <type_traits>
+ #include <unordered_map>
+@@ -43,9 +44,9 @@
+ #include <boost/functional/hash.hpp> 
+ #include <functional> //to be able to provide custom hash functions for std maps
+ 
+-#include <envire_core/items/Environment.hpp>
+-#include <envire_core/items/ItemBase.hpp>
+-#include <envire_core/serialization/SerializableConcept.hpp>
++#include "../items/Environment.hpp"
++#include "../items/ItemBase.hpp"
++#include "../serialization/SerializableConcept.hpp"
+ 
+ 
+ namespace envire { namespace core
+@@ -182,7 +183,7 @@ namespace envire { namespace core
+     struct VertexHash : std::unary_function<GraphTraits::vertex_descriptor, std::size_t> {
+       std::size_t operator()(GraphTraits::vertex_descriptor const& u) const {
+         std::size_t seed = 0;
+-        boost::hash_combine(seed, (long)u);
++        boost::hash_combine(seed, (intptr_t)u);
+         return seed;
+       }
+     };
+diff --git src/graph/GraphVisitors.hpp src/graph/GraphVisitors.hpp
+index 9be8e6a..95d1747 100644
+--- src/graph/GraphVisitors.hpp
++++ src/graph/GraphVisitors.hpp
+@@ -32,9 +32,9 @@
+  */
+ 
+ #pragma once
+-#include <envire_core/graph/GraphExceptions.hpp>
+-#include <envire_core/graph/GraphTypes.hpp>
+-#include <envire_core/graph/TreeView.hpp>
++#include "GraphExceptions.hpp"
++#include "GraphTypes.hpp"
++#include "TreeView.hpp"
+ #include <boost/shared_ptr.hpp>
+ #include <boost/graph/breadth_first_search.hpp>
+ 
+diff --git src/graph/Path.cpp src/graph/Path.cpp
+index e4dcc84..8c6e89d 100644
+--- src/graph/Path.cpp
++++ src/graph/Path.cpp
+@@ -25,8 +25,8 @@
+ //
+ 
+ #include "Path.hpp"
+-#include <envire_core/events/EdgeEvents.hpp>
+-#include <envire_core/events/GraphEventPublisher.hpp>
++#include "../events/EdgeEvents.hpp"
++#include "../events/GraphEventPublisher.hpp"
+ 
+ 
+ namespace envire { namespace core
+@@ -139,4 +139,4 @@ const FrameId& Path::at(const int i) const
+ 
+ 
+   
+-}}
+\ No newline at end of file
++}}
+diff --git src/graph/Path.hpp src/graph/Path.hpp
+index c41e911..0ef0051 100644
+--- src/graph/Path.hpp
++++ src/graph/Path.hpp
+@@ -26,9 +26,9 @@
+ 
+ #pragma once
+ #include "GraphTypes.hpp"
+-#include <envire_core/items/Transform.hpp>
+-#include <envire_core/events/GraphEventDispatcher.hpp>
+-#include <envire_core/graph/GraphTypes.hpp>
++#include "../items/Transform.hpp"
++#include "../events/GraphEventDispatcher.hpp"
++#include "GraphTypes.hpp"
+ #include <memory>
+ 
+ namespace envire { namespace core
+diff --git src/graph/TransformGraph.hpp src/graph/TransformGraph.hpp
+index ec405b7..4e97ac0 100644
+--- src/graph/TransformGraph.hpp
++++ src/graph/TransformGraph.hpp
+@@ -10,11 +10,11 @@
+ #include <cassert>
+ #include <string>
+ 
+-#include <envire_core/graph/Graph.hpp>
+-#include <envire_core/graph/GraphVisitors.hpp>
+-#include <envire_core/events/GraphEventPublisher.hpp>
++#include "Graph.hpp"
++#include "GraphVisitors.hpp"
++#include "../events/GraphEventPublisher.hpp"
+ #include <boost_serialization/BoostTypes.hpp>
+-#include <envire_core/items/Transform.hpp>
++#include "../items/Transform.hpp"
+ 
+ 
+ 
+diff --git src/graph/TreeView.cpp src/graph/TreeView.cpp
+index 7b69fb1..3646c41 100644
+--- src/graph/TreeView.cpp
++++ src/graph/TreeView.cpp
+@@ -24,7 +24,7 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/graph/TreeView.hpp>
++#include "TreeView.hpp"
+ 
+ namespace envire { namespace core
+ {
+@@ -277,4 +277,4 @@ bool TreeView::isParent(const vertex_descriptor parent, const vertex_descriptor
+ }
+ 
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/graph/TreeView.hpp src/graph/TreeView.hpp
+index 2d73e85..58d4805 100644
+--- src/graph/TreeView.hpp
++++ src/graph/TreeView.hpp
+@@ -26,8 +26,9 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/graph/GraphTypes.hpp>
++#include "GraphTypes.hpp"
+ 
++#define GLOG_USE_GLOG_EXPORT
+ #include <glog/logging.h>
+ #include <deque>
+ 
+diff --git src/items/Frame.hpp src/items/Frame.hpp
+index ef74caf..8be8b30 100644
+--- src/items/Frame.hpp
++++ src/items/Frame.hpp
+@@ -34,14 +34,15 @@
+ #include <sstream>
+ #include <unordered_map>
+ #include <typeindex>
++#define GLOG_USE_GLOG_EXPORT
+ #include <glog/logging.h>
+     
+ #include "ItemBase.hpp"
+ #include "RandomGenerator.hpp"
+ #include <boost_serialization/BoostTypes.hpp>
+ #include <boost_serialization/DynamicSizeSerialization.hpp>
+-#include <envire_core/serialization/Serialization.hpp>
+-#include <envire_core/util/Demangle.hpp>
++#include "../serialization/Serialization.hpp"
++#include "../util/Demangle.hpp"
+ 
+ namespace envire { namespace core
+ {
+diff --git src/items/ItemMetadata.cpp src/items/ItemMetadata.cpp
+index c56c1ee..d125429 100644
+--- src/items/ItemMetadata.cpp
++++ src/items/ItemMetadata.cpp
+@@ -25,6 +25,7 @@
+ //
+ 
+ #include "ItemMetadata.hpp"
++#define GLOG_USE_GLOG_EXPORT
+ #include <glog/logging.h>
+ #include <iostream>
+ using namespace std;
+diff --git src/items/SpatialItem.hpp src/items/SpatialItem.hpp
+index 6787f8c..42aad65 100644
+--- src/items/SpatialItem.hpp
++++ src/items/SpatialItem.hpp
+@@ -27,8 +27,8 @@
+ #ifndef __ENVIRE_CORE_SPATIAL_ITEM__
+ #define __ENVIRE_CORE_SPATIAL_ITEM__
+ 
+-#include <envire_core/items/Item.hpp>
+-#include <envire_core/items/BoundingVolume.hpp>
++#include "Item.hpp"
++#include "BoundingVolume.hpp"
+ #include <boost/shared_ptr.hpp>
+ #include <Eigen/Geometry>
+ 
+diff --git src/plugin/ClassLoader.cpp src/plugin/ClassLoader.cpp
+index 478ac0d..de896bf 100644
+--- src/plugin/ClassLoader.cpp
++++ src/plugin/ClassLoader.cpp
+@@ -24,7 +24,8 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/plugin/ClassLoader.hpp>
++#include "ClassLoader.hpp"
++#define GLOG_USE_GLOG_EXPORT
+ #include <glog/logging.h>
+ 
+ using namespace envire::core;
+diff --git src/plugin/ClassLoader.hpp src/plugin/ClassLoader.hpp
+index 3cf6f89..87757e7 100644
+--- src/plugin/ClassLoader.hpp
++++ src/plugin/ClassLoader.hpp
+@@ -32,7 +32,7 @@
+ #include <base-logging/Singleton.hpp>
+ #include <plugin_manager/PluginLoader.hpp>
+ 
+-#include <envire_core/items/ItemBase.hpp>
++#include "../items/ItemBase.hpp"
+ 
+ namespace envire { namespace core
+ {
+@@ -183,4 +183,4 @@ bool ClassLoader::createCollisionObjectFor(const envire::core::ItemBase& item, b
+     return false;
+ }
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/plugin/Plugin.hpp src/plugin/Plugin.hpp
+index 39161a2..0145c2e 100644
+--- src/plugin/Plugin.hpp
++++ src/plugin/Plugin.hpp
+@@ -27,9 +27,9 @@
+ #pragma once
+ 
+ #include <class_loader_melodic/class_loader_register_macro.h>
+-#include <envire_core/items/ItemMetadata.hpp>
+-#include <envire_core/items/Item.hpp>
+-#include <envire_core/serialization/SerializationRegistration.hpp>
++#include "../items/ItemMetadata.hpp"
++#include "../items/Item.hpp"
++#include "../serialization/SerializationRegistration.hpp"
+ 
+ /**
+ * The macro ENVIRE_REGISTER_ITEM(DataType) exports the class envire::core::Item<DataType> as class_loader plugin.
+diff --git src/serialization/ItemHeader.hpp src/serialization/ItemHeader.hpp
+index 3ff4812..68600a9 100644
+--- src/serialization/ItemHeader.hpp
++++ src/serialization/ItemHeader.hpp
+@@ -26,7 +26,7 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/items/ItemBase.hpp>
++#include "../items/ItemBase.hpp"
+ #include <boost/serialization/nvp.hpp>
+ 
+ namespace envire { namespace core
+@@ -55,4 +55,4 @@ private:
+     }
+ };
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/serialization/Serialization.cpp src/serialization/Serialization.cpp
+index 5ee2c04..603c90b 100644
+--- src/serialization/Serialization.cpp
++++ src/serialization/Serialization.cpp
+@@ -28,12 +28,12 @@
+ 
+ #include <boost/serialization/shared_ptr.hpp>
+ #include <boost/serialization/nvp.hpp>
+-#include <envire_core/serialization/BinaryBufferHelper.hpp>
++#include "BinaryBufferHelper.hpp"
+ #include <boost/archive/binary_iarchive.hpp>
+ #include <boost/archive/binary_oarchive.hpp>
+ 
+ #ifdef CMAKE_ENABLE_PLUGINS
+-    #include <envire_core/plugin/ClassLoader.hpp>
++    #include "../plugin/ClassLoader.hpp"
+ #endif
+ 
+ using namespace envire::core;
+diff --git src/serialization/Serialization.hpp src/serialization/Serialization.hpp
+index c54625e..3e24ba6 100644
+--- src/serialization/Serialization.hpp
++++ src/serialization/Serialization.hpp
+@@ -26,11 +26,12 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/serialization/SerializationHandle.hpp>
+-#include <envire_core/serialization/ItemHeader.hpp>
+-#include <envire_core/items/ItemBase.hpp>
++#include "SerializationHandle.hpp"
++#include "ItemHeader.hpp"
++#include "../items/ItemBase.hpp"
+ 
+ #include <boost/serialization/nvp.hpp>
++#define GLOG_USE_GLOG_EXPORT
+ #include <glog/logging.h>
+ #include <map>
+ 
+@@ -216,4 +217,4 @@ private:
+     static bool loadAllPluginLibraries();
+ };
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/serialization/SerializationHandle.hpp src/serialization/SerializationHandle.hpp
+index a60e569..0be324d 100644
+--- src/serialization/SerializationHandle.hpp
++++ src/serialization/SerializationHandle.hpp
+@@ -26,7 +26,7 @@
+ 
+ #pragma once
+ 
+-#include <envire_core/items/ItemBase.hpp>
++#include "../items/ItemBase.hpp"
+ 
+ namespace boost { namespace archive
+ {
+@@ -56,4 +56,4 @@ public:
+     virtual bool load(boost::archive::text_iarchive& ar, ItemBase::Ptr& item) = 0;
+ };
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/serialization/SerializationRegistration.hpp src/serialization/SerializationRegistration.hpp
+index c6063ee..ee5c601 100644
+--- src/serialization/SerializationRegistration.hpp
++++ src/serialization/SerializationRegistration.hpp
+@@ -28,7 +28,7 @@
+ 
+ #include "SerializationHandle.hpp"
+ #include "Serialization.hpp"
+-#include <envire_core/items/ItemBase.hpp>
++#include "../items/ItemBase.hpp"
+ 
+ #include <boost/serialization/shared_ptr.hpp>
+ #include <boost/serialization/nvp.hpp>
+@@ -110,4 +110,4 @@ public:
+     }
+ };
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/util/Demangle.cpp src/util/Demangle.cpp
+index a243f74..b851ee8 100644
+--- src/util/Demangle.cpp
++++ src/util/Demangle.cpp
+@@ -24,7 +24,7 @@
+ // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ //
+ 
+-#include <envire_core/util/Demangle.hpp>
++#include "Demangle.hpp"
+ 
+ namespace envire { namespace core
+ {
+@@ -59,4 +59,4 @@ std::string escapeAngleBraces(const std::string& input)
+     return b;
+ }
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/util/EnvireManager.cpp src/util/EnvireManager.cpp
+index 77f8ed2..45a89db 100644
+--- src/util/EnvireManager.cpp
++++ src/util/EnvireManager.cpp
+@@ -7,7 +7,7 @@
+ 
+ #include "EnvireManager.hpp"
+ 
+-#include <envire_core/graph/EnvireGraph.hpp>
++#include "../graph/EnvireGraph.hpp"
+ 
+ 
+ namespace envire { 
+diff --git src/util/Exceptions.hpp src/util/Exceptions.hpp
+index 3a6f128..df90756 100644
+--- src/util/Exceptions.hpp
++++ src/util/Exceptions.hpp
+@@ -28,7 +28,7 @@
+ 
+ #include <stdexcept>
+ #include <typeindex>
+-#include <envire_core/util/Demangle.hpp>
++#include "Demangle.hpp"
+ 
+ namespace envire { namespace core
+ {
+@@ -46,4 +46,4 @@ namespace envire { namespace core
+ 
+ 
+ 
+-}}
+\ No newline at end of file
++}}
+diff --git src/util/ThreadSaveEnvireGraph.hpp src/util/ThreadSaveEnvireGraph.hpp
+index e6e9dad..abacc96 100644
+--- src/util/ThreadSaveEnvireGraph.hpp
++++ src/util/ThreadSaveEnvireGraph.hpp
+@@ -5,7 +5,9 @@
+ #include <vector>
+ #include "../graph/EnvireGraph.hpp"
+ 
++#ifndef _WIN32
+ #include <execinfo.h>
++#endif
+ 
+ namespace envire { 
+ namespace core {
