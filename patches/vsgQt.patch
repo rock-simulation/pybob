@@ -1,0 +1,77 @@
+diff --git include/vsgQt/Window.h include/vsgQt/Window.h
+index 08b8b21..a49e9b4 100644
+--- include/vsgQt/Window.h
++++ include/vsgQt/Window.h
+@@ -40,7 +40,7 @@ namespace vsgQt
+ 
+         vsg::ref_ptr<vsg::Window> windowAdapter;
+         vsg::ref_ptr<KeyboardMap> keyboardMap;
+-
++        QWindow *window;
+         operator vsg::ref_ptr<vsg::Window>() { return windowAdapter; }
+ 
+         /// Initialize the Vulkan integration using VulkanSceneGraph VkInstance/VkSurface support
+@@ -64,7 +64,8 @@ namespace vsgQt
+ 
+         /// convert Qt's window coordinate into Vulkan/VSG ones by scaling by the devicePixelRatio()
+         template<typename T>
+-        int32_t convert_coord(T c) const { return static_cast<int32_t>(std::round(static_cast<qreal>(c) * devicePixelRatio())); }
++            //int32_t convert_coord(T c) const { return static_cast<int32_t>(std::round(static_cast<qreal>(c) * devicePixelRatio())); }
++        int32_t convert_coord(T c) const { return static_cast<int32_t>(std::round(static_cast<qreal>(c))); }
+ 
+         std::pair<vsg::ButtonMask, uint32_t> convertMouseButtons(QMouseEvent* e) const;
+         std::pair<int32_t, int32_t> convertMousePosition(QMouseEvent* e) const;
+diff --git src/vsgQt/Window.cpp src/vsgQt/Window.cpp
+index e1e1429..b1cd9ce 100644
+--- src/vsgQt/Window.cpp
++++ src/vsgQt/Window.cpp
+@@ -152,7 +152,7 @@ void Window::initializeWindow()
+ #elif defined(VK_USE_PLATFORM_XCB_KHR)
+     traits->nativeWindow = static_cast<xcb_window_t>(winId());
+ #elif defined(VK_USE_PLATFORM_MACOS_MVK)
+-    traits->nativeWindow = winId();
++    //traits->nativeWindow = winId();
+ #endif
+ 
+     traits->x = convert_coord(x());
+@@ -160,7 +160,15 @@ void Window::initializeWindow()
+     traits->width = convert_coord(width());
+     traits->height = convert_coord(height());
+ 
++#if defined(VK_USE_PLATFORM_MACOS_MVK)
++    traits->showWindow = false;
+     windowAdapter = vsg::Window::create(traits);
++    void* nsview = std::any_cast<void*>(traits->nativeWindow);
++    window = QWindow::fromWinId(WId(nsview));
++    window->setParent(this);
++#else
++    windowAdapter = vsg::Window::create(traits);
++#endif
+     _initialized = true;
+ }
+ 
+@@ -208,7 +216,11 @@ bool Window::event(QEvent* e)
+ 
+ void Window::exposeEvent(QExposeEvent* /*e*/)
+ {
++#if defined(VK_USE_PLATFORM_MACOS_MVK)
++    if (!_initialized) // && isExposed())
++#else
+     if (!_initialized && isExposed())
++#endif
+     {
+         initializeWindow();
+     }
+@@ -228,7 +240,11 @@ void Window::resizeEvent(QResizeEvent* /*e*/)
+     windowAdapter->bufferedEvents.push_back(vsg::ConfigureWindowEvent::create(windowAdapter, event_time, convert_coord(x()), convert_coord(y()), convert_coord(width()), convert_coord(height())));
+ 
+     windowAdapter->resize();
+-
++#if defined(VK_USE_PLATFORM_MACOS_MVK)
++    window->resize(width(), height());
++#else
++    window->resize();
++#endif
+     if (viewer) viewer->request();
+ }
+ 

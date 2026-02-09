@@ -1,0 +1,294 @@
+diff --git include/vsg/app/WindowTraits.h include/vsg/app/WindowTraits.h
+index 4ee2753f..4581c78d 100644
+--- include/vsg/app/WindowTraits.h
++++ include/vsg/app/WindowTraits.h
+@@ -97,6 +97,8 @@ namespace vsg
+ 
+         std::any nativeWindow;
+         std::any systemConnection;
++        bool showWindow;
++        double backingScaleFactor;
+ 
+     protected:
+         virtual ~WindowTraits() {}
+diff --git a/include/vsg/platform/macos/MacOS_Window.h b/include/vsg/platform/macos/MacOS_Window.h
+index 21b93316..7312754c 100644
+--- include/vsg/platform/macos/MacOS_Window.h
++++ include/vsg/platform/macos/MacOS_Window.h
+@@ -12,7 +12,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
+ 
+ </editor-fold> */
+ 
+-#define VK_USE_PLATFORM_MACOS_MVK
++//#define VK_USE_PLATFORM_MACOS_MVK
++#define VK_USE_PLATFORM_METAL_EXT
+ 
+ #include <vsg/app/Window.h>
+ #include <vsg/ui/KeyEvent.h>
+@@ -20,6 +21,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
+ @class NSEvent;
+ @class CAMetalLayer;
+ @class vsg_MacOS_NSView;
++@class vsg_MacOS_NSView2;
+ @class vsg_MacOS_NSWindow;
+ 
+ #import <Cocoa/Cocoa.h>
+@@ -55,7 +57,7 @@ namespace vsgMacOS
+         MacOS_Window(const MacOS_Window&) = delete;
+         MacOS_Window operator = (const MacOS_Window&) = delete;
+ 
+-        const char* instanceExtensionSurfaceName() const override { return "VK_MVK_macos_surface"; }
++        const char* instanceExtensionSurfaceName() const override { return "VK_EXT_metal_surface"; }
+ 
+         bool valid() const override { return _window; }
+ 
+@@ -86,7 +88,7 @@ namespace vsgMacOS
+         vsg_MacOS_NSWindow* _window;
+         vsg_MacOS_NSView* _view;
+         CAMetalLayer* _metalLayer;
+-
++        bool handleNSEvents = false;
+         double _first_macos_timestamp = 0;
+         vsg::clock::time_point _first_macos_time_point;
+ 
+diff --git a/src/vsg/app/WindowTraits.cpp b/src/vsg/app/WindowTraits.cpp
+index 1f3c6363..8e943f52 100644
+--- a/src/vsg/app/WindowTraits.cpp
++++ b/src/vsg/app/WindowTraits.cpp
+@@ -98,7 +98,9 @@ WindowTraits::WindowTraits(const WindowTraits& traits, const CopyOp& copyop) :
+     deviceExtensionNames(traits.deviceExtensionNames),
+     deviceTypePreferences(traits.deviceTypePreferences),
+     deviceFeatures(traits.deviceFeatures),
+-    samples(traits.samples) /*,
++    samples(traits.samples),
++    showWindow(traits.showWindow),
++    backingScaleFactor(traits.backingScaleFactor)/*,
+     nativeWindow(traits.nativeWindow),
+     systemConnection(traits.systemConnection)*/
+ {
+@@ -144,6 +146,8 @@ void WindowTraits::defaults()
+ 
+     // prefer discrete gpu over integrated gpu over virtual gpu
+     deviceTypePreferences = {VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU, VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU};
++    showWindow = true;
++    backingScaleFactor = 1.0;
+ }
+ 
+ void WindowTraits::validate()
+diff --git a/src/vsg/platform/macos/MacOS_Window.mm b/src/vsg/platform/macos/MacOS_Window.mm
+index 8b0da4be..e6d3d8a7 100644
+--- a/src/vsg/platform/macos/MacOS_Window.mm
++++ b/src/vsg/platform/macos/MacOS_Window.mm
+@@ -135,7 +135,7 @@ namespace vsg
+ 
+     const NSRect contentRect = [window-> view() frame];
+ 
+-    auto devicePixelScale = _traits->hdpi ? [window->window() backingScaleFactor] : 1.0f;
++    auto devicePixelScale = _traits->hdpi ? _traits->backingScaleFactor : 1.0f;
+ 
+     uint32_t width = contentRect.size.width * devicePixelScale;
+     uint32_t height = contentRect.size.height * devicePixelScale;
+@@ -216,6 +216,38 @@ namespace vsg
+     return true;
+ }
+ 
++- (id)makeBackingLayer
++{
++    if (window && window->layer())
++        return window->layer();
++
++    return [super makeBackingLayer];
++}
++
++@end
++
++@interface vsg_MacOS_NSView2 : vsg_MacOS_NSView
++{
++}
++
++- (instancetype)initWithVsgWindow:(vsgMacOS::MacOS_Window*)initWindow;
++
++@end
++
++@implementation vsg_MacOS_NSView2
++
++- (instancetype)initWithVsgWindow:(vsgMacOS::MacOS_Window*)initWindow
++{
++    self = [super init];
++    if (self != nil)
++    {
++        window = initWindow;
++        [self updateTrackingAreas];
++    }
++
++    return self;
++}
++
+ - (BOOL)canBecomeKeyView
+ {
+     return YES;
+@@ -246,14 +278,6 @@ namespace vsg
+ 
+ }
+ 
+-- (id)makeBackingLayer
+-{
+-    if (window->layer())
+-        return window->layer();
+-
+-    return [super makeBackingLayer];
+-}
+-
+ - (void)cursorUpdate:(NSEvent *)event
+ {
+ }
+@@ -388,13 +412,13 @@ namespace vsgMacOS
+         MacOSSurface(vsg::Instance* instance, NSView* window) :
+             vsg::Surface(VK_NULL_HANDLE, instance)
+         {
+-            VkMacOSSurfaceCreateInfoMVK surfaceCreateInfo{};
+-            surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
++            VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
++            surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+             surfaceCreateInfo.pNext = nullptr;
+             surfaceCreateInfo.flags = 0;
+-            surfaceCreateInfo.pView = window;
++            surfaceCreateInfo.pLayer = window.layer;
+ 
+-            /*auto result = */ vkCreateMacOSSurfaceMVK(*instance, &surfaceCreateInfo, _instance->getAllocationCallbacks(), &_surface);
++            /*auto result = */ vkCreateMetalSurfaceEXT(*instance, &surfaceCreateInfo, _instance->getAllocationCallbacks(), &_surface);
+         }
+     };
+ 
+@@ -725,11 +749,14 @@ MacOS_Window::MacOS_Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
+     }
+ 
+     // create app
+-    [NSApplication sharedApplication];
+-    vsg_MacOS_ApplicationDelegate* appDelegate = [[vsg_MacOS_ApplicationDelegate alloc] init];
+-    [NSApp setDelegate:appDelegate];
+-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+-    //[NSApp run];
++    if(traits->showWindow)
++    {
++        [NSApplication sharedApplication];
++        vsg_MacOS_ApplicationDelegate* appDelegate = [[vsg_MacOS_ApplicationDelegate alloc] init];
++        [NSApp setDelegate:appDelegate];
++        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
++        //[NSApp run];
++    }
+ 
+     // create metal layer
+     _metalLayer = [[CAMetalLayer alloc] init];
+@@ -740,25 +767,34 @@ MacOS_Window::MacOS_Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
+ 
+     // create window
+     _window = [[vsg_MacOS_NSWindow alloc] initWithContentRect:contentRect
+-                                                              styleMask:styleMask
+-                                                              backing:NSBackingStoreBuffered
+-                                                              defer:NO];
+-
+-    vsg_MacOS_NSWindowDelegate* windowDelegate = [[vsg_MacOS_NSWindowDelegate alloc] initWithVsgWindow:this andTraits:traits];
+-    [_window setDelegate:windowDelegate];
++                                                    styleMask:styleMask
++                                                      backing:NSBackingStoreBuffered
++                                                        defer:NO];
++    if(traits->showWindow)
++    {
++        vsg_MacOS_NSWindowDelegate* windowDelegate = [[vsg_MacOS_NSWindowDelegate alloc] initWithVsgWindow:this andTraits:traits];
++        [_window setDelegate:windowDelegate];
++    }
+ 
+     [_window setTitle:[NSString stringWithUTF8String:traits->windowTitle.c_str()]];
++    [_window setTitle:@"foo"];
+     [_window setAcceptsMouseMovedEvents:YES];
+     [_window setRestorable:YES];
+     [_window setOpaque:YES];
+     [_window setBackgroundColor:[NSColor whiteColor]];
+ 
+-
+     // create view
+-    _view = [[vsg_MacOS_NSView alloc] initWithVsgWindow:this];
++    if(traits->showWindow)
++    {
++        _view = [[vsg_MacOS_NSView2 alloc] initWithVsgWindow:this];
++    } else
++    {
++        _view = [[vsg_MacOS_NSView alloc] initWithVsgWindow:this];
++    }
+     // [_view setWantsBestResolutionOpenGLSurface:_traits->hdpi];
+     [_view setAutoresizingMask: (NSViewWidthSizable | NSViewHeightSizable) ];
+     [_view setWantsLayer:YES];
++    traits->nativeWindow = (void*)_view;
+ 
+     // attach view to window
+     [_window setContentView:_view];
+@@ -772,7 +808,7 @@ MacOS_Window::MacOS_Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
+         [_window toggleFullScreen:NSApp.delegate];
+     }
+ 
+-    auto devicePixelScale = _traits->hdpi ? [_window backingScaleFactor] : 1.0f;
++    auto devicePixelScale = traits->hdpi ? traits->backingScaleFactor : 1.0f;
+     [_metalLayer setContentsScale:devicePixelScale];
+ 
+     // we could get the width and height from the window?
+@@ -796,16 +832,23 @@ MacOS_Window::MacOS_Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
+     int ymax = [[NSScreen mainScreen] frame].size.height - [_window frame].size.height;
+     pos.x = std::clamp(traits->x, 0, xmax);
+     pos.y = ymax - std::clamp(traits->y, 0, ymax);
+-    // show
+-    [_window setFrame:CGRectMake(pos.x, pos.y, [_window frame].size.width, [_window frame].size.height) display:YES];
+-
+-    //vsgMacOS::createApplicationMenus();
+-    [NSApp activateIgnoringOtherApps:YES];
+-    [_window makeKeyAndOrderFront:nil];
+ 
+-    // manually trigger configure here??
+-    vsg::clock::time_point event_time = vsg::clock::now();
+-    bufferedEvents.emplace_back(vsg::ConfigureWindowEvent::create(this, event_time, _traits->x, _traits->y, finalwidth, finalheight));
++    if(traits->showWindow)
++    {
++        handleNSEvents = true;
++        // show
++        [_window setFrame:CGRectMake(pos.x, pos.y, [_window frame].size.width, [_window frame].size.height) display:NO];
++
++        //vsgMacOS::createApplicationMenus();
++        [NSApp activateIgnoringOtherApps:YES];
++        [_window makeKeyAndOrderFront:nil];
++
++        // manually trigger configure here??
++        vsg::clock::time_point event_time = vsg::clock::now();
++        bufferedEvents.emplace_back(vsg::ConfigureWindowEvent::create(this, event_time, _traits->x, _traits->y, finalwidth, finalheight));
++        _traits->backingScaleFactor = [_window backingScaleFactor];
++    }
++    //_traits->backingScaleFactor = [_window backingScaleFactor];
+ }
+ 
+ MacOS_Window::~MacOS_Window()
+@@ -841,7 +884,7 @@ void MacOS_Window::resize()
+ {
+     const NSRect contentRect = [_view frame];
+ 
+-    auto devicePixelScale = _traits->hdpi ? [_window backingScaleFactor] : 1.0f;
++    auto devicePixelScale = _traits->hdpi ? _traits->backingScaleFactor : 1.0f;
+     //[_metalLayer setContentsScale:devicePixelScale];
+ 
+     _extent2D.width = contentRect.size.width * devicePixelScale;
+@@ -852,6 +895,8 @@ void MacOS_Window::resize()
+ 
+ bool MacOS_Window::handleNSEvent(NSEvent* anEvent)
+ {
++    if(!handleNSEvents) return false;
++    NSLog(@"handleNSEvent");
+     switch([anEvent type])
+     {
+         // mouse events
+@@ -870,7 +915,7 @@ bool MacOS_Window::handleNSEvent(NSEvent* anEvent)
+             NSPoint pos = [anEvent locationInWindow];
+ 
+             // dpi scale as needed
+-            auto devicePixelScale = _traits->hdpi ? [_window backingScaleFactor] : 1.0f;
++            auto devicePixelScale = _traits->hdpi ? _traits->backingScaleFactor : 1.0f;
+             contentRect.size.width = contentRect.size.width * devicePixelScale;
+             contentRect.size.height = contentRect.size.height * devicePixelScale;
+ 
